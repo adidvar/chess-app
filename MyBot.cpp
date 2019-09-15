@@ -18,7 +18,6 @@ namespace Chess{
 		 //якщо кінчилась глибина
 		 if(TTL==0){
 			 GetPositionMark(TreeMark , board);
-			 TreeMark  = MinMax ? -TreeMark : TreeMark;
 			 TreeResult = true;
 			 return;
 		 }
@@ -75,7 +74,7 @@ namespace Chess{
              newboard = ~newboard;
              double mark;
              bool result;
-             GetTreeMark(mark, result, newboard , true , 2);
+             GetTreeMark(mark, result, newboard , true , 4);
              if(true) //***
                 marks.push_back(mark);
 			 std::cout << mark << std::endl;
@@ -91,7 +90,7 @@ namespace Chess{
 			 maxindex = 0;
 
              for ( double mark : marks) {
-                 if(mark > max){
+                 if(mark < max){
                      max = mark;
                      maxindex = i;
                  }
