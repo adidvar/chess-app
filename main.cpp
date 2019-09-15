@@ -36,18 +36,18 @@ int main()
 
 	sf::Texture black_textures[7];
 	sf::Texture white_textures[7];
-	black_textures[1].loadFromFile("Img/Black_Pawn.png");
-	black_textures[2].loadFromFile("Img/Black_Knight.png");
-	black_textures[3].loadFromFile("Img/Black_Bishop.png");
-	black_textures[4].loadFromFile("Img/Black_Rook.png");
-	black_textures[5].loadFromFile("Img/Black_Queen.png");
-	black_textures[6].loadFromFile("Img/Black_King.png");
-	white_textures[1].loadFromFile("Img/White_Pawn.png");
-	white_textures[2].loadFromFile("Img/White_Knight.png");
-	white_textures[3].loadFromFile("Img/White_Bishop.png");
-	white_textures[4].loadFromFile("Img/White_Rook.png");
-	white_textures[5].loadFromFile("Img/White_Queen.png");
-	white_textures[6].loadFromFile("Img/White_King.png");
+	black_textures[1].loadFromFile("img/Black_Pawn.png");
+	black_textures[2].loadFromFile("img/Black_Knight.png");
+	black_textures[3].loadFromFile("img/Black_Bishop.png");
+	black_textures[4].loadFromFile("img/Black_Rook.png");
+	black_textures[5].loadFromFile("img/Black_Queen.png");
+	black_textures[6].loadFromFile("img/Black_King.png");
+	white_textures[1].loadFromFile("img/White_Pawn.png");
+	white_textures[2].loadFromFile("img/White_Knight.png");
+	white_textures[3].loadFromFile("img/White_Bishop.png");
+	white_textures[4].loadFromFile("img/White_Rook.png");
+	white_textures[5].loadFromFile("img/White_Queen.png");
+	white_textures[6].loadFromFile("img/White_King.png");
 	
 	sf::RenderWindow w(sf::VideoMode(512,512,32),"Chess");
 	
