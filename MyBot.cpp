@@ -1,23 +1,22 @@
-#include "MyBot.h"
-#include <random>
-#include <iostream>
+#include "MyBot.h" 
 
 namespace Chess{
 
-	void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
+    void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
 	{
+        std::array<int,7> price {0,1,2,3,4,5,1000};
 		PositionMark = 0;
 		for(int i=0;i<64;i++)
 		{
-			PositionMark += (board.map[i].color == Chess::Color::White) ? (board.map[i].type) : -(board.map[i].type);
+            PositionMark += (board.map[i].color == Chess::Color::White) ? (price.at(board.map[i].type)) : -(price.at(board.map[i].type));
 		}
 	}
 	
-	void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
+    void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
 	{
 		 //якщо кінчилась глибина
 		 if(TTL==0){
-			 GetPositionMark(TreeMark , board);
+             GetPositionMark(TreeMark , board);
 			 TreeResult = true;
 			 return;
 		 }
@@ -65,7 +64,7 @@ namespace Chess{
 		 std::vector<Turn> turns;
 		 board.getCurrentTurns(turns);
 
-		 std::vector<double> marks;
+         std::vector<double> marks;
 
          std::vector<Turn>::iterator it = turns.begin();
          for ( ;it != turns.end();it++) {
@@ -77,7 +76,6 @@ namespace Chess{
              GetTreeMark(mark, result, newboard , true , 4);
              if(true) //***
                 marks.push_back(mark);
-			 std::cout << mark << std::endl;
 
 
 		 }

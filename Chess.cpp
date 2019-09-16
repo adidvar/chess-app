@@ -15,5 +15,4 @@ namespace Chess{
 			return true;
 		return false;
 	}
-	
 }

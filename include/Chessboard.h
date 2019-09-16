@@ -1,4 +1,5 @@
 #include "Chess.h"
+#include <array>
 
 namespace Chess{
 	
@@ -12,7 +13,7 @@ namespace Chess{
 			bool whiteTurn = true; // чий хід
 			bool whiteCastling = true; // біла рокіровка 
 			bool blackCastling = true; // чорна рокіровка
-			Figure map[64];
+            std::array<Figure,64> map;
 			
             bool makeTurn(Turn turn){return makeTurn(turn,true);};
             bool makeTurn(Turn turn , bool SafeMode);
