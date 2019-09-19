@@ -84,7 +84,7 @@ void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
     }
 }
 	
-    void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
+    void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL , double alpha = 0)
 	{
 		 //якщо кінчилась глибина
 		 if(TTL==0){
