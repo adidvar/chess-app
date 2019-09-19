@@ -52,8 +52,8 @@ int main()
 	sf::RenderWindow w(sf::VideoMode(512,512,32),"Chess");
 	
 	Chess::MyBot b1;
-	//Chess::MyBot b2;
-	Input b2(w);
+    Chess::MyBot b2;
+    //Input b2(w);
 	Chess::ChessController c(b1,b2);
 	Chess::Chessboard board;
 	

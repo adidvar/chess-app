@@ -2,6 +2,89 @@
 
 namespace Chess{
 
+<<<<<<< HEAD
+void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
+{
+    std::array<std::array<float,64>,7> posprice = {
+        std::array<float,64>
+        {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f},
+        std::array<float,64>
+        {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         5.0f,5.0f,5.0f,5.0f,5.0f,5.0f,5.0f,5.0f,
+         1.0f,1.0f,2.0f,3.0f,3.0f,2.0f,1.0f,1.0f,
+         0.5f,0.5f,1.0f,2.5f,2.5f,1.0f,0.5f,0.5f,
+         0.0f,0.0f,0.0f,2.0f,2.0f,0.0f,0.0f,0.0f,
+         0.5f,-0.5f,-1.0f,0.0f,0.0f,-1.0f,-0.5f,0.5f,
+         0.5f,1.0f,1.0f,-2.0f,-2.0f,1.0f,1.0f,0.5f,
+         0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f},
+        std::array<float,64>
+        {-5.0f,-4.0f,-3.0f,-3.0f,-3.0f,-3.0f,-4.0f,-5.0f,
+         -4.0f,-2.0f,0.0f,0.0f,0.0f,0.0f,-2.0f,-4.0f,
+         -3.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-3.0f,
+         -3.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-3.0f,
+         -3.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-3.0f,
+         -3.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-3.0f,
+         -4.0f,-2.0f,0.0f,0.0f,0.0f,0.0f,-2.0f,-4.0f,
+         -5.0f,-3.0f,-3.0f,-3.0f,-3.0f,-3.0f,-4.0f,-5.0f},
+        std::array<float,64>
+        {-2.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-2.0f,
+         -1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-1.0f,
+         -1.0f,0.0f,0.5f,1.0f,1.0f,0.5f,0.0f,-1.0f,
+         -1.0f,0.5f,0.5f,1.0f,1.0f,0.5f,0.5f,-1.0f,
+         -1.0f,0.0f,1.0f,1.0f,1.0f,1.0f,0.0f,-1.0f,
+         -1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,-1.0f,
+         -1.0f,0.5f,0.0f,0.0f,0.0f,0.0f,0.5f,-1.0f,
+         -2.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-2.0f},
+        std::array<float,64>
+        {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,
+         0.5f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,0.5f,
+         -0.5f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-0.5f,
+         -0.5f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-0.5f,
+         -0.5f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-0.5f,
+         -0.5f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-0.5f,
+         -0.5f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-0.5f,
+         0.0f,0.0f,0.0f,0.5f,0.5f,0.0f,0.0f,0.0f},
+        std::array<float,64>
+        {-2.0f,-1.0f,-1.0f,-0.5f,-0.5f,-1.0f,-1.0f,-2.0f,
+         -1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,-1.0f,
+         -1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,-1.0f,
+         -1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,-0.5f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,-0.5f,
+         -1.0f,0.5f,0.5f,0.5f,0.5f,0.5f,1.0f,-1.0f,
+         -1.0f,0.0f,0.5f,0.0f,0.0f,0.0f,0.0f,-1.0f,
+         -2.0f,-1.0f,-1.0f,-0.5f,-0.5f,-1.0f,-1.0f,-2.0f},
+		 std::array<float,64>
+        {1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
+         1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}
+    };
+
+
+
+
+
+    std::array<int,7> price {0,10,30,30,50,90,900};
+    PositionMark = 0;
+    for(int i=0;i<64;i++)
+    {
+        PositionMark += ((board.map[i].color == Chess::Color::White)
+                ? (price.at(board.map[i].type) +  posprice.at(board.map[i].type).at(i))
+                : -(price.at(board.map[i].type) + posprice.at(board.map[i].type).at(i)))
+    }
+}
+=======
     void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
 	{
         std::array<int,7> price {0,1,2,3,4,5,1000};
@@ -11,6 +94,7 @@ namespace Chess{
             PositionMark += (board.map[i].color == Chess::Color::White) ? (price.at(board.map[i].type)) : -(price.at(board.map[i].type));
 		}
 	}
+>>>>>>> 760d37bb8e3ed3feeefb7a4e138dacb5a8b2c5d6
 	
     void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
 	{
@@ -38,7 +122,7 @@ namespace Chess{
 				
 		 }
 		 
-		 double min = 0 , max = 0;
+		 double min, max;
 		 
 		 if(!marks.empty()){
 			 min = marks.front();
@@ -76,17 +160,24 @@ namespace Chess{
              GetTreeMark(mark, result, newboard , true , 4);
              if(true) //***
                 marks.push_back(mark);
+<<<<<<< HEAD
+			 std::cout << mark << std::endl;
+=======
 
 
+>>>>>>> 760d37bb8e3ed3feeefb7a4e138dacb5a8b2c5d6
 		 }
 		 
-		 double max;
-		 unsigned maxindex = 0 , i = 0;
+		 
 		 
 		 if(!marks.empty()){
+			 
+			 double max;
+		 unsigned maxindex;
+			 
 			 max = marks.front();
 			 maxindex = 0;
-
+			int i = 0;
              for ( double mark : marks) {
                  if(mark < max){
                      max = mark;
