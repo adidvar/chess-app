@@ -1,5 +1,6 @@
 #include "ChessController.h"
 #include <array>
+#include <iostream>
 
 namespace Chess{
 

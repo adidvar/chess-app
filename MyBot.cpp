@@ -2,7 +2,6 @@
 
 namespace Chess{
 
-<<<<<<< HEAD
 void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
 {
     std::array<std::array<float,64>,7> posprice = {
@@ -81,20 +80,9 @@ void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
     {
         PositionMark += ((board.map[i].color == Chess::Color::White)
                 ? (price.at(board.map[i].type) +  posprice.at(board.map[i].type).at(i))
-                : -(price.at(board.map[i].type) + posprice.at(board.map[i].type).at(i)))
+                : -(price.at(board.map[i].type) + posprice.at(board.map[i].type).at(i)));
     }
 }
-=======
-    void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
-	{
-        std::array<int,7> price {0,1,2,3,4,5,1000};
-		PositionMark = 0;
-		for(int i=0;i<64;i++)
-		{
-            PositionMark += (board.map[i].color == Chess::Color::White) ? (price.at(board.map[i].type)) : -(price.at(board.map[i].type));
-		}
-	}
->>>>>>> 760d37bb8e3ed3feeefb7a4e138dacb5a8b2c5d6
 	
     void MyBot::GetTreeMark(double &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
 	{
@@ -160,12 +148,10 @@ void MyBot::GetPositionMark(double &PositionMark , Chessboard &board)
              GetTreeMark(mark, result, newboard , true , 4);
              if(true) //***
                 marks.push_back(mark);
-<<<<<<< HEAD
 			 std::cout << mark << std::endl;
-=======
+			 std::cout << mark << std::endl;
 
 
->>>>>>> 760d37bb8e3ed3feeefb7a4e138dacb5a8b2c5d6
 		 }
 		 
 		 
