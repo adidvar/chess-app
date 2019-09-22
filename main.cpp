@@ -1,6 +1,7 @@
 #include <iostream>
 #include <MyBot.h>
 #include <SFML/Graphics.hpp>
+#include <fstream>
 
 using namespace std;
 
@@ -12,6 +13,35 @@ class Input : public Chess::AbstractBot
 	w(r){;};
 	bool GetTurn(Chess::Turn &t,Chess::Chessboard &board);	
 };
+
+class PythonConnector : public Chess::AbstractBot
+{
+	public:
+	PythonConnector(){};
+	bool GetTurn(Chess::Turn &t,Chess::Chessboard &board);	
+};
+bool PythonConnector::GetTurn(Chess::Turn &t,Chess::Chessboard &board)
+{
+	ofstream outputfile;
+	outputfile.open("input.txt");
+	for(Chess::Figure fig : board.map)
+	{
+		outputfile << fig.type << " " << fig.color << " ";
+	}
+	outputfile.close();
+	
+	system("py bot.py");
+	
+	int fx;
+	int fy;
+	int sx;
+	int sy;
+	ifstream inputfile;
+	inputfile.open("output.txt");
+	inputfile >> fx >> fy >> sx >> sy;
+	inputfile.close();
+	return true;
+}
 
 bool Input::GetTurn(Chess::Turn &t,Chess::Chessboard &board)
 {
@@ -52,8 +82,9 @@ int main()
 	sf::RenderWindow w(sf::VideoMode(512,512,32),"Chess");
 	
 	Chess::MyBot b1;
-    Chess::MyBot b2;
+    //Chess::MyBot b2;
     //Input b2(w);
+	PythonConnector b2;
 	Chess::ChessController c(b1,b2);
 	Chess::Chessboard board;
 	
