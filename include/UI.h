@@ -1,8 +1,9 @@
-//#include <vector>
-//#include <thread>
+#include <vector>
+#include <thread>
 #include "AbstractBot.h"
 #include <SFML/Graphics.hpp>
 #include <mutex>
+#include <array>
 
 namespace Chess{
 
@@ -11,13 +12,17 @@ namespace Chess{
 		public:
 			InputUI();
 			bool GetTurn(Chess::Turn &t,Chess::Chessboard &board);
+            void RenderThread();
 		private:
-			void RenderThread();
-			
-            sf::RenderWindow window;
-			std::mutex window_mtx;
+
+            Chess::Chessboard map;
+            std::mutex map_mtx;
 			std::vector<Chess::Turn> turnBuffer;
 			std::mutex turnBuffer_mtx;
+
+            std::array<std::array<sf::Texture,7>,2> textures;
+
+
 	};
 
 };

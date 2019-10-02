@@ -12,6 +12,6 @@ int main()
 	
     while(1){
 		c.NextMove();
-	}
+    }
     return 0;
 }
