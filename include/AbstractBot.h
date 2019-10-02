@@ -1,3 +1,4 @@
+#pragma once
 #include "ChessBoard.h"
 
 namespace Chess
