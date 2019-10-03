@@ -64,29 +64,8 @@ namespace Chess{
 			
 		} else 
 		{
-/*
-			
-			if(turn.start == Position(7,0) || turn.start == Position(7,7) || turn.start == Position(7,4))
-				(whiteTurn ? whiteCastling : blackCastling) = false; //хід турою або королем мінус рокіровка
-			
-			if( turn.start == Position(7,4) && turn.end == Position(7,2))
-			{
-				at(7,0).type = Emply;
-				at(7,2).type = King; // ліва рокіровка
-				at(7,3).type = Rook;
-				at(7,4).type = Emply;	
-			}
-			else if( turn.start == Position(7,4) && turn.end == Position(7,6))
-			{
-				at(7,4).type = Emply;
-				at(7,6).type = King; // права рокіровка
-				at(7,5).type = Rook;
-				at(7,7).type = Emply;	
-			}
-			else*/{
 			at(turn.end) = at(turn.start);
 			at(turn.start).type = Emply;
-			}
 			return true;
 		}
 	};
@@ -215,13 +194,7 @@ namespace Chess{
 					 }
 			 }
 		 }
-		 //рокіровка
-		 /*
-		 if( (whiteTurn ? whiteCastling : blackCastling ) == false && at(7,5).type == Emply && at(7,6).type == Emply)
-			 turns.push_back(Turn(Position(7,4),Position(7,6)));
-		 if( (whiteTurn ? whiteCastling : blackCastling ) == false && at(7,1).type == Emply && at(7,2).type == Emply && at(7,3).type == Emply)
-			 turns.push_back(Turn(Position(7,4),Position(7,2)));
-			 */
+
 		 if(turns.empty())
 			 return false;
 		 return true;

@@ -19,10 +19,6 @@ namespace Chess{
             std::mutex map_mtx;
 			std::vector<Chess::Turn> turnBuffer;
 			std::mutex turnBuffer_mtx;
-
-            std::array<std::array<sf::Texture,7>,2> textures;
-
-
 	};
 
 };

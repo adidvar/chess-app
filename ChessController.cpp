@@ -23,7 +23,6 @@ bool ChessController::NextMove()
 	
     if(!board.makeTurn(t,true))
 		std::cerr << "Uncorect MOVE! Player:" << (board.whiteTurn ? "White" : "Black") << std::endl;
-	std::cout  << (board.whiteTurn ? "White" : "Black") << std::endl;
     board = ~board;
 	board.whiteTurn = !board.whiteTurn;
     return stat;

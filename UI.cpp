@@ -5,23 +5,6 @@ namespace Chess{
 
     InputUI::InputUI()
     {
-        //White
-        textures[0][0].loadFromFile("Texture/WEmpty.png");
-        textures[0][1].loadFromFile("Texture/WPawn.png");
-        textures[0][2].loadFromFile("Texture/WKnight.png");
-        textures[0][3].loadFromFile("Texture/WBishop.png");
-        textures[0][4].loadFromFile("Texture/WRook.png");
-        textures[0][5].loadFromFile("Texture/WQueen.png");
-        textures[0][6].loadFromFile("Texture/WKing.png");
-        //Black
-        textures[1][0].loadFromFile("Texture/BEmpty.png");
-        textures[1][1].loadFromFile("Texture/BPawn.png");
-        textures[1][2].loadFromFile("Texture/BKnight.png");
-        textures[1][3].loadFromFile("Texture/BBishop.png");
-        textures[1][4].loadFromFile("Texture/BBishop.png");
-        textures[1][5].loadFromFile("Texture/BRook.png");
-        textures[1][6].loadFromFile("Texture/BKing.png");
-
         std::thread th(&InputUI::RenderThread,this);
         th.detach();
     }
@@ -35,7 +18,6 @@ namespace Chess{
             turnBuffer_mtx.lock();
             if(turnBuffer.size() > 0){
                 t = turnBuffer.front();
-                std::cout << t.start.x << t.start.y << t.end.x << t.end.y << std::endl;
                 turnBuffer.erase(turnBuffer.begin());
                 turnBuffer_mtx.unlock();
                 break;
@@ -49,9 +31,28 @@ namespace Chess{
     void InputUI::RenderThread()
     {
         std::vector<Position> p;
+        sf::Texture textures[2][7];
+
+        //White
+        //textures[0][0].loadFromFile("Texture/WEmpty.png");
+        textures[0][1].loadFromFile("Texture/WPawn.png");
+        textures[0][2].loadFromFile("Texture/WKnight.png");
+        textures[0][3].loadFromFile("Texture/WBishop.png");
+        textures[0][4].loadFromFile("Texture/WRook.png");
+        textures[0][5].loadFromFile("Texture/WQueen.png");
+        textures[0][6].loadFromFile("Texture/WKing.png");
+        //Black
+        //textures[1][0].loadFromFile("Texture/BEmpty.png");
+        textures[1][1].loadFromFile("Texture/BPawn.png");
+        textures[1][2].loadFromFile("Texture/BKnight.png");
+        textures[1][3].loadFromFile("Texture/BBishop.png");
+        textures[1][4].loadFromFile("Texture/BRook.png");
+        textures[1][5].loadFromFile("Texture/BQueen.png");
+        textures[1][6].loadFromFile("Texture/BKing.png");
+
+
 
         sf::RenderWindow window(sf::VideoMode(640,640),"InputUI");
-        window.setFramerateLimit(60);
         while (window.isOpen())
         {
            sf::Event event;
@@ -87,18 +88,21 @@ namespace Chess{
                }
                IsWhite = !IsWhite;
            }
+
+           map_mtx.lock();
            sf::Sprite figure;
            figure.setScale(sf::Vector2f(1.5f,1.5f));
-           map_mtx.lock();
            for (int x = 0; x < 8; x++)
            {
                for (int y = 0; y < 8; y++)
                {
-                   figure.setTexture(textures[(int)map.at(x,y).color][(int)map.at(x,y).type]);
+                   unsigned color_id = (unsigned)map.at(x,y).color  , figure_id = (unsigned)map.at(x,y).type;
+                   figure.setTexture(textures[color_id][figure_id]);
                    figure.setPosition(sf::Vector2f(y*80,x*80));
-                   window.draw(figure);
+                   if( figure_id != Chess::Emply)
+                       window.draw(figure);
                }
-           }
+          }
            map_mtx.unlock();
 
            window.display();

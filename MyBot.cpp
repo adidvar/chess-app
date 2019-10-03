@@ -98,8 +98,6 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
 		 board.getCurrentTurns(turns);
 		 
 		 std::vector<float> marks;
-		 
-		 //marks.push_back(TreeMark);
 
 		 for ( Turn turn : turns) {
 			 Chessboard newboard(board);
@@ -151,14 +149,7 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
              GetTreeMark(mark, result, newboard , true , 4);
              if(true) //***
                 marks.push_back(mark);
-			 std::cout << mark << std::endl;
-			 std::cout << mark << std::endl;
-
-
 		 }
-		 
-		 
-		 
 		 if(!marks.empty()){
 			 
 			 float max;
@@ -174,17 +165,10 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
                  }
                  i++;
              }
-
              t = turns[maxindex];
-
              return true;
 
 		 }
-
             return false;
-		
     }
-
-	
-	
 };

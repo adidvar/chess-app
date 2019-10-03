@@ -8,8 +8,8 @@ namespace Chess{
 		
 		public:
             ChessController(AbstractBot &bp , AbstractBot &wp):
-            black_player(bp),
-            white_player(wp)
+            white_player(bp),
+            black_player(wp)
             {};
 			Chessboard GetGlobalBoard();
 			Chessboard GetLocalBoard();
