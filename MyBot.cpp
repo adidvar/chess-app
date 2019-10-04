@@ -1,9 +1,9 @@
 #include "MyBot.h" 
-#define INFINITY 9999999999.0
+#define INFINITY 99999.0
 
 namespace Chess{
 
-void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
+float MyBot::GetPositionMark(Chessboard &board)
 {
     std::array<std::array<float,64>,7> posprice = {
         std::array<float,64>
@@ -76,22 +76,21 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
 
 
     std::array<int,7> price {0,10,30,30,50,90,900};
-    PositionMark = 0;
+    float PositionMark = 0;
     for(int i=0;i<64;i++)
     {
         PositionMark += ((board.map[i].color == Chess::Color::White)
                 ? (price.at(board.map[i].type) +  posprice.at(board.map[i].type).at(i))
                 : -(price.at(board.map[i].type) + posprice.at(board.map[i].type).at(i)));
     }
+    return PositionMark;
 }
 	
-    void MyBot::GetTreeMark(float &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL )
+    float MyBot::GetTreeMark(Chessboard &board , bool MinMax , unsigned TTL )
 	{
 		 //якщо кінчилась глибина
 		 if(TTL<=0){
-             GetPositionMark(TreeMark , board);
-			 TreeResult = true;
-			 return;
+            return GetPositionMark(board);
 		 }
 		 //якщо глубина не закінчилася
 		 std::vector<Turn> turns;
@@ -103,11 +102,8 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
 			 Chessboard newboard(board);
 			 newboard.makeTurn(turn,false);
 			 newboard = ~newboard;
-			 float mark = 0;
-			 bool result = false;
-			 GetTreeMark(mark, result, newboard ,!MinMax , TTL-1);
-			 if(result == true)
-				marks.push_back(mark);
+             float mark = GetTreeMark(newboard ,!MinMax , TTL-1);
+             marks.push_back(mark);
 				
 		 }
 		 
@@ -123,13 +119,9 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
 				 if(mark < min)
 					 min = mark;
 			}
-			TreeMark = (MinMax ? max : min);
-			TreeResult = true;
-			return;	
+            return (MinMax ? max : min);
 		 }
-		 
-		 TreeResult = false;
-			return;
+            return (MinMax ? -INFINITY : INFINITY);
 	}
 
 	bool MyBot::GetTurn(Turn &t,Chessboard &board)
@@ -144,27 +136,25 @@ void MyBot::GetPositionMark(float &PositionMark , Chessboard &board)
              Chessboard newboard(board);
              newboard.makeTurn(*it,false);
              newboard = ~newboard;
-             float mark;
-             bool result;
-             GetTreeMark(mark, result, newboard , true , 4);
-             if(true) //***
-                marks.push_back(mark);
+             float mark = GetTreeMark(newboard , false , 3);
+             marks.push_back(mark);
 		 }
 		 if(!marks.empty()){
 			 
-			 float max;
+         float max;
 		 unsigned maxindex;
 			 
-			 max = marks.front();
-			 maxindex = 0;
+            max = marks.front();
+            maxindex = 0;
 			int i = 0;
              for ( float mark : marks) {
-                 if(mark < max){
+                 if(mark > max){
                      max = mark;
                      maxindex = i;
                  }
                  i++;
              }
+
              t = turns[maxindex];
              return true;
 

@@ -23,8 +23,20 @@ namespace Chess{
 			Chessboard(const Chessboard&); // конструктор копіювання
 				
 			bool getCurrentTurns(std::vector<Turn> &turns);
-            Figure& at(unsigned x , unsigned y);
-            Figure& at(Position p);
+
+            //Figure& at(unsigned x , unsigned y);
+            //Figure& at(Position p);
+
+            Figure& at(unsigned x , unsigned y)
+            {
+                return (this->map[(x * 8)+y]);
+            }
+
+            Figure& at(Position p)
+            {
+                return (this->map[(p.x * 8)+p.y]);
+            }
+
 			virtual void reset();
 			Chessboard& operator= (const Chessboard &str); // оператор копіювання
 			Chessboard operator ~() const;

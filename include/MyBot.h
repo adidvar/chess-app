@@ -8,8 +8,8 @@ class MyBot : public Chess::AbstractBot
 {
 	public:
 		bool GetTurn(Turn &t,Chessboard &board);
-        void GetTreeMark(float &TreeMark , bool &TreeResult , Chessboard &board , bool MinMax , unsigned TTL );
-        void GetPositionMark(float &PositionMark , Chessboard &board);
+        float GetTreeMark(Chessboard &board , bool MinMax , unsigned TTL );
+        float GetPositionMark(Chessboard &board);
 };
 
 

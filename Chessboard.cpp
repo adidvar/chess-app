@@ -201,17 +201,6 @@ namespace Chess{
 		 
 	}
 
-
-    Figure& Chessboard::at(unsigned x , unsigned y)
-	{
-		return (this->map[(x * 8)+y]);
-	}
-	
-    Figure& Chessboard::at(Position p)
-	{
-		return (this->map[(p.x * 8)+p.y]);
-	}
-
 	void Chessboard::reset()
 	{
 		(*this) = Chessboard();
