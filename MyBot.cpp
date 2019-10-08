@@ -71,10 +71,6 @@ float MyBot::GetPositionMark(Chessboard &board)
          1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}
     };
 
-
-
-
-
     std::array<int,7> price {0,10,30,30,50,90,900};
     float PositionMark = 0;
     for(int i=0;i<64;i++)
@@ -90,7 +86,7 @@ float MyBot::GetPositionMark(Chessboard &board)
 	{
 		 //якщо кінчилась глибина
 		 if(TTL<=0){
-            return GetPositionMark(board);
+            return -GetPositionMark(board);
 		 }
 		 //якщо глубина не закінчилася
 		 std::vector<Turn> turns;
@@ -136,7 +132,7 @@ float MyBot::GetPositionMark(Chessboard &board)
              Chessboard newboard(board);
              newboard.makeTurn(*it,false);
              newboard = ~newboard;
-             float mark = GetTreeMark(newboard , false , 3);
+             float mark = GetTreeMark(newboard , false , 4);
              marks.push_back(mark);
 		 }
 		 if(!marks.empty()){
