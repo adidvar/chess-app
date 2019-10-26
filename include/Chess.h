@@ -12,7 +12,14 @@ namespace Chess{
 		   Rook = 4,
 		   Queen = 5,
 		   King = 6
-	};
+    };
+
+    enum MatchStatus
+    {
+        Now,
+        Win,
+        Lose
+    };
 	
 	
 	enum Color

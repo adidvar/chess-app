@@ -11,10 +11,13 @@ namespace Chess{
             white_player(bp),
             black_player(wp)
             {};
-			Chessboard GetGlobalBoard();
-			Chessboard GetLocalBoard();
+            Chessboard GetGlobalBoard();
+            Chessboard GetLocalBoard();
             bool NextMove();
-			Chessboard board;
+
+        private:
+            static MatchStatus GetBoardStat(Chessboard &board);
+            Chessboard board;
 			AbstractBot &black_player;
 			AbstractBot &white_player;
 		

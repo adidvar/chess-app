@@ -12,8 +12,21 @@ namespace Chess{
 		public:
 			InputUI();
 			bool GetTurn(Chess::Turn &t,Chess::Chessboard &board);
+            void YouLose();
+            void YouWin();
             void RenderThread();
 		private:
+
+            Chess::MatchStatus stat = MatchStatus::Now;
+            std::mutex stat_mtx;
+            MatchStatus GetStat()
+            {
+                MatchStatus st;
+                stat_mtx.lock();
+                st = stat;
+                stat_mtx.unlock();
+                return st;
+            }
 
             Chess::Chessboard map;
             std::mutex map_mtx;

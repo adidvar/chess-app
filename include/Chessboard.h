@@ -11,12 +11,10 @@ namespace Chess{
 		public:
 
 			bool whiteTurn = true; // чий хід
-			bool whiteCastling = true; // біла рокіровка 
-			bool blackCastling = true; // чорна рокіровка
             std::array<Figure,64> map;
 			
-            bool makeTurn(Turn turn){return makeTurn(turn,true);};
             bool makeTurn(Turn turn , bool SafeMode);
+            bool undoTurn();
 			
 			
 			Chessboard();
@@ -37,7 +35,6 @@ namespace Chess{
                 return (this->map[(p.x * 8)+p.y]);
             }
 
-			virtual void reset();
 			Chessboard& operator= (const Chessboard &str); // оператор копіювання
 			Chessboard operator ~() const;
 		

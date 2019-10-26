@@ -10,8 +10,8 @@ int main()
     Chess::InputUI b2;
 	Chess::ChessController c(b1,b2);
 	
-    while(1){
-		c.NextMove();
-    }
+    while(c.NextMove()){}
+
+    cin.get();
     return 0;
 }

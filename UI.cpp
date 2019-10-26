@@ -1,5 +1,4 @@
 #include "UI.h"
-#include <iostream>
 
 namespace Chess{
 
@@ -28,8 +27,27 @@ namespace Chess{
         return true;
     }
 
+    void InputUI::YouLose()
+    {
+        stat_mtx.lock();
+        stat = Lose;
+        stat_mtx.unlock();
+    }
+
+    void InputUI::YouWin()
+    {
+        stat_mtx.lock();
+        stat = Win;
+        stat_mtx.unlock();
+    }
+
     void InputUI::RenderThread()
     {
+        sf::Font font;
+        font.loadFromFile("font.ttf");
+
+
+
         std::vector<Position> p;
         sf::Texture textures[2][7];
 
@@ -75,6 +93,9 @@ namespace Chess{
            }
            window.clear();
 
+           if(GetStat() == Now)
+           {
+
            sf::RectangleShape MapRectangle(sf::Vector2f(80,80));
            bool IsWhite = false;
            for (int x = 0; x < 8; x++)
@@ -103,10 +124,25 @@ namespace Chess{
                        window.draw(figure);
                }
           }
-           map_mtx.unlock();
+          map_mtx.unlock();
+          }
+          else if(GetStat() == Win)
+          {
+               sf::Text text("You Win!",font,30);
+               text.setPosition(260,300);
+               window.draw(text);
+
+          }
+          else if(GetStat() == Lose)
+          {
+               sf::Text text("You Lose!",font,30);
+               text.setPosition(260,300);
+               window.draw(text);
+          }
 
            window.display();
            _sleep(20);
+
         }
 
     }

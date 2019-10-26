@@ -10,7 +10,7 @@ class MyBot : public Chess::AbstractBot
 		bool GetTurn(Turn &t,Chessboard &board);
         float GetTreeMark(Chessboard &board , bool MinMax , unsigned TTL );
         float GetPositionMark(Chessboard &board);
-};
-
-
+        void YouWin(){}
+        void YouLose(){}
+    };
 };

@@ -28,8 +28,6 @@ namespace Chess{
 				map[i] = reference.map[i];
 		}
 		this->whiteTurn = reference.whiteTurn; 
-		this->whiteCastling = reference.whiteCastling;
-		this->blackCastling = reference.blackCastling;
 	}
 	
 	Chessboard Chessboard::operator ~() const
@@ -201,19 +199,12 @@ namespace Chess{
 		 
 	}
 
-	void Chessboard::reset()
-	{
-		(*this) = Chessboard();
-	}
-
 	Chessboard& Chessboard::operator= (const Chessboard &from)
 	{
 		for(int i=0;i<64;i++){
 			this->map[i] = from.map[i];
 		}
 		this->whiteTurn = from.whiteTurn; 
-		this->whiteCastling = from.whiteCastling;
-		this->blackCastling = from.blackCastling;
 		return *this;	
 	}
 
