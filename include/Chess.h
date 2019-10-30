@@ -34,7 +34,7 @@ namespace Chess{
 		type(t),
 		color(c)
 		{}
-		Figure(){};
+        Figure(){}
 		FigureType type;
 		Color color;
 	};
@@ -43,26 +43,45 @@ namespace Chess{
 	{
 		Position():
 		x(0),
-		y(0){};
+        y(0){}
 		Position(unsigned xx , unsigned yy):
 		x(xx),
-		y(yy){};
+        y(yy){}
 		unsigned int x;
 		unsigned int y;
 	};
+
+    enum TurnType
+    {
+        Normal,
+        Rooking,
+        FigureSwap
+    };
 	
 	struct Turn
 	{
-		Turn(Position s , Position e):
-		start(s),
-		end(e)
-		{};
-		Turn():
-		start(),
-		end()
-		{};
+        Turn(Position s , Position e): // normal
+            start(s),end(e),type(Normal)
+        {}
+        Turn( bool lr ):
+            type(Rooking),leftright(lr) // Rooking
+        {}
+        Turn( Position s , Position e , Figure fgr ): // Swap
+            type(FigureSwap),start(s),end(e),figure(fgr)
+        {}
+        Turn(): // Zero
+            type(Normal),start(),end()
+        {}
+
+        TurnType type;
+
+        bool leftright;
+
 		Position start;
 		Position end;
+
+        Figure figure;
+
 	};
 	
 	bool operator==(const Position &t1 , const Position &t2);

@@ -22,9 +22,6 @@ namespace Chess{
 				
 			bool getCurrentTurns(std::vector<Turn> &turns);
 
-            //Figure& at(unsigned x , unsigned y);
-            //Figure& at(Position p);
-
             Figure& at(unsigned x , unsigned y)
             {
                 return (this->map[(x * 8)+y]);

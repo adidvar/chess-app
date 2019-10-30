@@ -86,7 +86,7 @@ float MyBot::GetPositionMark(Chessboard &board)
 	{
 		 //якщо кінчилась глибина
 		 if(TTL<=0){
-            return -GetPositionMark(board);
+            return GetPositionMark(board);
 		 }
 		 //якщо глубина не закінчилася
 		 std::vector<Turn> turns;
@@ -132,7 +132,7 @@ float MyBot::GetPositionMark(Chessboard &board)
              Chessboard newboard(board);
              newboard.makeTurn(*it,false);
              newboard = ~newboard;
-             float mark = GetTreeMark(newboard , false , 4);
+             float mark = GetTreeMark(newboard , false , 3);
              marks.push_back(mark);
 		 }
 		 if(!marks.empty()){
