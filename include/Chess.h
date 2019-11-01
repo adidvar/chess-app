@@ -66,7 +66,7 @@ namespace Chess{
         Turn( bool lr ):
             type(Rooking),leftright(lr) // Rooking
         {}
-        Turn( Position s , Position e , Figure fgr ): // Swap
+        Turn( Position s , Position e , FigureType fgr ): // Swap
             type(FigureSwap),start(s),end(e),figure(fgr)
         {}
         Turn(): // Zero
@@ -80,7 +80,7 @@ namespace Chess{
 		Position start;
 		Position end;
 
-        Figure figure;
+        FigureType figure;
 
 	};
 	

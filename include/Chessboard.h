@@ -11,6 +11,9 @@ namespace Chess{
 		public:
 
 			bool whiteTurn = true; // чий хід
+            bool LeftRooking = true; // true - можливо зробити рокіровку false - неможливо
+            bool RightRooking = true;
+
             std::array<Figure,64> map;
 			
             bool makeTurn(Turn turn , bool SafeMode);

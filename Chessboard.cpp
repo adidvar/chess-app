@@ -62,9 +62,53 @@ namespace Chess{
 			
 		} else 
 		{
-			at(turn.end) = at(turn.start);
-			at(turn.start).type = Emply;
-			return true;
+            if(turn.type == TurnType::Normal){
+
+                if(turn.start == Position(7,0))
+                    LeftRooking = false;
+                if(turn.start == Position(7,7)) // збивання рокіровок при ходах
+                    RightRooking = false;
+                if(turn.start == Position(7,4)){
+                    LeftRooking = false;
+                    RightRooking = false;
+                }
+
+                at(turn.end) = at(turn.start);
+                at(turn.start).type = Emply;
+                return true;
+            }
+            else if(turn.type == TurnType::Rooking)
+            {
+                if(turn.leftright == true)
+                {
+
+                    at(7,2) = at(7,4);
+                    at(7,4).type = Emply;
+
+                    at(7,3) = at(7,0);
+                    at(7,0).type = Emply;
+                    return true;
+
+                }else
+                {
+
+                    at(7,6) = at(7,4);
+                    at(7,4).type = Emply;
+
+                    at(7,5) = at(7,7);
+                    at(7,7).type = Emply;
+                    return true;
+
+                }
+
+            }
+            else if(turn.type == TurnType::FigureSwap)
+            {
+                at(turn.end) = at(turn.start);
+                at(turn.start).type = Emply;
+                at(turn.end).type = turn.figure;
+                return true;
+            }
 		}
 	};
 
@@ -86,7 +130,8 @@ namespace Chess{
 					continue;
 					
 				 if(at(x,y).type == FigureType::Pawn)//пішак
-					 {
+                     {  // звичайні ходи
+                       if(x > 1){
 						if(at(x-1,y).type == FigureType::Emply ) // хід
 							turns.push_back(Turn(SP , Position(x-1,y)));
 						if(at(x-1,y).type == FigureType::Emply && at(x-2,y).type == FigureType::Emply && x == 6) // двойний хід
@@ -95,6 +140,23 @@ namespace Chess{
 							turns.push_back(Turn(SP , Position(x-1,y-1)));
 						if(at(x-1,y+1).type != FigureType::Emply && at(x-1,y+1).color != Color::White && y != 7) // права атака
 							turns.push_back(Turn(SP , Position(x-1,y+1)));
+                       }
+                       else if( x == 1)
+                       { // якщо це хід з перетворенням
+                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Knight));
+                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Bishop));
+                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Rook));
+                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Queen));
+                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Knight));
+                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Bishop));
+                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Rook));
+                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Queen));
+                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Knight));
+                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Bishop));
+                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Rook));
+                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Queen));
+
+                       }
 					 } 
 					 
 					 else if(at(x,y).type == FigureType::Rook)  //тура
@@ -184,7 +246,7 @@ namespace Chess{
 						 unsigned cy;
 						 for(int i=0;i<8;i++){
 							cx = x;cy = y;
-								cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
+                            cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
 								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
 									continue;
 								turns.push_back(Turn(SP,Position(cx,cy))); // додаємо
@@ -192,6 +254,11 @@ namespace Chess{
 					 }
 			 }
 		 }
+
+         if(LeftRooking == true && at(7,1).type == Emply && at(7,2).type == Emply && at(7,3).type == Emply) // ліва рокіровка
+             turns.push_back(Turn(true));
+         if(RightRooking == true && at(7,5).type == Emply && at(7,6).type == Emply) // права рокіровка
+             turns.push_back(Turn(false));
 
 		 if(turns.empty())
 			 return false;
