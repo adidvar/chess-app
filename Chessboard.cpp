@@ -5,14 +5,14 @@ namespace Chess{
 	Chessboard::Chessboard()
 	{
 		Figure start[64] = {
-			Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(Queen,Black),Figure(King,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
+            Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(King,Black),Figure(Queen,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
 			Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),
 			Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
 			Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
 			Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
 			Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
 			Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),
-			Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(Queen,White),Figure(King,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
+            Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(King,White),Figure(Queen,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
 		};
 		for(int i=0;i< 64 ; i++)
 		{

@@ -50,6 +50,8 @@ namespace Chess{
 
         std::vector<Position> p;
         sf::Texture textures[2][7];
+        const int twidth = 50;
+        const int theight = 50;
 
         //White
         //textures[0][0].loadFromFile("Texture/WEmpty.png");
@@ -78,22 +80,79 @@ namespace Chess{
            {
                if (event.type == sf::Event::Closed)
                    window.close();
-               if(event.type == sf::Event::MouseButtonPressed)
+               if(event.type == sf::Event::MouseButtonPressed && FigureChoiseMenu == false)
                 {
                     p.push_back(Position(event.mouseButton.y / 80,event.mouseButton.x / 80));
 
                     if(p.size() >= 2)
                     {
-                        turnBuffer_mtx.lock();
-                        turnBuffer.push_back(Turn(p[0],p[1]));
-                        p.clear();
-                        turnBuffer_mtx.unlock();
+                        map_mtx.lock();
+                        if(p[0] == Position(7,4) && (p[1] == Position(7,2) || p[1] == Position(7,6))) // рокіровка
+                        {
+                            turnBuffer_mtx.lock();
+                            if(p[1] == Position(7,2))
+                            {
+                                turnBuffer.push_back(Turn(true));
+                            } else if (p[1] == Position(7,6))
+                            {
+                                turnBuffer.push_back(Turn(false));
+                            }
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+
+                        } else if (p[0].x == 1 && map.at(p[0]).type == Pawn )
+                        {
+                            FigureChoiseMenu = true;
+                        } else {
+                            turnBuffer_mtx.lock();
+                            turnBuffer.push_back(Turn(p[0],p[1]));
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+                        }
+                        map_mtx.unlock();
+                    }
+                }
+               if(event.type == sf::Event::MouseButtonPressed && FigureChoiseMenu == true)
+                {
+                    int x = event.mouseButton.x , y = event.mouseButton.y;
+
+                    if( y > 320 && y < 420){
+                        if( x > 105 && x < 205)
+                        {
+                            turnBuffer_mtx.lock();
+                            turnBuffer.push_back(Turn(p[0],p[1],Pawn));
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+                            FigureChoiseMenu = false;
+                        } else if ( x > 215 && x < 315 )
+                        {
+                            turnBuffer_mtx.lock();
+                            turnBuffer.push_back(Turn(p[0],p[1],Knight));
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+                            FigureChoiseMenu = false;
+                        } else if ( x > 325 && x < 425 )
+                        {
+                            turnBuffer_mtx.lock();
+                            turnBuffer.push_back(Turn(p[0],p[1],Bishop));
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+                            FigureChoiseMenu = false;
+
+                        }else if( x > 435 && x < 535  )
+                        {
+                            turnBuffer_mtx.lock();
+                            turnBuffer.push_back(Turn(p[0],p[1],Queen));
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+                            FigureChoiseMenu = false;
+                        }
                     }
                 }
            }
            window.clear();
 
-           if(GetStat() == Now)
+           if(GetStat() == Now && FigureChoiseMenu == false)
            {
 
            sf::RectangleShape MapRectangle(sf::Vector2f(80,80));
@@ -112,14 +171,14 @@ namespace Chess{
 
            map_mtx.lock();
            sf::Sprite figure;
-           figure.setScale(sf::Vector2f(1.5f,1.5f));
+           figure.setScale(sf::Vector2f((float)70/twidth,(float)70/theight));
            for (int x = 0; x < 8; x++)
            {
                for (int y = 0; y < 8; y++)
                {
                    unsigned color_id = (unsigned)map.at(x,y).color  , figure_id = (unsigned)map.at(x,y).type;
                    figure.setTexture(textures[color_id][figure_id]);
-                   figure.setPosition(sf::Vector2f(y*80,x*80));
+                   figure.setPosition(sf::Vector2f(y*80 + 5,x*80+5));
                    if( figure_id != Chess::Emply)
                        window.draw(figure);
                }
@@ -138,6 +197,32 @@ namespace Chess{
                sf::Text text("You Lose!",font,30);
                text.setPosition(260,300);
                window.draw(text);
+          }
+          else if(GetStat() == Now && FigureChoiseMenu == true)
+          {
+            sf::Text text("Choise figure",font,30);
+            text.setFont(font);
+            text.setPosition(240,260);
+            window.draw(text);
+
+            sf::Sprite figure;
+            figure.setScale((float)100/twidth,(float)100/theight);
+
+            figure.setTexture(textures[0][2]);
+            figure.setPosition(105,320);
+            window.draw(figure);
+
+            figure.setTexture(textures[0][3]);
+            figure.setPosition(215,320);
+            window.draw(figure);
+
+            figure.setTexture(textures[0][4]);
+            figure.setPosition(325,320);
+            window.draw(figure);
+
+            figure.setTexture(textures[0][5]);
+            figure.setPosition(435,320);
+            window.draw(figure);
           }
 
            window.display();

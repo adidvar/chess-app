@@ -17,6 +17,7 @@ namespace Chess{
             void RenderThread();
 		private:
 
+            bool FigureChoiseMenu = false;
             Chess::MatchStatus stat = MatchStatus::Now;
             std::mutex stat_mtx;
             MatchStatus GetStat()
