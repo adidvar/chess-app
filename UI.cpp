@@ -44,7 +44,7 @@ namespace Chess{
     void InputUI::RenderThread()
     {
         sf::Font font;
-        font.loadFromFile("font.ttf");
+        font.loadFromFile("sourse\font.ttf");
 
 
 
@@ -55,20 +55,20 @@ namespace Chess{
 
         //White
         //textures[0][0].loadFromFile("Texture/WEmpty.png");
-        textures[0][1].loadFromFile("Texture/WPawn.png");
-        textures[0][2].loadFromFile("Texture/WKnight.png");
-        textures[0][3].loadFromFile("Texture/WBishop.png");
-        textures[0][4].loadFromFile("Texture/WRook.png");
-        textures[0][5].loadFromFile("Texture/WQueen.png");
-        textures[0][6].loadFromFile("Texture/WKing.png");
+        textures[0][1].loadFromFile("sourse/WPawn.png");
+        textures[0][2].loadFromFile("sourse/WKnight.png");
+        textures[0][3].loadFromFile("sourse/WBishop.png");
+        textures[0][4].loadFromFile("sourse/WRook.png");
+        textures[0][5].loadFromFile("sourse/WQueen.png");
+        textures[0][6].loadFromFile("sourse/WKing.png");
         //Black
-        //textures[1][0].loadFromFile("Texture/BEmpty.png");
-        textures[1][1].loadFromFile("Texture/BPawn.png");
-        textures[1][2].loadFromFile("Texture/BKnight.png");
-        textures[1][3].loadFromFile("Texture/BBishop.png");
-        textures[1][4].loadFromFile("Texture/BRook.png");
-        textures[1][5].loadFromFile("Texture/BQueen.png");
-        textures[1][6].loadFromFile("Texture/BKing.png");
+        //textures[1][0].loadFromFile("sourse/BEmpty.png");
+        textures[1][1].loadFromFile("sourse/BPawn.png");
+        textures[1][2].loadFromFile("sourse/BKnight.png");
+        textures[1][3].loadFromFile("sourse/BBishop.png");
+        textures[1][4].loadFromFile("sourse/BRook.png");
+        textures[1][5].loadFromFile("sourse/BQueen.png");
+        textures[1][6].loadFromFile("sourse/BKing.png");
 
 
 
