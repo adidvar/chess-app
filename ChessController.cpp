@@ -17,12 +17,12 @@ Chessboard ChessController::GetLocalBoard()
 bool ChessController::NextMove()
 {
     Turn t;
+    do{
     ( board.whiteTurn ? white_player : black_player).GetTurn(t,board);
-	
-    if(!board.makeTurn(t,true))
-        _exit(1);
+    }while(board.makeTurn(t,true)==false);
 
     auto stat = GetBoardStat(board);
+
     if(stat!=Now)
     {
         if(stat == Win)
