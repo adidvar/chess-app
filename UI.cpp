@@ -1,4 +1,4 @@
-#include "UI.h"
+﻿#include "UI.h"
 
 namespace Chess{
 
@@ -44,7 +44,7 @@ namespace Chess{
     void InputUI::RenderThread()
     {
         sf::Font font;
-        font.loadFromFile("sourse\font.ttf");
+        font.loadFromFile("sourse/Font.ttf");
 
 
 
