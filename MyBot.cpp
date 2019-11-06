@@ -1,4 +1,4 @@
-#include "MyBot.h" 
+#include "MyBot.h"
 #define INFINITY 99999.0
 
 namespace Chess{

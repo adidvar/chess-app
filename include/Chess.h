@@ -44,11 +44,11 @@ namespace Chess{
 		Position():
 		x(0),
         y(0){}
-		Position(unsigned xx , unsigned yy):
+        Position(int xx , int yy):
 		x(xx),
         y(yy){}
-		unsigned int x;
-		unsigned int y;
+        int x;
+        int y;
 	};
 
     enum TurnType
@@ -61,7 +61,7 @@ namespace Chess{
 	struct Turn
 	{
         Turn(Position s , Position e): // normal
-            start(s),end(e),type(Normal)
+            type(Normal),start(s),end(e)
         {}
         Turn( bool lr ):
             type(Rooking),leftright(lr) // Rooking
@@ -77,8 +77,8 @@ namespace Chess{
 
         bool leftright;
 
-		Position start;
-		Position end;
+        Position start;
+        Position end;
 
         FigureType figure;
 

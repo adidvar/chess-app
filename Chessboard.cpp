@@ -14,7 +14,7 @@ namespace Chess{
 			Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),
             Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(King,White),Figure(Queen,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
 		};
-		for(int i=0;i< 64 ; i++)
+        for(unsigned i=0;i< 64 ; i++)
 		{
 			map[i] = start[i]; 
 		}
@@ -23,7 +23,7 @@ namespace Chess{
 
 	Chessboard::Chessboard(const Chessboard& reference) 
 	{
-		for(int i=0;i<64;i++)
+        for(unsigned i=0;i<64;i++)
 		{
 				map[i] = reference.map[i];
 		}
@@ -34,7 +34,7 @@ namespace Chess{
 	{
 		Chessboard revercecopy(*this);
 		Figure temp;
-		for(int i=0;i<32;i++)
+        for(unsigned i=0;i<32;i++)
 		{
 			Figure temp = revercecopy.map[i];
 			revercecopy.map[i] = revercecopy.map[63-i];
@@ -91,7 +91,6 @@ namespace Chess{
 
                 }else
                 {
-
                     at(7,6) = at(7,4);
                     at(7,4).type = Emply;
 
@@ -110,16 +109,16 @@ namespace Chess{
                 return true;
             }
 		}
-	};
+    }
 
 	bool Chessboard::getCurrentTurns(std::vector<Turn> &turns)
 	{
 
 		turns.clear();
 
-		 for(unsigned int x=0;x<8;x++)
+         for(unsigned x=0;x<8;x++)
 		 {
-			 for(unsigned int y = 0;y<8;y++){
+             for(unsigned y = 0;y<8;y++){
 				 assert(at(x,y).type<=6);
 				 assert(at(x,y).color<=1);
 				 
@@ -143,18 +142,29 @@ namespace Chess{
                        }
                        else if( x == 1)
                        { // якщо це хід з перетворенням
-                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Knight));
-                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Bishop));
-                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Rook));
-                            turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Queen));
-                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Knight));
-                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Bishop));
-                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Rook));
-                            turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Queen));
-                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Knight));
-                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Bishop));
-                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Rook));
-                            turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Queen));
+                           if(at(x-1,y).type == FigureType::Emply )
+                           {
+                               turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Knight));
+                               turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Bishop));
+                               turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Rook));
+                               turns.push_back(Turn(SP , Position(x-1,y) , FigureType::Queen));
+                           }
+                           if(at(x-1,y-1).type != FigureType::Emply && at(x-1,y-1).color != Color::White && y != 0)
+                           {
+                               turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Knight));
+                               turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Bishop));
+                               turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Rook));
+                               turns.push_back(Turn(SP , Position(x-1,y-1) , FigureType::Queen));
+                           }
+                            if(at(x-1,y+1).type != FigureType::Emply && at(x-1,y+1).color != Color::White && y != 7)
+                           {
+                             turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Knight));
+                             turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Bishop));
+                             turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Rook));
+                             turns.push_back(Turn(SP , Position(x-1,y+1) , FigureType::Queen));
+                           }
+
+
 
                        }
 					 } 
@@ -272,6 +282,8 @@ namespace Chess{
 			this->map[i] = from.map[i];
 		}
 		this->whiteTurn = from.whiteTurn; 
+        this->LeftRooking = from.LeftRooking;
+        this->RightRooking = from.RightRooking;
 		return *this;	
 	}
 

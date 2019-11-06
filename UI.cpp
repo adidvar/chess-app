@@ -50,6 +50,7 @@ namespace Chess{
 
         std::vector<Position> p;
         sf::Texture textures[2][7];
+        sf::Sprite sprites[2][7];
         const int twidth = 50;
         const int theight = 50;
 
@@ -69,6 +70,14 @@ namespace Chess{
         textures[1][4].loadFromFile("sourse/BRook.png");
         textures[1][5].loadFromFile("sourse/BQueen.png");
         textures[1][6].loadFromFile("sourse/BKing.png");
+
+        for(int i=0;i<2;i++)
+        {
+            for(int j=0;j<7;j++)
+            {
+                sprites[i][j].setTexture(textures[i][j]);
+            }
+        }
 
 
 
@@ -176,11 +185,12 @@ namespace Chess{
            {
                for (int y = 0; y < 8; y++)
                {
-                   unsigned color_id = (unsigned)map.at(x,y).color  , figure_id = (unsigned)map.at(x,y).type;
-                   figure.setTexture(textures[color_id][figure_id]);
-                   figure.setPosition(sf::Vector2f(y*80 + 5,x*80+5));
+                   auto fgr = map.at(x,y);
+                   int color_id = fgr.color ; int figure_id = fgr.type;
+                   sprites[color_id][figure_id].setScale(sf::Vector2f((float)70/twidth,(float)70/theight));
+                   sprites[color_id][figure_id].setPosition(sf::Vector2f(y*80 + 5,x*80+5));
                    if( figure_id != Chess::Emply)
-                       window.draw(figure);
+                       window.draw(sprites[color_id][figure_id]);
                }
           }
           map_mtx.unlock();
