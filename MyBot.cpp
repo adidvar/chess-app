@@ -132,7 +132,7 @@ float MyBot::GetPositionMark(Chessboard &board)
              Chessboard newboard(board);
              newboard.makeTurn(*it,false);
              newboard = ~newboard;
-             float mark = GetTreeMark(newboard , false , 3);
+             float mark = GetTreeMark(newboard , false , (int)mode);
              marks.push_back(mark);
 		 }
 		 if(!marks.empty()){
