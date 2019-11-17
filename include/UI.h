@@ -18,6 +18,8 @@ namespace Chess{
 		private:
 
             bool FigureChoiseMenu = false;
+            bool ChessMate = false;
+            std::mutex ChessMate_mutex;
             Chess::MatchStatus stat = MatchStatus::Now;
             std::mutex stat_mtx;
             MatchStatus GetStat()
