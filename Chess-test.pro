@@ -9,8 +9,6 @@ DISTFILES += \
     README.md
 
 SOURCES += \
-    AbstractChessController.cpp \
-    AbstractObserver.cpp \
     Chess.cpp \
     ChessController.cpp \
     Chessboard.cpp \
@@ -19,9 +17,7 @@ SOURCES += \
     main.cpp
 
 HEADERS += \
-    include/AbstractChessController.h \
     include/AbstractBot.h \
-    include/AbstractObserver.h \
     include/Chess.h \
     include/ChessController.h \
     include/Chessboard.h \
