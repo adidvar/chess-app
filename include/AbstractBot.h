@@ -1,5 +1,5 @@
 #pragma once
-#include "ChessBoard.h"
+#include <Chessboard.h>
 
 namespace Chess
 {

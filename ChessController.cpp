@@ -21,6 +21,11 @@ bool ChessController::NextMove()
     ( board.whiteTurn ? white_player : black_player).GetTurn(t,board);
     }while(board.makeTurn(t,true)==false);
 
+    for(AbstractObserver *o : observers)
+    {
+        o->MapEvent(board);
+    }
+
     auto stat = GetBoardStat(board);
 
     if(stat!=Now)

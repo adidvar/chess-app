@@ -1,4 +1,5 @@
-#include "ChessController.h"
+#pragma once
+#include "AbstractBot.h"
 #include <array>
 #include <iostream>
 

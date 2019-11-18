@@ -1,6 +1,7 @@
+#pragma once
+#include "AbstractBot.h"
 #include <vector>
 #include <thread>
-#include "AbstractBot.h"
 #include <SFML/Graphics.hpp>
 #include <mutex>
 #include <array>
@@ -18,6 +19,8 @@ namespace Chess{
 		private:
 
             bool FigureChoiseMenu = false;
+            //bool ChessMate = false;
+            //std::mutex ChessMate_mutex;
             Chess::MatchStatus stat = MatchStatus::Now;
             std::mutex stat_mtx;
             MatchStatus GetStat()

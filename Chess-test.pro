@@ -17,7 +17,9 @@ SOURCES += \
     main.cpp
 
 HEADERS += \
+    AbstractObs.h \
     include/AbstractBot.h \
+    include/AbstractObs.h \
     include/Chess.h \
     include/ChessController.h \
     include/Chessboard.h \
