@@ -10,7 +10,8 @@ HEADERS += \
     include/ChessController.h \
     include/Chessboard.h \
     include/MyBot.h \
-    include/UI.h
+    include/UI.h \
+    include/UIobs.h
 
 LIBS += -LD:/Developing/SFML32/lib/ -lsfml-window -lsfml-graphics -lsfml-system
 INCLUDEPATH += D:/Developing/SFML32/include
@@ -24,5 +25,6 @@ SOURCES += \
     sourse/core/Chess.cpp \
     sourse/core/ChessController.cpp \
     sourse/core/Chessboard.cpp \
-    sourse/main.cpp
+    sourse/main.cpp \
+    sourse/obs/UIobs.cpp
 

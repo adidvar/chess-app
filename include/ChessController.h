@@ -8,12 +8,12 @@ namespace Chess{
     {
 
         public:
-            ChessController(AbstractBot &wp , AbstractBot &bp):
+            ChessController(AbstractBot *wp , AbstractBot *bp):
             white_player(wp),
             black_player(bp),
             board()
             {}
-            ChessController(AbstractBot &wp , AbstractBot &bp , Chessboard map):
+            ChessController(AbstractBot *wp , AbstractBot *bp , Chessboard map):
             board(map),
             white_player(wp),
             black_player(bp)
@@ -29,8 +29,8 @@ namespace Chess{
 
         private:
             Chessboard board;
-            AbstractBot &white_player;
-            AbstractBot &black_player;
+            AbstractBot *white_player;
+            AbstractBot *black_player;
             std::vector<AbstractObserver*> observers;
 
             Chessboard GetLocalBoard();

@@ -18,12 +18,12 @@ bool ChessController::NextMove()
 {
     Turn t;
     do{
-    ( board.whiteTurn ? white_player : black_player).GetTurn(t,board);
+    ( board.whiteTurn ? white_player : black_player)->GetTurn(t,board);
     }while(board.makeTurn(t,true)==false);
 
     for(AbstractObserver *o : observers)
     {
-        o->MapEvent(board);
+        o->MapEvent(this->GetGlobalBoard());
     }
 
     auto stat = GetBoardStat(board);
@@ -32,13 +32,13 @@ bool ChessController::NextMove()
     {
         if(stat == Win)
         {
-           ( board.whiteTurn ? white_player : black_player).YouWin();
-           ( !board.whiteTurn ? white_player : black_player).YouLose();
+           ( board.whiteTurn ? white_player : black_player)->YouWin();
+           ( !board.whiteTurn ? white_player : black_player)->YouLose();
         }
         if(stat == Lose)
         {
-           ( board.whiteTurn ? white_player : black_player).YouLose();
-           ( !board.whiteTurn ? white_player : black_player).YouWin();
+           ( board.whiteTurn ? white_player : black_player)->YouLose();
+           ( !board.whiteTurn ? white_player : black_player)->YouWin();
         }
         return false;
     }
