@@ -1,41 +1,40 @@
 #pragma once
-#include <AbstractBot.h>
-#include <AbstractObs.h>
+#include <APlayer.h>
 
 namespace Chess{
 
-    class ChessController
+class ChessController
+{
+
+public:
+    ChessController(APlayer *wp , APlayer *bp):
+        white_player(wp),
+        black_player(bp),
+        board()
+    {}
+    ChessController(APlayer *wp , APlayer *bp , Chessboard map):
+        board(map),
+        white_player(wp),
+        black_player(bp)
+    {}
+
+    Chessboard GetGlobalBoard();
+
+    bool NextMove();
+    void SetObs(std::vector<AObserver*> obs)
     {
+        observers = obs;
+    }
 
-        public:
-            ChessController(AbstractBot *wp , AbstractBot *bp):
-            white_player(wp),
-            black_player(bp),
-            board()
-            {}
-            ChessController(AbstractBot *wp , AbstractBot *bp , Chessboard map):
-            board(map),
-            white_player(wp),
-            black_player(bp)
-            {}
+private:
+    Chessboard board;
+    APlayer *white_player;
+    APlayer *black_player;
+    std::vector<AObserver*> observers;
 
-            Chessboard GetGlobalBoard();
+    Chessboard GetLocalBoard();
+    static MatchStatus GetBoardStat(Chessboard &board);
 
-            bool NextMove();
-            void SetObs(std::vector<AbstractObserver*> obs)
-            {
-                observers = obs;
-            }
-
-        private:
-            Chessboard board;
-            AbstractBot *white_player;
-            AbstractBot *black_player;
-            std::vector<AbstractObserver*> observers;
-
-            Chessboard GetLocalBoard();
-            static MatchStatus GetBoardStat(Chessboard &board);
-
-    };
+};
 }
 

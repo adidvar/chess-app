@@ -1,31 +1,42 @@
 #pragma once
-#include "AbstractBot.h"
+#include <APlayer.h>
 #include <array>
 #include <iostream>
 
 namespace Chess{
 
-    enum AI_Mode
-    {
-      Easy = 1,
-      //Medium = 2,
-      Hard = 3
-    };
+enum AI_Mode
+{
+    Easy = 1,
+    //Medium = 2,
+    Hard = 3
+};
 
-class MyBot : public Chess::AbstractBot
+class MyBot : public Chess::APlayer
 {
     AI_Mode mode;
-	public:
-    MyBot(AI_Mode md):
+    Chessboard board;
+
+    float GetTreeMark(Chessboard &board , bool MinMax , unsigned TTL );
+    float GetPositionMark(Chessboard &board);
+
+public:
+
+    MyBot(AI_Mode md , Color c):
+        APlayer(c),
         mode(md)
     {}
-    MyBot():
+    MyBot(Color c):
+        APlayer(c),
         mode(Hard)
     {}
-		bool GetTurn(Turn &t,Chessboard &board);
-        float GetTreeMark(Chessboard &board , bool MinMax , unsigned TTL );
-        float GetPositionMark(Chessboard &board);
-        void YouWin(){}
-        void YouLose(){}
-    };
+
+    void MapEvent(Chessboard board)
+    {
+        this->board = board;
+    }
+    bool GetTurn(Turn &t);
+    void YouWin(){}
+    void YouLose(){}
+};
 };

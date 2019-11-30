@@ -42,7 +42,7 @@ namespace Chess{
 			revercecopy.map[i].color = revercecopy.map[i].color ? White : Black;
 			revercecopy.map[63-i].color = revercecopy.map[63-i].color ? White : Black;
 		}
-		
+        revercecopy.whiteTurn = !revercecopy.whiteTurn;
 		return revercecopy;
 	}
 
@@ -286,5 +286,25 @@ namespace Chess{
         this->RightRooking = from.RightRooking;
 		return *this;	
 	}
+
+    MatchStatus Chessboard::GetBoardStat(Chessboard &board)
+    {
+        int MyKingCount = 0;
+        int HisKingCount = 0;
+        for(auto p : board.map)
+        {
+            if(p.type == King && p.color == White)
+                MyKingCount++;
+            if(p.type == King && p.color == Black)
+                HisKingCount++;
+        }
+
+        if(MyKingCount > 0 && HisKingCount > 0)
+            return MatchStatus::Now;
+        if(MyKingCount <= 0 && HisKingCount > 0)
+            return MatchStatus::Lose;
+        if(MyKingCount > 0 && HisKingCount <= 0)
+            return MatchStatus::Win;
+    }
 
 }

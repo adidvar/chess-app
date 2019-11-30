@@ -9,7 +9,7 @@ include = ["-Iinclude" , "-ID:\Developing\SFML32\include"]
 libpaths = ["-LD:\Developing\SFML32\lib"]
 libs = [ "-lsfml-graphics-s" , "-lfreetype" , "-lsfml-window-s" , "-lopengl32" , "-lgdi32" , "-lsfml-system-s" , "-lwinmm" ]
 defines = [ "-DSFML_STATIC" ]
-flags = ["-O3" , "-m32" , "-mfpmath=sse" , "-Ofast" , "-flto" , "-march=native" , "-static-libgcc" , "-static-libstdc++"];
+flags = [ "-O3", "-m32" , "-mfpmath=sse" , "-Ofast" , "-flto" , "-march=native" , "-static-libgcc" , "-static-libstdc++"];
 
 def walk(dir):
   for name in os.listdir(dir):

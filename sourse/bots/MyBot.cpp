@@ -120,7 +120,7 @@ float MyBot::GetPositionMark(Chessboard &board)
             return (MinMax ? -INFINITY : INFINITY);
 	}
 
-	bool MyBot::GetTurn(Turn &t,Chessboard &board)
+    bool MyBot::GetTurn(Turn &t)
 	{
 		 std::vector<Turn> turns;
 		 board.getCurrentTurns(turns);

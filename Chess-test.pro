@@ -4,14 +4,14 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 HEADERS += \
-    include/AbstractBot.h \
-    include/AbstractObs.h \
+    include/ABot.h \
+    include/AObs.h \
+    include/APlayer.h \
     include/Chess.h \
     include/ChessController.h \
     include/Chessboard.h \
     include/MyBot.h \
-    include/UI.h \
-    include/UIobs.h
+    include/UI.h
 
 LIBS += -LD:/Developing/SFML32/lib/ -lsfml-window -lsfml-graphics -lsfml-system
 INCLUDEPATH += D:/Developing/SFML32/include
@@ -25,6 +25,5 @@ SOURCES += \
     sourse/core/Chess.cpp \
     sourse/core/ChessController.cpp \
     sourse/core/Chessboard.cpp \
-    sourse/main.cpp \
-    sourse/obs/UIobs.cpp
+    sourse/main.cpp
 

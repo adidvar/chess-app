@@ -6,7 +6,7 @@ namespace Chess{
 
 Chessboard ChessController::GetGlobalBoard()
 {
-    return board.whiteTurn ? board : ~board ;
+    return board.WhoTurn() ? board : ~board ;
 }
 
 Chessboard ChessController::GetLocalBoard()
@@ -17,57 +17,36 @@ Chessboard ChessController::GetLocalBoard()
 bool ChessController::NextMove()
 {
     Turn t;
+    ( board.WhoTurn() ? white_player : black_player)->MapEvent(board);
     do{
-    ( board.whiteTurn ? white_player : black_player)->GetTurn(t,board);
+    ( board.WhoTurn() ? white_player : black_player)->GetTurn(t);
     }while(board.makeTurn(t,true)==false);
 
-    for(AbstractObserver *o : observers)
+    for(AObserver *o : observers)
     {
         o->MapEvent(this->GetGlobalBoard());
     }
 
-    auto stat = GetBoardStat(board);
+    auto stat = Chessboard::GetBoardStat(board);
 
     if(stat!=Now)
     {
         if(stat == Win)
         {
-           ( board.whiteTurn ? white_player : black_player)->YouWin();
-           ( !board.whiteTurn ? white_player : black_player)->YouLose();
+           ( board.WhoTurn() ? white_player : black_player)->YouWin();
+           ( !board.WhoTurn() ? white_player : black_player)->YouLose();
         }
         if(stat == Lose)
         {
-           ( board.whiteTurn ? white_player : black_player)->YouLose();
-           ( !board.whiteTurn ? white_player : black_player)->YouWin();
+           ( board.WhoTurn() ? white_player : black_player)->YouLose();
+           ( !board.WhoTurn() ? white_player : black_player)->YouWin();
         }
         return false;
     }
 
     board = ~board;
-	board.whiteTurn = !board.whiteTurn;
     return true;
 }
-
-MatchStatus ChessController::GetBoardStat(Chessboard &board)
-{
-    int MyKingCount = 0;
-    int HisKingCount = 0;
-    for(auto p : board.map)
-    {
-        if(p.type == King && p.color == White)
-            MyKingCount++;
-        if(p.type == King && p.color == Black)
-            HisKingCount++;
-    }
-
-    if(MyKingCount > 0 && HisKingCount > 0)
-        return MatchStatus::Now;
-    if(MyKingCount <= 0 && HisKingCount > 0)
-        return MatchStatus::Lose;
-    if(MyKingCount > 0 && HisKingCount <= 0)
-        return MatchStatus::Win;
-}
-
 	
 };
 

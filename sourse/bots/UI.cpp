@@ -2,17 +2,22 @@
 
 namespace Chess{
 
-    InputUI::InputUI()
+    InputUI::InputUI(Color c):
+        APlayer(c)
     {
         std::thread th(&InputUI::RenderThread,this);
         th.detach();
     }
 
-    bool InputUI::GetTurn(Chess::Turn &t,Chess::Chessboard &board)
+    void InputUI::MapEvent(Chessboard board)
     {
         map_mtx.lock();
          map = board;
         map_mtx.unlock();
+    }
+
+    bool InputUI::GetTurn(Chess::Turn &t)
+    {
         while(1){
             turnBuffer_mtx.lock();
             if(turnBuffer.size() > 0){
@@ -46,7 +51,7 @@ namespace Chess{
         sf::Font font;
         font.loadFromFile("sourse/Font.ttf");
 
-
+        bool FigureChoiseMenu = false;
 
         std::vector<Position> p;
         sf::Texture textures[2][7];
