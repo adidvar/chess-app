@@ -10,12 +10,17 @@ class MyBot;
 
 class ChessController;
 
+struct Rooking_info
+{
+    bool LeftRooking = true;
+    bool RightRooking = true;
+};
+
 class Chessboard
 {
     // чий хід
     bool whiteTurn = true;
-    bool LeftRooking = true; // true - можливо зробити рокіровку false - неможливо
-    bool RightRooking = true;
+    std::array<Rooking_info,2> rooking;
     std::array<Figure,64> map;
 public:
 

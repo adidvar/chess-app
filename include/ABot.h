@@ -6,6 +6,7 @@ namespace Chess
 
 class ABot
 {
+protected:
     Chess::Color color;
 public:
     ABot(Chess::Color c):

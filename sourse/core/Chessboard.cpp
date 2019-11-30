@@ -5,14 +5,14 @@ namespace Chess{
 	Chessboard::Chessboard()
 	{
 		Figure start[64] = {
-            Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(King,Black),Figure(Queen,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
+            Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(Queen,Black),Figure(King,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
 			Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),
 			Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
 			Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
 			Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
 			Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
 			Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),
-            Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(King,White),Figure(Queen,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
+            Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(Queen,White),Figure(King,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
 		};
         for(unsigned i=0;i< 64 ; i++)
 		{
@@ -28,22 +28,6 @@ namespace Chess{
 				map[i] = reference.map[i];
 		}
 		this->whiteTurn = reference.whiteTurn; 
-	}
-	
-	Chessboard Chessboard::operator ~() const
-	{
-		Chessboard revercecopy(*this);
-		Figure temp;
-        for(unsigned i=0;i<32;i++)
-		{
-			Figure temp = revercecopy.map[i];
-			revercecopy.map[i] = revercecopy.map[63-i];
-			revercecopy.map[63-i] = temp;
-			revercecopy.map[i].color = revercecopy.map[i].color ? White : Black;
-			revercecopy.map[63-i].color = revercecopy.map[63-i].color ? White : Black;
-		}
-        revercecopy.whiteTurn = !revercecopy.whiteTurn;
-		return revercecopy;
 	}
 
 	bool Chessboard::makeTurn(Turn turn , bool SafeMode) 
@@ -65,13 +49,22 @@ namespace Chess{
             if(turn.type == TurnType::Normal){
 
                 if(turn.start == Position(7,0))
-                    LeftRooking = false;
+                    rooking[whiteTurn].LeftRooking = false;
                 if(turn.start == Position(7,7)) // збивання рокіровок при ходах
-                    RightRooking = false;
-                if(turn.start == Position(7,4)){
-                    LeftRooking = false;
-                    RightRooking = false;
+                    rooking[whiteTurn].RightRooking = false;
+                if(whiteTurn == true){
+                    if(turn.start == Position(7,4)){
+                        rooking[whiteTurn].LeftRooking = false;
+                        rooking[whiteTurn].RightRooking = false;
+                    }
+                }else
+                {
+                    if(turn.start == Position(7,3)){
+                        rooking[whiteTurn].LeftRooking = false;
+                        rooking[whiteTurn].RightRooking = false;
+                    }
                 }
+
 
                 at(turn.end) = at(turn.start);
                 at(turn.start).type = Emply;
@@ -79,25 +72,47 @@ namespace Chess{
             }
             else if(turn.type == TurnType::Rooking)
             {
-                if(turn.leftright == true)
+                if( whiteTurn == true){
+                    if(turn.leftright == true)
+                    {
+                        at(7,2) = at(7,4);
+                        at(7,4).type = Emply;
+
+                        at(7,3) = at(7,0);
+                        at(7,0).type = Emply;
+                        return true;
+
+                    }else
+                    {
+                        at(7,6) = at(7,4);
+                        at(7,4).type = Emply;
+
+                        at(7,5) = at(7,7);
+                        at(7,7).type = Emply;
+                        return true;
+
+                    }
+                } else
                 {
+                    if(turn.leftright == true)
+                    {
+                        at(7,1) = at(7,3);
+                        at(7,3).type = Emply;
 
-                    at(7,2) = at(7,4);
-                    at(7,4).type = Emply;
+                        at(7,2) = at(7,0);
+                        at(7,0).type = Emply;
+                        return true;
 
-                    at(7,3) = at(7,0);
-                    at(7,0).type = Emply;
-                    return true;
+                    }else
+                    {
+                        at(7,5) = at(7,3);
+                        at(7,3).type = Emply;
 
-                }else
-                {
-                    at(7,6) = at(7,4);
-                    at(7,4).type = Emply;
+                        at(7,4) = at(7,7);
+                        at(7,7).type = Emply;
+                        return true;
 
-                    at(7,5) = at(7,7);
-                    at(7,7).type = Emply;
-                    return true;
-
+                    }
                 }
 
             }
@@ -265,26 +280,23 @@ namespace Chess{
 			 }
 		 }
 
-         if(LeftRooking == true && at(7,1).type == Emply && at(7,2).type == Emply && at(7,3).type == Emply) // ліва рокіровка
-             turns.push_back(Turn(true));
-         if(RightRooking == true && at(7,5).type == Emply && at(7,6).type == Emply) // права рокіровка
-             turns.push_back(Turn(false));
+         if(whiteTurn == true){
+             if(rooking[whiteTurn].LeftRooking == true && at(7,1).type == Emply && at(7,2).type == Emply && at(7,3).type == Emply) // ліва рокіровка
+                 turns.push_back(Turn(true));
+             if(rooking[whiteTurn].RightRooking == true && at(7,5).type == Emply && at(7,6).type == Emply) // права рокіровка
+                 turns.push_back(Turn(false));
+         } else
+         {
+             if(rooking[!whiteTurn].LeftRooking == true && at(7,1).type == Emply && at(7,2).type == Emply) // ліва рокіровка
+                 turns.push_back(Turn(true));
+             if(rooking[!whiteTurn].RightRooking == true && at(7,5).type == Emply && at(7,5).type == Emply && at(7,6).type == Emply) // права рокіровка
+                 turns.push_back(Turn(false));
+         }
 
 		 if(turns.empty())
 			 return false;
 		 return true;
 		 
-	}
-
-	Chessboard& Chessboard::operator= (const Chessboard &from)
-	{
-		for(int i=0;i<64;i++){
-			this->map[i] = from.map[i];
-		}
-		this->whiteTurn = from.whiteTurn; 
-        this->LeftRooking = from.LeftRooking;
-        this->RightRooking = from.RightRooking;
-		return *this;	
 	}
 
     MatchStatus Chessboard::GetBoardStat(Chessboard &board)
@@ -305,6 +317,32 @@ namespace Chess{
             return MatchStatus::Lose;
         if(MyKingCount > 0 && HisKingCount <= 0)
             return MatchStatus::Win;
+    }
+
+	Chessboard& Chessboard::operator= (const Chessboard &from)
+	{
+		for(int i=0;i<64;i++){
+			this->map[i] = from.map[i];
+		}
+		this->whiteTurn = from.whiteTurn; 
+        this->rooking = from.rooking;
+		return *this;	
+	}
+
+    Chessboard Chessboard::operator ~() const
+    {
+        Chessboard revercecopy(*this);
+        Figure temp;
+        for(unsigned i=0;i<32;i++)
+        {
+            Figure temp = revercecopy.map[i];
+            revercecopy.map[i] = revercecopy.map[63-i];
+            revercecopy.map[63-i] = temp;
+            revercecopy.map[i].color = revercecopy.map[i].color ? White : Black;
+            revercecopy.map[63-i].color = revercecopy.map[63-i].color ? White : Black;
+        }
+        revercecopy.whiteTurn = !revercecopy.whiteTurn;
+        return revercecopy;
     }
 
 }

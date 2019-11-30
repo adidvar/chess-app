@@ -61,20 +61,20 @@ namespace Chess{
 
         //White
         //textures[0][0].loadFromFile("Texture/WEmpty.png");
-        textures[0][1].loadFromFile("sourse/WPawn.png");
-        textures[0][2].loadFromFile("sourse/WKnight.png");
-        textures[0][3].loadFromFile("sourse/WBishop.png");
-        textures[0][4].loadFromFile("sourse/WRook.png");
-        textures[0][5].loadFromFile("sourse/WQueen.png");
-        textures[0][6].loadFromFile("sourse/WKing.png");
+        textures[color][1].loadFromFile("sourse/WPawn.png");
+        textures[color][2].loadFromFile("sourse/WKnight.png");
+        textures[color][3].loadFromFile("sourse/WBishop.png");
+        textures[color][4].loadFromFile("sourse/WRook.png");
+        textures[color][5].loadFromFile("sourse/WQueen.png");
+        textures[color][6].loadFromFile("sourse/WKing.png");
         //Black
         //textures[1][0].loadFromFile("sourse/BEmpty.png");
-        textures[1][1].loadFromFile("sourse/BPawn.png");
-        textures[1][2].loadFromFile("sourse/BKnight.png");
-        textures[1][3].loadFromFile("sourse/BBishop.png");
-        textures[1][4].loadFromFile("sourse/BRook.png");
-        textures[1][5].loadFromFile("sourse/BQueen.png");
-        textures[1][6].loadFromFile("sourse/BKing.png");
+        textures[!color][1].loadFromFile("sourse/BPawn.png");
+        textures[!color][2].loadFromFile("sourse/BKnight.png");
+        textures[!color][3].loadFromFile("sourse/BBishop.png");
+        textures[!color][4].loadFromFile("sourse/BRook.png");
+        textures[!color][5].loadFromFile("sourse/BQueen.png");
+        textures[!color][6].loadFromFile("sourse/BKing.png");
 
         for(int i=0;i<2;i++)
         {
@@ -101,7 +101,7 @@ namespace Chess{
                     if(p.size() >= 2)
                     {
                         map_mtx.lock();
-                        if(p[0] == Position(7,4) && (p[1] == Position(7,2) || p[1] == Position(7,6))) // рокіровка
+                        if(p[0] == Position(7,4) && (p[1] == Position(7,2) || p[1] == Position(7,6)) && this->color == Color::White ) // рокіровка
                         {
                             turnBuffer_mtx.lock();
                             if(p[1] == Position(7,2))
@@ -114,7 +114,21 @@ namespace Chess{
                             p.clear();
                             turnBuffer_mtx.unlock();
 
-                        } else if (p[0].x == 1 && map.at(p[0]).type == Pawn )
+                        } else if(p[0] == Position(7,3) && (p[1] == Position(7,1) || p[1] == Position(7,5)) && this->color == Color::Black  ) // рокіровка
+                        {
+                            turnBuffer_mtx.lock();
+                            if(p[1] == Position(7,1))
+                            {
+                                turnBuffer.push_back(Turn(true));
+                            } else if (p[1] == Position(7,5))
+                            {
+                                turnBuffer.push_back(Turn(false));
+                            }
+                            p.clear();
+                            turnBuffer_mtx.unlock();
+
+                        }
+                        else if (p[0].x == 1 && map.at(p[0]).type == Pawn )
                         {
                             FigureChoiseMenu = true;
                         } else {
