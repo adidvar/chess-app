@@ -148,21 +148,21 @@ namespace Chess{
                         if( x > 105 && x < 205)
                         {
                             turnBuffer_mtx.lock();
-                            turnBuffer.push_back(Turn(p[0],p[1],Pawn));
+                            turnBuffer.push_back(Turn(p[0],p[1],Knight));
                             p.clear();
                             turnBuffer_mtx.unlock();
                             FigureChoiseMenu = false;
                         } else if ( x > 215 && x < 315 )
                         {
                             turnBuffer_mtx.lock();
-                            turnBuffer.push_back(Turn(p[0],p[1],Knight));
+                            turnBuffer.push_back(Turn(p[0],p[1],Bishop));
                             p.clear();
                             turnBuffer_mtx.unlock();
                             FigureChoiseMenu = false;
                         } else if ( x > 325 && x < 425 )
                         {
                             turnBuffer_mtx.lock();
-                            turnBuffer.push_back(Turn(p[0],p[1],Bishop));
+                            turnBuffer.push_back(Turn(p[0],p[1],Rook));
                             p.clear();
                             turnBuffer_mtx.unlock();
                             FigureChoiseMenu = false;
@@ -237,19 +237,19 @@ namespace Chess{
             sf::Sprite figure;
             figure.setScale((float)100/twidth,(float)100/theight);
 
-            figure.setTexture(textures[0][2]);
+            figure.setTexture(textures[!map.WhoTurn()][2]);
             figure.setPosition(105,320);
             window.draw(figure);
 
-            figure.setTexture(textures[0][3]);
+            figure.setTexture(textures[!map.WhoTurn()][3]);
             figure.setPosition(215,320);
             window.draw(figure);
 
-            figure.setTexture(textures[0][4]);
+            figure.setTexture(textures[!map.WhoTurn()][4]);
             figure.setPosition(325,320);
             window.draw(figure);
 
-            figure.setTexture(textures[0][5]);
+            figure.setTexture(textures[!map.WhoTurn()][5]);
             figure.setPosition(435,320);
             window.draw(figure);
           }
