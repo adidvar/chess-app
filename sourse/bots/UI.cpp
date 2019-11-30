@@ -56,8 +56,8 @@ namespace Chess{
         std::vector<Position> p;
         sf::Texture textures[2][7];
         sf::Sprite sprites[2][7];
-        const int twidth = 50;
-        const int theight = 50;
+        int twidth = 50;
+        int theight = 50;
 
         //White
         //textures[0][0].loadFromFile("Texture/WEmpty.png");
@@ -199,14 +199,13 @@ namespace Chess{
 
            map_mtx.lock();
            sf::Sprite figure;
-           figure.setScale(sf::Vector2f((float)70/twidth,(float)70/theight));
            for (int x = 0; x < 8; x++)
            {
                for (int y = 0; y < 8; y++)
                {
                    auto fgr = map.at(x,y);
                    int color_id = fgr.color ; int figure_id = fgr.type;
-                   sprites[color_id][figure_id].setScale(sf::Vector2f((float)70/twidth,(float)70/theight));
+                   sprites[color_id][figure_id].setScale(sf::Vector2f((float)70/textures[color_id][figure_id].getSize().x,(float)70/textures[color_id][figure_id].getSize().y));
                    sprites[color_id][figure_id].setPosition(sf::Vector2f(y*80 + 5,x*80+5));
                    if( figure_id != Chess::Emply)
                        window.draw(sprites[color_id][figure_id]);
@@ -235,20 +234,23 @@ namespace Chess{
             window.draw(text);
 
             sf::Sprite figure;
-            figure.setScale((float)100/twidth,(float)100/theight);
 
+            figure.setScale((float)100/textures[!map.WhoTurn()][2].getSize().x,(float)100/textures[!map.WhoTurn()][2].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][2]);
             figure.setPosition(105,320);
             window.draw(figure);
 
+            figure.setScale((float)100/textures[!map.WhoTurn()][3].getSize().x,(float)100/textures[!map.WhoTurn()][3].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][3]);
             figure.setPosition(215,320);
             window.draw(figure);
 
+            figure.setScale((float)100/textures[!map.WhoTurn()][4].getSize().x,(float)100/textures[!map.WhoTurn()][4].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][4]);
             figure.setPosition(325,320);
             window.draw(figure);
 
+            figure.setScale((float)100/textures[!map.WhoTurn()][5].getSize().x,(float)100/textures[!map.WhoTurn()][5].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][5]);
             figure.setPosition(435,320);
             window.draw(figure);

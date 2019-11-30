@@ -4,7 +4,6 @@ namespace Chess{
 
 	Chessboard::Chessboard()
 	{
-        /*
 		Figure start[64] = {
             Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(Queen,Black),Figure(King,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
 			Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),
@@ -15,17 +14,6 @@ namespace Chess{
 			Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),Figure(Pawn,White),
             Figure(Rook,White),Figure(Knight,White),Figure(Bishop,White),Figure(Queen,White),Figure(King,White),Figure(Bishop,White),Figure(Knight,White),Figure(Rook,White),
 		};
-        */
-        Figure start[64] = {
-            Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(King,White),Figure(Emply,White),Figure(Emply,White),
-            Figure(Pawn,Black),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
-            Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
-            Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),Figure(Emply,Black),
-            Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
-            Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
-            Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
-            Figure(King,Black),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),Figure(Emply,White),
-        };
         for(unsigned i=0;i< 64 ; i++)
 		{
 			map[i] = start[i]; 
