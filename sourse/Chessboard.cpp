@@ -194,7 +194,7 @@ namespace Chess{
 							cx = x;cy = y;
 							while(1){
 								cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
-								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
+                                if( (   cx >= 8  || cy >= 8 || at(cx,cy).type != Emply && at(cx,cy).color == White) ) // перевіряємо
 									break;
 								if( at(cx,cy).type != Emply && at(cx,cy).color == Black ){ // перевіряємо
 									turns.push_back(Turn(SP,Position(cx,cy)));
@@ -215,9 +215,9 @@ namespace Chess{
 							cx = x;cy = y;
 							while(1){
 								cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
-								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
+                                if( cx >= 8  || cy >= 8 || (at(cx,cy).type != Emply && at(cx,cy).color == White)) // перевіряємо
 									break;
-								else if( at(cx,cy).type != Emply && at(cx,cy).color == Black ){ // перевіряємо
+                                else if( at(cx,cy).type != Emply && at(cx,cy).color == Black ){ // перевіряємо
 									turns.push_back(Turn(SP,Position(cx,cy)));
 									break;
 								}
@@ -235,7 +235,7 @@ namespace Chess{
 						 for(int i=0;i<8;i++){
 							cx = x;cy = y;
 								cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
-								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
+                                if( cx >= 8  || cy >= 8 || (at(cx,cy).type != Emply && at(cx,cy).color == White) ) // перевіряємо
 									continue;
 								turns.push_back(Turn(SP,Position(cx,cy))); // додаємо
 						 }
@@ -251,7 +251,7 @@ namespace Chess{
 							cx = x;cy = y;
 							while(1){
 								cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
-								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
+                                if( cx >= 8  || cy >= 8 || (at(cx,cy).type != Emply && at(cx,cy).color == White) ) // перевіряємо
 									break;
 								else if( at(cx,cy).type != Emply && at(cx,cy).color == Black ){ // перевіряємо
 									turns.push_back(Turn(SP,Position(cx,cy)));
@@ -272,7 +272,7 @@ namespace Chess{
 						 for(int i=0;i<8;i++){
 							cx = x;cy = y;
                             cx += offsetx[i]; cy+= offsety[i]; // переміщаємося
-								if( (at(cx,cy).type != Emply && at(cx,cy).color == White) || cx >= 8  || cy >= 8 ) // перевіряємо
+                                if( cx >= 8  || cy >= 8 || (at(cx,cy).type != Emply && at(cx,cy).color == White) ) // перевіряємо
 									continue;
 								turns.push_back(Turn(SP,Position(cx,cy))); // додаємо
 						 }

@@ -3,8 +3,8 @@
 #define APLAYER_H
 
 #endif // APLAYER_H
-#include <AObs.h>
-#include <ABot.h>
+#include "AObs.h"
+#include "ABot.h"
 
 namespace Chess
 {

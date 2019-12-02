@@ -1,4 +1,5 @@
 ﻿#include "UI.h"
+#include <chrono>
 
 namespace Chess{
 
@@ -27,7 +28,7 @@ namespace Chess{
                 break;
             }
             turnBuffer_mtx.unlock();
-            _sleep(20);
+
         }
         return true;
     }
@@ -257,7 +258,7 @@ namespace Chess{
           }
 
            window.display();
-           _sleep(20);
+           std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
         }
 

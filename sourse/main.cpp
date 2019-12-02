@@ -1,7 +1,7 @@
  #include <iostream>
-#include <ChessController.h>
-#include <MyBot.h>
-#include <UI.h>
+#include "ChessController.h"
+#include "MyBot.h"
+#include "UI.h"
 
 using namespace std;
 
