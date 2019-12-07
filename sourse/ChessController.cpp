@@ -9,6 +9,17 @@ Chessboard ChessController::GetGlobalBoard()
     return board.WhoTurn() ? board : ~board ;
 }
 
+MatchStatus ChessController::GetMatchResult()
+{
+    Chessboard brd = this->GetGlobalBoard();
+    return Chessboard::GetBoardStat(brd);
+}
+
+std::vector<Chessboard> ChessController::GetMatchHistory()
+{
+    return this->history;
+}
+
 Chessboard ChessController::GetLocalBoard()
 {
     return board;
@@ -26,6 +37,7 @@ bool ChessController::NextMove()
     {
         o->MapEvent(this->GetGlobalBoard());
     }
+    history.push_back(this->GetGlobalBoard());
 
     auto stat = Chessboard::GetBoardStat(board);
 
@@ -33,19 +45,31 @@ bool ChessController::NextMove()
     {
         if(stat == Win)
         {
-           ( board.WhoTurn() ? white_player : black_player)->YouWin();
-           ( !board.WhoTurn() ? white_player : black_player)->YouLose();
+           ( board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::White);
+           ( !board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::Black);
         }
         if(stat == Lose)
         {
-           ( board.WhoTurn() ? white_player : black_player)->YouLose();
-           ( !board.WhoTurn() ? white_player : black_player)->YouWin();
+           ( board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::Black);
+           ( !board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::White);
         }
+
+        for(AObserver *o : observers)
+        {
+            Chessboard gb = this->GetGlobalBoard();
+            o->FinishEvent( Chessboard::GetBoardStat(gb) == Win ? White : Black );
+        }
+
         return false;
     }
 
     board = ~board;
     return true;
+}
+
+void ChessController::SetObs(std::vector<AObserver *> obs)
+{
+    observers = obs;
 }
 	
 };

@@ -134,7 +134,7 @@ float MyBot::GetPositionMark(Chessboard &board)
              newboard = ~newboard;
              float mark = GetTreeMark(newboard , false , (int)mode);
              marks.push_back(mark);
-		 }
+         }
 		 if(!marks.empty()){
 			 
          float max;

@@ -19,22 +19,19 @@ public:
     {}
 
     Chessboard GetGlobalBoard();
+    MatchStatus GetMatchResult();
+    std::vector<Chessboard> GetMatchHistory();
 
     bool NextMove();
-    void SetObs(std::vector<AObserver*> obs)
-    {
-        observers = obs;
-    }
+    void SetObs(std::vector<AObserver*> obs);
 
 private:
     Chessboard board;
     APlayer *white_player;
     APlayer *black_player;
     std::vector<AObserver*> observers;
-
+    std::vector<Chessboard> history;
     Chessboard GetLocalBoard();
-    static MatchStatus GetBoardStat(Chessboard &board);
-
 };
 }
 

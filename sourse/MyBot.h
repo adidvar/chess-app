@@ -1,6 +1,5 @@
 #pragma once
 #include "APlayer.h"
-#include <array>
 #include <iostream>
 
 namespace Chess{
@@ -36,7 +35,5 @@ public:
         this->board = board;
     }
     bool GetTurn(Turn &t);
-    void YouWin(){}
-    void YouLose(){}
 };
 };

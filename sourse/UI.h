@@ -11,14 +11,14 @@ namespace Chess{
 class InputUI : public Chess::APlayer
 {
 public:
-    InputUI(Color c);
+    InputUI(sf::RenderWindow *w ,Color c);
+    ~InputUI();
     bool GetTurn(Chess::Turn &t);
     void MapEvent(Chessboard board);
-    void YouLose();
-    void YouWin();
+    void FinishEvent(Color c);
 
 private:
-    void RenderThread();
+    void RenderThread(sf::RenderWindow *w);
 
     MatchStatus GetStat()
     {
@@ -28,7 +28,6 @@ private:
         stat_mtx.unlock();
         return st;
     }
-
     Chess::MatchStatus stat = MatchStatus::Now;
     std::mutex stat_mtx;
     Chess::Chessboard map;

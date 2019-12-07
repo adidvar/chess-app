@@ -12,8 +12,6 @@ public:
     ABot(Chess::Color c):
         color(c){}
     virtual bool GetTurn(Turn &turn) = 0;
-    virtual void YouLose() = 0;
-    virtual void YouWin() = 0;
 };
 
 

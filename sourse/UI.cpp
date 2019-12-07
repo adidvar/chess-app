@@ -1,20 +1,33 @@
 ﻿#include "UI.h"
 #include <chrono>
+#include <iostream>
 
 namespace Chess{
 
-    InputUI::InputUI(Color c):
+    InputUI::InputUI(sf::RenderWindow *w, Color c):
         APlayer(c)
     {
-        std::thread th(&InputUI::RenderThread,this);
+        std::thread th(&InputUI::RenderThread,this , w);
         th.detach();
+    }
+
+    InputUI::~InputUI()
+    {
+
     }
 
     void InputUI::MapEvent(Chessboard board)
     {
-        map_mtx.lock();
+         map_mtx.lock();
          map = board;
-        map_mtx.unlock();
+         map_mtx.unlock();
+    }
+
+    void InputUI::FinishEvent(Color c)
+    {
+        stat_mtx.lock();
+        stat = c == Color::White ? MatchStatus::Win : MatchStatus::Lose ;
+        stat_mtx.unlock();
     }
 
     bool InputUI::GetTurn(Chess::Turn &t)
@@ -28,26 +41,12 @@ namespace Chess{
                 break;
             }
             turnBuffer_mtx.unlock();
-
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
         return true;
     }
 
-    void InputUI::YouLose()
-    {
-        stat_mtx.lock();
-        stat = Lose;
-        stat_mtx.unlock();
-    }
-
-    void InputUI::YouWin()
-    {
-        stat_mtx.lock();
-        stat = Win;
-        stat_mtx.unlock();
-    }
-
-    void InputUI::RenderThread()
+    void InputUI::RenderThread(sf::RenderWindow *w)
     {
         sf::Font font;
         font.loadFromFile("sourse/Font.ttf");
@@ -87,14 +86,15 @@ namespace Chess{
 
 
 
-        sf::RenderWindow window(sf::VideoMode(640,640),"InputUI");
-        while (window.isOpen())
+        sf::RenderWindow *window = w;
+        w->setActive(true);
+        w->setTitle("InputUI");
+        w->setSize(sf::Vector2u(640,640));
+        while (window->isOpen() )
         {
            sf::Event event;
-           while (window.pollEvent(event))
+           while (window->pollEvent(event))
            {
-               if (event.type == sf::Event::Closed)
-                   window.close();
                if(event.type == sf::Event::MouseButtonPressed && FigureChoiseMenu == false)
                 {
                     p.push_back(Position(event.mouseButton.y / 80,event.mouseButton.x / 80));
@@ -179,7 +179,7 @@ namespace Chess{
                     }
                 }
            }
-           window.clear();
+           window->clear();
 
            if(GetStat() == Now && FigureChoiseMenu == false)
            {
@@ -193,7 +193,7 @@ namespace Chess{
                    IsWhite = !IsWhite;
                    MapRectangle.setFillColor( IsWhite ? sf::Color(200,200,200) : sf::Color(50,50,50));
                    MapRectangle.setPosition(sf::Vector2f(x*80,y*80));
-                   window.draw(MapRectangle);
+                   window->draw(MapRectangle);
                }
                IsWhite = !IsWhite;
            }
@@ -209,58 +209,64 @@ namespace Chess{
                    sprites[color_id][figure_id].setScale(sf::Vector2f((float)70/textures[color_id][figure_id].getSize().x,(float)70/textures[color_id][figure_id].getSize().y));
                    sprites[color_id][figure_id].setPosition(sf::Vector2f(y*80 + 5,x*80+5));
                    if( figure_id != Chess::Emply)
-                       window.draw(sprites[color_id][figure_id]);
+                       window->draw(sprites[color_id][figure_id]);
                }
           }
           map_mtx.unlock();
           }
           else if(GetStat() == Win)
           {
-               sf::Text text("You Win!",font,30);
+               sf::Text text("White Win",font,30);
                text.setPosition(260,300);
-               window.draw(text);
+               window->draw(text);
+               window->display();
+               break;
 
           }
           else if(GetStat() == Lose)
           {
-               sf::Text text("You Lose!",font,30);
+               sf::Text text("Black Win!",font,30);
                text.setPosition(260,300);
-               window.draw(text);
+               window->draw(text);
+               window->display();
+               break;
           }
           else if(GetStat() == Now && FigureChoiseMenu == true)
           {
             sf::Text text("Choise figure",font,30);
             text.setFont(font);
             text.setPosition(240,260);
-            window.draw(text);
+            window->draw(text);
 
             sf::Sprite figure;
 
             figure.setScale((float)100/textures[!map.WhoTurn()][2].getSize().x,(float)100/textures[!map.WhoTurn()][2].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][2]);
             figure.setPosition(105,320);
-            window.draw(figure);
+            window->draw(figure);
 
             figure.setScale((float)100/textures[!map.WhoTurn()][3].getSize().x,(float)100/textures[!map.WhoTurn()][3].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][3]);
             figure.setPosition(215,320);
-            window.draw(figure);
+            window->draw(figure);
 
             figure.setScale((float)100/textures[!map.WhoTurn()][4].getSize().x,(float)100/textures[!map.WhoTurn()][4].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][4]);
             figure.setPosition(325,320);
-            window.draw(figure);
+            window->draw(figure);
 
             figure.setScale((float)100/textures[!map.WhoTurn()][5].getSize().x,(float)100/textures[!map.WhoTurn()][5].getSize().y);
             figure.setTexture(textures[!map.WhoTurn()][5]);
             figure.setPosition(435,320);
-            window.draw(figure);
+            window->draw(figure);
           }
 
-           window.display();
+           window->display();
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
         }
+        w->setActive(false);
+        std::cout << "we end this" << std::endl;
 
     }
 
