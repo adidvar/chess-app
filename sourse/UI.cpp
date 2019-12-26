@@ -4,10 +4,10 @@
 
 namespace Chess{
 
-    InputUI::InputUI(sf::RenderWindow *w, Color c):
+    InputUI::InputUI(Color c):
         APlayer(c)
     {
-        std::thread th(&InputUI::RenderThread,this , w);
+        std::thread th(&InputUI::RenderThread,this);
         th.detach();
     }
 
@@ -46,7 +46,7 @@ namespace Chess{
         return true;
     }
 
-    void InputUI::RenderThread(sf::RenderWindow *w)
+    void InputUI::RenderThread()
     {
         sf::Font font;
         font.loadFromFile("sourse/Font.ttf");
@@ -86,10 +86,7 @@ namespace Chess{
 
 
 
-        sf::RenderWindow *window = w;
-        w->setActive(true);
-        w->setTitle("InputUI");
-        w->setSize(sf::Vector2u(640,640));
+        sf::RenderWindow *window = new sf::RenderWindow(sf::VideoMode(640,640),"UI");
         while (window->isOpen() )
         {
            sf::Event event;
@@ -265,8 +262,8 @@ namespace Chess{
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
         }
-        w->setActive(false);
-        std::cout << "we end this" << std::endl;
+        window->close();
+        delete window;
 
     }
 

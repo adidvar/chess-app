@@ -4,6 +4,7 @@ namespace Chess{
 
 	Chessboard::Chessboard()
 	{
+        this->lastturn.type = TurnType::Zero;
 		Figure start[64] = {
             Figure(Rook,Black),Figure(Knight,Black),Figure(Bishop,Black),Figure(Queen,Black),Figure(King,Black),Figure(Bishop,Black),Figure(Knight,Black),Figure(Rook,Black),
 			Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),Figure(Pawn,Black),
@@ -28,11 +29,17 @@ namespace Chess{
 				map[i] = reference.map[i];
 		}
 		this->whiteTurn = reference.whiteTurn; 
+        this->rooking = reference.rooking;
+        this->lastturn = reference.lastturn;
 	}
 
 	bool Chessboard::makeTurn(Turn turn , bool SafeMode) 
 	{
-
+        lastturn = turn;
+        if(turn.type == Chess::TurnType::Zero)
+        {
+            return true;
+        }
 		if(SafeMode == true)
 		{
 			std::vector<Turn> turns;
@@ -326,7 +333,8 @@ namespace Chess{
 		}
 		this->whiteTurn = from.whiteTurn; 
         this->rooking = from.rooking;
-		return *this;	
+        this->lastturn = from.lastturn;
+        return *this;
 	}
 
     Chessboard Chessboard::operator ~() const
@@ -342,6 +350,7 @@ namespace Chess{
             revercecopy.map[63-i].color = revercecopy.map[63-i].color ? White : Black;
         }
         revercecopy.whiteTurn = !revercecopy.whiteTurn;
+
         return revercecopy;
     }
 

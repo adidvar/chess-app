@@ -2,11 +2,10 @@
 #include "Chess.h"
 #include <array>
 
-
-
 namespace Chess{
 
 class MyBot;
+class NetPlayer;
 
 class ChessController;
 
@@ -25,8 +24,9 @@ class Chessboard
 public:
 
     friend class Chess::MyBot;
+    friend class Chess::NetPlayer;
 
-
+    Turn lastturn;
     bool getCurrentTurns(std::vector<Turn> &turns);
     bool makeTurn(Turn turn , bool SafeMode);
     static MatchStatus GetBoardStat(Chessboard &board);

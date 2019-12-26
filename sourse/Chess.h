@@ -56,7 +56,8 @@ enum TurnType
 {
     Normal,
     Rooking,
-    FigureSwap
+    FigureSwap,
+    Zero
 };
 
 struct Turn
@@ -74,14 +75,14 @@ struct Turn
         type(Normal),start(),end()
     {}
 
-    TurnType type;
+    TurnType type; // 1
 
-    bool leftright;
+    bool leftright; // 1
 
-    Position start;
-    Position end;
+    Position start; // 2
+    Position end; // 2
 
-    FigureType figure;
+    FigureType figure; // 1
 
 };
 
