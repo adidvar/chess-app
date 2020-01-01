@@ -13,7 +13,9 @@ namespace Chess{
 
     InputUI::~InputUI()
     {
-
+        IsLive_mtx.lock();
+        IsLive = false;
+        IsLive_mtx.unlock();
     }
 
     void InputUI::MapEvent(Chessboard board)
@@ -176,7 +178,7 @@ namespace Chess{
                     }
                 }
            }
-           window->clear();
+           window->clear(sf::Color(128,128,128));
 
            if(GetStat() == Now && FigureChoiseMenu == false)
            {
@@ -217,8 +219,6 @@ namespace Chess{
                text.setPosition(260,300);
                window->draw(text);
                window->display();
-               break;
-
           }
           else if(GetStat() == Lose)
           {
@@ -226,7 +226,6 @@ namespace Chess{
                text.setPosition(260,300);
                window->draw(text);
                window->display();
-               break;
           }
           else if(GetStat() == Now && FigureChoiseMenu == true)
           {
@@ -259,7 +258,12 @@ namespace Chess{
           }
 
            window->display();
+
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+           IsLive_mtx.lock();
+            if(IsLive == false)window->close();
+           IsLive_mtx.unlock();
 
         }
         window->close();

@@ -28,6 +28,8 @@ private:
         stat_mtx.unlock();
         return st;
     }
+    std::mutex IsLive_mtx;
+    bool IsLive = true;
     Chess::MatchStatus stat = MatchStatus::Now;
     std::mutex stat_mtx;
     Chess::Chessboard map;

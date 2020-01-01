@@ -15,6 +15,9 @@ int main()
 {	
     Chess::APlayer * p1, *p2;
     string message = "";
+
+    std::cout << "Welcome in Chess-app\nEnter settings in format: p1 {PlayerType} {PlayerArguments} p2 {PlayerType} {PlayerArguments} start\nSuported PlayerType: ai(bot) ui(GUI) net(remote interface)\nFor example (p1 ui p2 ai start) for play with bot" << std::endl;
+
     while(message!=string("start"))
     {
         cin >> message;
@@ -55,6 +58,8 @@ int main()
     }
     Chess::ChessController c(p1,p2);
     while(c.NextMove()){};
+
+    this_thread::sleep_for(std::chrono::seconds(15));
 
     return 0;
 
