@@ -217,14 +217,14 @@ namespace Chess{
           }
           else if(GetStat() == Win)
           {
-               sf::Text text("White Win",font,30);
+               sf::Text text("You win",font,30);
                text.setPosition(260,300);
                window->draw(text);
                window->display();
           }
           else if(GetStat() == Lose)
           {
-               sf::Text text("Black Win!",font,30);
+               sf::Text text( "You lose" ,font,30);
                text.setPosition(260,300);
                window->draw(text);
                window->display();
