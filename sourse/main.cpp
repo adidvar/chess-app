@@ -1,10 +1,9 @@
- #include <iostream>
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "ChessController.h"
 #include "UI.h"
 #include "NetPlayer.h"
 #include "MyBot.h"
-
 #include <string>
 #include <vector>
 #include <cstring>
@@ -56,10 +55,12 @@ int main()
         }
 
     }
-    Chess::ChessController c(p1,p2);
-    while(c.NextMove()){};
-
-    this_thread::sleep_for(std::chrono::seconds(15));
+    {
+        Chess::ChessController c(p1,p2);
+        while(c.NextMove()){};
+    }
+    delete p1;
+    delete p2;
 
     return 0;
 

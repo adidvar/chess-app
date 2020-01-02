@@ -12,11 +12,10 @@ class InputUI : public Chess::APlayer
 {
 public:
     InputUI(Color c);
-    ~InputUI();
     bool GetTurn(Chess::Turn &t);
     void MapEvent(Chessboard board);
     void FinishEvent(Color c);
-
+    virtual ~InputUI() override;
 private:
     void RenderThread();
 
@@ -28,14 +27,13 @@ private:
         stat_mtx.unlock();
         return st;
     }
-    std::mutex IsLive_mtx;
-    bool IsLive = true;
     Chess::MatchStatus stat = MatchStatus::Now;
     std::mutex stat_mtx;
     Chess::Chessboard map;
     std::mutex map_mtx;
     std::vector<Chess::Turn> turnBuffer;
     std::mutex turnBuffer_mtx;
+    std::thread *th;
 };
 
 };

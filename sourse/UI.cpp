@@ -7,15 +7,13 @@ namespace Chess{
     InputUI::InputUI(Color c):
         APlayer(c)
     {
-        std::thread th(&InputUI::RenderThread,this);
-        th.detach();
+        th = new std::thread(&InputUI::RenderThread,this);
     }
 
     InputUI::~InputUI()
     {
-        IsLive_mtx.lock();
-        IsLive = false;
-        IsLive_mtx.unlock();
+        th->join();
+        delete th;
     }
 
     void InputUI::MapEvent(Chessboard board)
@@ -94,6 +92,10 @@ namespace Chess{
            sf::Event event;
            while (window->pollEvent(event))
            {
+               if( (GetStat()!=Chess::Now ) && (event.type == sf::Event::MouseButtonReleased || event.type == sf::Event::Closed) )
+               {
+                   window->close();
+               }
                if(event.type == sf::Event::MouseButtonPressed && FigureChoiseMenu == false)
                 {
                     p.push_back(Position(event.mouseButton.y / 80,event.mouseButton.x / 80));
@@ -260,13 +262,7 @@ namespace Chess{
            window->display();
 
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
-           IsLive_mtx.lock();
-            if(IsLive == false)window->close();
-           IsLive_mtx.unlock();
-
         }
-        window->close();
         delete window;
 
     }

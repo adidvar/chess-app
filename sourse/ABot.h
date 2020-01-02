@@ -3,7 +3,6 @@
 
 namespace Chess
 {
-
 class ABot
 {
 protected:
@@ -12,6 +11,7 @@ public:
     ABot(Chess::Color c):
         color(c){}
     virtual bool GetTurn(Turn &turn) = 0;
+    virtual ~ABot(){};
 };
 
 
