@@ -45,11 +45,13 @@ bool ChessController::NextMove()
     {
         if(stat == Win)
         {
+            ( !board.WhoTurn() ? white_player : black_player)->MapEvent(board);
            ( board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::White);
            ( !board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::Black);
         }
         if(stat == Lose)
         {
+           ( !board.WhoTurn() ? white_player : black_player)->MapEvent(board);
            ( board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::Black);
            ( !board.WhoTurn() ? white_player : black_player)->FinishEvent(Color::White);
         }

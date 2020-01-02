@@ -119,18 +119,18 @@ Chess::NetPlayer::NetPlayer(Chess::Color c, int port):
 
 bool Chess::NetPlayer::GetTurn(Chess::Turn &turn)
 {    
-
     char buffer[6];
-    this->FromTurn(buffer,lastmove);
-    this->sock.send(buffer,5);
-
     size_t rec;
     this->sock.receive(buffer,5,rec);
     turn = this->ToTurn(buffer);
-
 }
 
 void Chess::NetPlayer::MapEvent(Chess::Chessboard map)
 {
-    lastmove = map.lastturn;
+    char buffer[6];
+    if(map.lastturn.type != Chess::Zero){
+
+        this->FromTurn(buffer,map.lastturn);
+        this->sock.send(buffer,5);
+    }
 }
