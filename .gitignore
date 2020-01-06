@@ -2,7 +2,8 @@
 # ----------------------------------------------------------------------------
 
 *.pro
-*.user
+Chess-app.pro.user
+Chess-app.pro
 *~
 *.autosave
 *.a
@@ -25,7 +26,6 @@ tags
 .DS_Store
 .directory
 *.debug
-Makefile*
 *.prl
 *.app
 moc_*.cpp
