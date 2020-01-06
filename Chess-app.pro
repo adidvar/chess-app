@@ -23,7 +23,10 @@ HEADERS += \
     sourse/AObs.h \
     sourse/ABot.h
 
-LIBS += -L/usr/lib/x86_64-linux-gnu/ -lsfml-system -lsfml-window -lsfml-network -sfml-graphics
+LIBS += -L/usr/lib/x86_64-linux-gnu/ -lsfml-system -lpthread
+LIBS += -lsfml-window
+LIBS += -lsfml-network
+LIBS += -lsfml-graphics
 
 INCLUDEPATH += /usr/include/SFML
 DEPENDPATH += /usr/include/SFML
