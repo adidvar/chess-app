@@ -56,12 +56,13 @@ int main()
 
     }
     {
+
         Chess::ChessController c(p1,p2);
-        while(c.NextMove()){};
+        while(c.NextMove()){;};
     }
     delete p1;
     delete p2;
-
+    std::cout << "end" << endl;
     return 0;
 
 };
