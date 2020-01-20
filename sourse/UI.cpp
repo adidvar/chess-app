@@ -4,9 +4,11 @@
 
 namespace Chess{
 
-    InputUI::InputUI(Color c):
-        APlayer(c)
+    InputUI::InputUI(Color c,sf::RenderWindow *win):
+        APlayer(c),
+        w(win)
     {
+        w->setActive(false);
         th = new std::thread(&InputUI::RenderThread,this);
     }
 
@@ -14,6 +16,7 @@ namespace Chess{
     {
         th->join();
         delete th;
+        w->setActive(true);
     }
 
     void InputUI::MapEvent(Chessboard board)
@@ -84,17 +87,17 @@ namespace Chess{
             }
         }
 
+        w->setActive(true);
 
-
-        sf::RenderWindow *window = new sf::RenderWindow(sf::VideoMode(640,640),"UI");
+        sf::RenderWindow *window = w;
         while (window->isOpen() )
         {
            sf::Event event;
            while (window->pollEvent(event))
            {
-               if( (GetStat()!=Chess::Now ) && (event.type == sf::Event::MouseButtonReleased || event.type == sf::Event::Closed) )
+               if( (GetStat()!=Chess::Now ) && (event.type == sf::Event::MouseButtonReleased) )
                {
-                   window->close();
+                   goto end;
                }
                if(event.type == sf::Event::MouseButtonPressed && FigureChoiseMenu == false)
                 {
@@ -263,8 +266,8 @@ namespace Chess{
 
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
-        delete window;
-
+        end:
+        w->setActive(false);
     }
 
 };

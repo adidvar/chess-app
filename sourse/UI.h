@@ -11,13 +11,14 @@ namespace Chess{
 class InputUI : public Chess::APlayer
 {
 public:
-    InputUI(Color c);
+    InputUI(Color c , sf::RenderWindow *win);
     bool GetTurn(Chess::Turn &t);
     void MapEvent(Chessboard board);
     void FinishEvent(Color c);
     virtual ~InputUI() override;
 private:
     void RenderThread();
+    sf::RenderWindow *w;
 
     MatchStatus GetStat()
     {
