@@ -27,10 +27,12 @@ Chessboard ChessController::GetLocalBoard()
 
 bool ChessController::NextMove()
 {
+    if(status == Error)return false;
+
     Turn t;
     ( board.WhoTurn() ? white_player : black_player)->MapEvent(board);
     do{
-    ( board.WhoTurn() ? white_player : black_player)->GetTurn(t);
+    if(( board.WhoTurn() ? white_player : black_player)->GetTurn(t)==false){status = Error;};
     }while(board.makeTurn(t,true)==false);
 
     for(AObserver *o : observers)

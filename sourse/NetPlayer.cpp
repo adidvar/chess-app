@@ -119,16 +119,16 @@ Chess::NetPlayer::NetPlayer(Chess::Color c, int port):
 
 bool Chess::NetPlayer::GetTurn(Chess::Turn &turn)
 {    
-    std::cout << "GetTurn" << std::endl;
     char buffer[6];
     size_t rec;
-    this->sock.receive(buffer,5,rec);
+    if(this->sock.receive(buffer,5,rec)!=sf::Socket::Done)return false;
     turn = this->ToTurn(buffer);
+
+    return true;
 }
 
 void Chess::NetPlayer::MapEvent(Chess::Chessboard map)
 {
-     std::cout << "MapEvent" << std::endl;
     char buffer[6];
     if(map.lastturn.type != Chess::Zero){
 

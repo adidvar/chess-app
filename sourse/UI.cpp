@@ -90,6 +90,8 @@ namespace Chess{
         w->setActive(true);
 
         sf::RenderWindow *window = w;
+        window->create(sf::VideoMode(640,640),"Chess-app");
+
         while (window->isOpen() )
         {
            sf::Event event;
@@ -267,6 +269,7 @@ namespace Chess{
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
         end:
+        w->close();
         w->setActive(false);
     }
 

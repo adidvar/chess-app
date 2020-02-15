@@ -3,6 +3,12 @@
 
 namespace Chess{
 
+    enum ControllerStatus
+    {
+        Good,
+        Error
+    };
+
 class ChessController
 {
 
@@ -23,6 +29,7 @@ public:
     std::vector<Chessboard> GetMatchHistory();
 
     bool NextMove();
+
     void SetObs(std::vector<AObserver*> obs);
 
 private:
@@ -32,6 +39,7 @@ private:
     std::vector<AObserver*> observers;
     std::vector<Chessboard> history;
     Chessboard GetLocalBoard();
+    ControllerStatus status = Good;
 };
 }
 

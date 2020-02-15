@@ -10,8 +10,7 @@ SOURCES += \
     sourse/main.cpp \
     sourse/ChessController.cpp \
     sourse/Chessboard.cpp \
-    sourse/Chess.cpp \
-    sourse/MainMenu.cpp
+    sourse/Chess.cpp
 
 HEADERS += \
     sourse/UI.h \
@@ -22,8 +21,7 @@ HEADERS += \
     sourse/Chess.h \
     sourse/APlayer.h \
     sourse/AObs.h \
-    sourse/ABot.h \
-    sourse/MainMenu.h
+    sourse/ABot.h
 
 LIBS += -L/usr/lib/x86_64-linux-gnu/ -lsfml-system -lpthread
 LIBS += -lsfml-window

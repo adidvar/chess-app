@@ -156,6 +156,6 @@ float MyBot::GetPositionMark(Chessboard &board)
              return true;
 
 		 }
-            return false;
+            return true;
     }
 };
