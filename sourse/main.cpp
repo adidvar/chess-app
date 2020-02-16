@@ -19,9 +19,12 @@ int main(int argc , char ** argv)
     std::stringstream ss;
     for(int i=0;i<argc;i++)
         ss << argv[i] << " ";
-    cout << ss.str() << endl;
 
 
+    if(argc==1){
+	p1 = new Chess::InputUI(Chess::Color::White,new sf::RenderWindow());
+	p2 = new Chess::MyBot(Chess::AI_Mode::Hard,Chess::Color::Black);
+    } else {
     while(ss >> message)
     {
         if(message==string("-p1") || message==string("-p2"))
@@ -58,14 +61,13 @@ int main(int argc , char ** argv)
            if(message=="-p2")p2=cp;
         }
 
-    }
-    {
-        Chess::ChessController c(p1,p2);
-        while(c.NextMove()){};
-    }
+	}
+	}	
+    Chess::ChessController c(p1,p2);
+    while(c.NextMove()){}
     delete p1;
     delete p2;
 
-    return 0;
+    return (int)c.GetMatchResult();
 
 };
