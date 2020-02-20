@@ -39,6 +39,11 @@ namespace Chess{
             turnBuffer_mtx.lock();
             if(turnBuffer.size() > 0){
                 t = turnBuffer.front();
+
+                map_mtx.lock();
+                map.makeTurn(t,true);
+                map_mtx.unlock();
+
                 turnBuffer.erase(turnBuffer.begin());
                 turnBuffer_mtx.unlock();
                 break;
@@ -91,13 +96,14 @@ namespace Chess{
 
         sf::RenderWindow *window = w;
         window->create(sf::VideoMode(640,640),"Chess-app");
+        w->setFramerateLimit(15);
 
         while (window->isOpen() )
         {
            sf::Event event;
            while (window->pollEvent(event))
            {
-               if( (GetStat()!=Chess::Now ) && (event.type == sf::Event::MouseButtonReleased) )
+               if( (GetStat()!=Chess::Now ) && (event.type == sf::Event::Closed) )
                {
                    goto end;
                }
@@ -225,14 +231,12 @@ namespace Chess{
                sf::Text text("You win",font,30);
                text.setPosition(260,300);
                window->draw(text);
-               window->display();
           }
           else if(GetStat() == Lose)
           {
                sf::Text text( "You lose" ,font,30);
                text.setPosition(260,300);
                window->draw(text);
-               window->display();
           }
           else if(GetStat() == Now && FigureChoiseMenu == true)
           {
@@ -267,6 +271,8 @@ namespace Chess{
            window->display();
 
            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+
         }
         end:
         w->close();

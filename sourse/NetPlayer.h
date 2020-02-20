@@ -20,6 +20,7 @@ public:
     void MapEvent(Chess::Chessboard map);
     void FinishEvent(Chess::Color){};
 
+    virtual ~NetPlayer();
 
     static Turn ToTurn(char * from);
     static void FromTurn(char * from , Turn &turn);

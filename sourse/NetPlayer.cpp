@@ -117,11 +117,16 @@ Chess::NetPlayer::NetPlayer(Chess::Color c, int port):
 
 }
 
+Chess::NetPlayer::~NetPlayer()
+{
+    sock.disconnect();
+}
+
 bool Chess::NetPlayer::GetTurn(Chess::Turn &turn)
 {    
     char buffer[6];
     size_t rec;
-    if(this->sock.receive(buffer,5,rec)!=sf::Socket::Done)return false;
+    this->sock.receive(buffer,5,rec);
     turn = this->ToTurn(buffer);
 
     return true;
