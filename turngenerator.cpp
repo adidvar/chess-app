@@ -90,7 +90,6 @@ const int8_t king_offsety[8] = {1 , -1 , 1 , -1 , 1 , -1, 0 , 0};
 TurnGenerator::TurnGenerator(const Board &board):
     board(board)
 {
-    bool king_flag = false;
 
     for(uint8_t x=0;x<8;x++)
     {
@@ -163,7 +162,6 @@ TurnGenerator::TurnGenerator(const Board &board):
 
             case king:
                 position_execute(king_offsetx,king_offsety,8,x,y , king_move , king_atack);
-                king_flag = true;
                 break;
             }
         }
@@ -181,12 +179,6 @@ TurnGenerator::TurnGenerator(const Board &board):
     //        if(rooking[!whiteTurn].RightRooking == true && at(7,5).type == Emply && at(7,5).type == Emply && at(7,6).type == Emply) // права рокіровка
     //            turns.push_back(Turn(false));
     //    }
-
-    if(king_flag==false)
-    {
-        std::priority_queue<TurnWrapper> empty;
-        std::swap( turns, empty );
-    }
 }
 
 Turn TurnGenerator::operator *() const

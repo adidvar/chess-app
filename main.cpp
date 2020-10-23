@@ -20,18 +20,19 @@ int main()
 
     for (int i=0;;i++)
     {
-
-
-
         b1.UploadMap(b,Turn());
-        TurnExecutor::ExecuteTurn(b,b1.GetTurn());
+        Turn t = b1.GetTurn();
+        if(!t.Normal())
+            break;
+        TurnExecutor::ExecuteTurn(b,t);
 
         if(i%2==0)
-            m.UploadMap(b);
-        else
             m.UploadMap(b.AfterRotate());
-
+        else
+            m.UploadMap(b);
     }
+
+    while(true){}
 
 
     return 0;

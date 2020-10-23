@@ -9,7 +9,7 @@ void TurnExecutor::ExecuteTurn(Board &board, Turn turn)
         break;
 
     case PawnMove:
-        board.Set(turn.position_2,board.GetFigure(turn.figure_type),board.GetColor(turn.position_1));
+        board.Set(turn.position_2,turn.figure_type,board.GetColor(turn.position_1));
         board.Set(turn.position_1,empty,white);
         break;
     case Rooking:

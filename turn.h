@@ -26,7 +26,7 @@ class Turn
         bool rooking_type;
     };
 
-    bool Normal(){return type != ErrorMove;}
+
 
 public:
     Turn();
@@ -34,6 +34,7 @@ public:
     Turn(Pos p1 , Pos p2 , Figures figure);
     Turn(bool rooking);
 
+    bool Normal(){return type != ErrorMove;}
 
     std::string toStr();
 

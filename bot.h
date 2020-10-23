@@ -10,7 +10,7 @@
 class Bot : public Player
 {
 
-    const unsigned depth = 4;
+    const unsigned depth = 5;
 
     virtual int16_t MarkTreeBranch(Board board , unsigned depth , int16_t alpha , int16_t beta );
     virtual int16_t Mark(Board &board);

@@ -4,15 +4,14 @@ const int16_t max_value = std::numeric_limits<int16_t>::max();
 
 int16_t Bot::Mark(Board &board)
 {
-    std::array<int,7> price {0,10,30,30,50,90,900};
+    std::array<int,7> price {0,10,30,30,50,90,90000};
     int16_t mark = 0;
     for(uint8_t i=0;i<64;i++)
     {
         Figures type = board.GetFigure(i);
         mark += ((board.TestColor(white,i))
-                 ? price.at(type)
-                 : -price.at(type));
-
+                 ? price.at(type) + (8 - Position_x(i))
+                 : -price.at(type) - (8 - Position_x(i)));
     }
     return mark;
 }
@@ -58,7 +57,7 @@ Turn Bot::GetTurn()
 
         int16_t mark = -MarkTreeBranch(sub_board,this->depth , -max_value , max_value);
 
-        if(mark > max)
+        if(mark >= max)
         {
             max = mark;
             turn = *generator;
