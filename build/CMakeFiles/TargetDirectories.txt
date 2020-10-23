@@ -1,0 +1,3 @@
+C:/Users/user/Documents/ChessNewCore/build/CMakeFiles/Chess.dir
+C:/Users/user/Documents/ChessNewCore/build/CMakeFiles/edit_cache.dir
+C:/Users/user/Documents/ChessNewCore/build/CMakeFiles/rebuild_cache.dir
