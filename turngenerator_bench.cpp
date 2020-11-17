@@ -20,7 +20,7 @@ int main()
 
 //        cout << b.toStr() << endl;
 
-        b.Set(Position(rand()%8 , rand()%8),rand()%7 , rand()%2);
+//        b.Set(Position(rand()%8 , rand()%8),rand()%7 , rand()%2);
 
         t1 = clock();
 
@@ -29,7 +29,7 @@ int main()
 
         for(;t;++t)
         {
-//           cout << (*t).toStr() << endl;
+           cout << (*t).toStr() << endl;
            turns++;
            (*t);
         }
@@ -43,6 +43,7 @@ int main()
             tmm = 1;
             turns = 0;
         }
+        break;
 
     }
 

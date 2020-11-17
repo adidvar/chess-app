@@ -7,13 +7,13 @@ SOURCES += \
         board.cpp \
 #        board_test.cpp \
     bot.cpp \
-        main.cpp \
+     main.cpp \
     map_preview.cpp \
     player.cpp \
         turn.cpp \
     turnexecutor.cpp \
     turngenerator.cpp \
-#    turngenerator_bench.cpp
+   # turngenerator_bench.cpp
 
 HEADERS += \
     board.h \
@@ -24,7 +24,7 @@ HEADERS += \
     turnexecutor.h \
     turngenerator.h
 
-LIBS += -LD:/Libs/SFMLx32/lib/ -lsfml-system -lsfml-window -lsfml-graphics
+LIBS += -L/usr/lib/x86_64-linux-gnu -lsfml-system -lsfml-window -lsfml-graphics -pthread
 
-INCLUDEPATH += D:/Libs/SFMLx32/include
-DEPENDPATH += D:/Libs/SFMLx32/include
+INCLUDEPATH += /usr/include/SFML
+DEPENDPATH += /usr/include/SFML

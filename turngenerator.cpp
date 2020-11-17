@@ -1,3 +1,4 @@
+
 #include "turngenerator.h"
 
 enum prior

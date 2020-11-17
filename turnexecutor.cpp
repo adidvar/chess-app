@@ -23,3 +23,14 @@ void TurnExecutor::ExecuteTurn(Board &board, Turn turn)
     }
     board.Rotate();
 }
+
+bool TurnExecutor::TurnTest(const Board &board, const Turn turn)
+{
+    Board sub(board);
+    for(TurnGenerator gen(board);gen;++gen)
+    {
+        if( (*gen) == turn)
+            return true;
+    }
+    return false;
+}

@@ -38,6 +38,8 @@ public:
 
     std::string toStr();
 
+    bool operator ==(const Turn &t) const;
+
     friend class TurnExecutor;
     friend class Map_preview;
 };

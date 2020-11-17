@@ -42,9 +42,32 @@ std::string Turn::toStr()
         ss << '<' << (rooking_type ? "l" : "r" )<< '>';
         break;
     case ErrorMove:
-         ss << '<' << "Error" << '>';
+        ss << '<' << "Error" << '>';
     default:
         break;
     }
     return ss.str();
+}
+
+bool Turn::operator ==(const Turn &t) const
+{
+    if(this->type == t.type)
+    {
+        switch (this->type) {
+        case ErrorMove:
+            return true;
+            break;
+        case PawnMove:
+            if(this->position_1 == t.position_1 && this->position_2 == t.position_2 && this->figure_type == t.figure_type)return true;
+            break;
+        case Move:
+            if(this->position_1 == t.position_1 && this->position_2 == t.position_2)return true;
+            break;
+        case Rooking:
+            if(this->rooking_type == t.rooking_type)return true;
+            break;
+
+        }
+    }
+    return false;
 }

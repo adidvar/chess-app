@@ -8,13 +8,31 @@ Map_preview::Map_preview(Board board , Color main_color):
     this->board = board;
 }
 
-void Map_preview::UploadMap(Board board)
+void Map_preview::UploadMap(Board board, Turn lastturn)
 {
     if(main_color != white)
         board.Rotate();
 
     std::lock_guard lock(board_mutex);
-    this->board = board;
+    this->board = board.AfterRotate();
+}
+
+Turn Map_preview::GetTurn()
+{
+    handle_flag = true;
+
+    std::unique_lock lock(this->turn_mutex);
+
+    do {
+        handle.wait(lock);
+    } while (!turn.Normal());
+
+    auto result = turn;
+    turn = Turn();
+
+    handle_flag = false;
+
+    return result;
 }
 
 void Map_preview::Exec()
@@ -51,10 +69,7 @@ void Map_preview::Exec()
 
     while (w.isOpen() )
     {
-        sf::Event event;
-        while (w.pollEvent(event))
-            if( (event.type == sf::Event::Closed) )
-                w.close();
+        this->CaptureEvent(w);
 
         w.clear(sf::Color(128,128,128));
 
@@ -85,7 +100,7 @@ void Map_preview::Exec()
 
             circle.setPosition(sf::Vector2f(Position_y(turn.position_2)*80 + 5,Position_x(turn.position_2)*80+5));
 
-            w.draw(circle);
+//            w.draw(circle);
         }
 
 
@@ -105,4 +120,62 @@ void Map_preview::Exec()
 
         w.display();
     }
+}
+
+void Map_preview::CaptureEvent(sf::RenderWindow &w)
+{
+    static std::vector<Pos> clicks;
+
+    sf::Event e;
+    while(w.pollEvent(e))
+    {
+        if(e.type == sf::Event::Closed)
+            w.close();
+        if(e.type == sf::Event::MouseButtonPressed && handle_flag && clicks.size()<2)
+        {
+            auto info = e.mouseButton;
+            auto pos = Position(info.y / 80 , info.x / 80);
+
+            std::lock_guard guard(board_mutex);
+            if(( (!board.TestEmp(pos) && board.TestColor(white,pos) && clicks.size() == 0))
+                    || ((board.TestColor(black,pos) || board.TestEmp(pos)) && clicks.size() == 1))
+                clicks.push_back(pos);
+            else
+                clicks.clear();
+        }
+    }
+    //кінцевий тест на правильність ходу
+    if(clicks.size() == 2){
+
+        std::lock_guard guard(board_mutex);
+        turn_mutex.lock();
+
+        Turn tests_turn;
+
+        if(Position_x(clicks[0]) ==1 && board.Test(pawn,clicks[0]))
+            tests_turn = Turn(clicks[0],clicks[1],PickRender(w));
+        else if (false) // тест на рокіровку
+        {
+
+        } else
+            tests_turn = Turn(clicks[0],clicks[1]);
+
+        if(TurnExecutor::TurnTest(board,tests_turn))
+        {
+            this->turn = tests_turn;
+            turn_mutex.unlock();
+            handle.notify_all();
+            clicks.clear();
+            TurnExecutor::ExecuteTurn(this->board,tests_turn);
+            this->board.Rotate();
+            return;
+        }
+        turn_mutex.unlock();
+        clicks.clear();
+    }
+}
+
+Figures Map_preview::PickRender(sf::RenderWindow &w)
+{
+    return queen;
 }
