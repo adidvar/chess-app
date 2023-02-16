@@ -6,7 +6,7 @@ Player::Player(Color main_color):
 
 }
 
-void Player::UploadMap(Board board, Turn lastturn)
+void Player::UploadMap(Board board, Position lastturn)
 {
     this->board =  board;
     this->lastturn = lastturn;

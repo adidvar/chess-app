@@ -1,14 +1,13 @@
 #include "board.h"
-#include "turngenerator.h"
 #include <stdexcept>
 #include <sstream>
 
-const char* Board::fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq — 0 1";
+const char* Board::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 Board::Board(std::string_view fen)
 {
     for(size_t i = 0 ; i < 64 ; i++)
-        Set(i,empty,white);
+        Set(i,{Figure::kEmpty,Color::kWhite});
 
     size_t i = 0;
     size_t position = 0;
@@ -16,51 +15,51 @@ Board::Board(std::string_view fen)
     {
         switch (fen.at(i)) {
         case 'p':
-            Set(position,pawn,black);
+            Set(position,{Figure::kPawn,Color::kBlack});
             position++;
             break;
         case 'n':
-            Set(position,knight,black);
+            Set(position,{Figure::kKnight,Color::kBlack});
             position++;
             break;
         case 'b':
-            Set(position,bishop,black);
+            Set(position,{Figure::kBishop,Color::kBlack});
             position++;
             break;
         case 'r':
-            Set(position,rook,black);
+            Set(position,{Figure::kRook,Color::kBlack});
             position++;
             break;
         case 'q':
-            Set(position,queen,black);
+            Set(position,{Figure::kQueen,Color::kBlack});
             position++;
             break;
         case 'k':
-            Set(position,king,black);
+            Set(position,{Figure::kKing,Color::kBlack});
             position++;
             break;
         case 'P':
-            Set(position,pawn,white);
+            Set(position,{Figure::kPawn,Color::kWhite});
             position++;
             break;
         case 'N':
-            Set(position,knight,white);
+            Set(position,{Figure::kKnight,Color::kWhite});
             position++;
             break;
         case 'B':
-            Set(position,bishop,white);
+            Set(position,{Figure::kBishop,Color::kWhite});
             position++;
             break;
         case 'R':
-            Set(position,rook,white);
+            Set(position,{Figure::kRook,Color::kWhite});
             position++;
             break;
         case 'Q':
-            Set(position,queen,white);
+            Set(position,{Figure::kQueen,Color::kWhite});
             position++;
             break;
         case 'K':
-            Set(position,king,white);
+            Set(position,{Figure::kKing,Color::kWhite});
             position++;
             break;
         case '1':
@@ -109,30 +108,30 @@ Board::Board(std::string_view fen)
     ss >> current_move >> rooking >> pawn >> static_move >> move_counter;
 
     if(current_move.front() == 'w')
-        this->current_color = white;
+        current_player_color_ = Color::kWhite;
     else if(current_move == "b")
-        this->current_color = black;
+        current_player_color_ = Color::kBlack;
     else
         throw std::runtime_error("fen invalid format [current_move]");
-    this->static_move_counter = static_move;
-    this->turn_counter = move_counter;
+    passive_move_counter_ = static_move;
+    turn_counter_ = move_counter;
 
-    this->r_flags = {false,false,false,false};
+    rooking_flags_ = {false,false,false,false};
 
     for(char x : rooking)
     {
         switch (x) {
         case 'K':
-            r_flags.white_oo = true;
+            rooking_flags_.white_oo = true;
             break;
         case 'Q':
-            r_flags.white_ooo = true;
+            rooking_flags_.white_ooo = true;
             break;
         case 'k':
-            r_flags.black_oo = true;
+            rooking_flags_.black_oo = true;
             break;
         case 'q':
-            r_flags.black_ooo = true;
+            rooking_flags_.black_ooo = true;
             break;
         case '-':
             break;
@@ -142,55 +141,43 @@ Board::Board(std::string_view fen)
     }
 }
 
-Board::Board(const std::initializer_list<std::pair<Figures, Color> > list)
+void Board::Set(Position position, Cell cell)
 {
-    if(list.size() != 64)
-        throw std::runtime_error("Board inizializer list error");
-    size_t index = 0;
-    for(  auto it = list.begin() ; it != list.end() ; ++it )
-    {
-        this->Set( index , (*it).first , (*it).second );
-        ++index;
-    }
+    board_[position.Value()] = cell;
 }
 
-void Board::Set(Pos position, Figures figure, Color c)
+void Board::Swap(Position p1, Position p2)
 {
-    map[position].color = c;
-    map[position].type = figure;
+    std::swap(board_[p1.Value()],board_[p2.Value()]);
 }
 
-void Board::Swap(Pos p1, Pos p2)
+bool Board::Test(Figure figure, Position position) const noexcept
 {
-    std::swap(map[p1],map[p2]);
+    return board_[position.Value()].type == figure;
 }
 
-bool Board::Test(Figures figure, Pos position) const
+bool Board::TestColor(Color color, Position position) const noexcept
 {
-    return map[position].type == figure;
+    return board_[position.Value()].color == color;
 }
 
-bool Board::TestColor(Color color, Pos position) const
+bool Board::TestEmp(Position position) const noexcept
 {
-    return map[position].color == color;
+    return board_[position.Value()].type == Figure::kEmpty;
 }
 
-bool Board::TestEmp(Pos position) const
+Figure Board::GetFigure(Position position) const noexcept
 {
-    return map[position].type == empty;
+    return board_[position.Value()].type;
 }
 
-Figures Board::GetFigure(Pos position) const
+Color Board::GetColor(Position position) const noexcept
 {
-    return map[position].type;
+    return board_[position.Value()].color;
 }
-
-Color Board::GetColor(Pos position) const
-{
-    return map[position].color;
-}
-
-Board::operator bool()
+/*
+Board::operator bool() const noexcept
 {
     return TurnGenerate(*this,current_color).size() != 0;
 }
+*/

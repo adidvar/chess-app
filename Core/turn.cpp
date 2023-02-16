@@ -1,76 +1,70 @@
 #include "turn.h"
 #include <sstream>
 
-Turn::Turn(std::tuple<Pos,Pos> move):
-    turn(move)
-{}
-
-Turn::Turn(std::tuple<Pos,Pos,Figures> pawn_move):
-    turn(pawn_move)
-{}
-
-Turn::Turn(Rooking direction):
-    turn(direction)
-{}
-
-std::optional<std::tuple<Pos, Pos> > Turn::GetTurn() const
+Turn::Turn():
+    figure_(Figure::kEmpty)
 {
-    if(auto value = std::get_if<std::tuple<Pos, Pos>>(&turn))
-        return *value;
-    return {};
+
 }
 
-std::optional<std::tuple<Pos, Pos, Figures> > Turn::GetPawnTurn() const
+Turn::Turn(Position from, Position to):
+    from_(from),
+    to_(to),
+    figure_(Figure::kEmpty)
 {
-    if(auto value = std::get_if<std::tuple<Pos, Pos,Figures>>(&turn))
-        return *value;
-    return {};
+
 }
 
-std::optional<Rooking> Turn::GetRooking() const
+Turn::Turn(Position from, Position to, Figure figure):
+    from_(from),
+    to_(to),
+    figure_(figure)
 {
-    if(auto value = std::get_if<bool>(&turn))
-        return *value;
-    return {};
+
 }
 
-std::string Turn::toChessFormat() const
+Position Turn::from() const noexcept
 {
-    if(auto value = std::get_if<std::tuple<Pos, Pos>>(&turn))
+   return from_;
+}
+
+Position Turn::to() const noexcept
+{
+   return to_ ;
+}
+
+Figure Turn::figure() const noexcept
+{
+   return figure_ ;
+}
+
+std::string Turn::ToChessFormat() const
+{
+    if(from_.Valid() || to_.Valid())
     {
-        auto& [start , end] = *value;
+         return "NULL TURN";
+    }
+    else if(figure_ != Figure::kEmpty)
+    {
         std::stringstream ss;
-        ss << static_cast<char>('a'+Position_y(start)) << static_cast<char>('8'-Position_x(start)) << '-'
-           << static_cast<char>('a'+Position_y(end))   << static_cast<char>('8'-Position_x(end));
+        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x()) << '-'
+           << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x());
         return ss.str();
     }
-    else if (auto value = std::get_if<std::tuple<Pos, Pos , Figures>>(&turn))
+    else
     {
-        char codes[7] = {' ',' ','k','b','r','q',' '} ;
+        char codes[7] = {' ','p','k','b','r','q',' '} ;
 
-        auto& [start , end , figure] = *value;
         std::stringstream ss;
-        ss << static_cast<char>('a'+Position_y(start)) << static_cast<char>('8'-Position_x(start)) << '-'
-           << static_cast<char>('a'+Position_y(end))   << static_cast<char>('8'-Position_x(end))
-           << codes[figure];
+        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x()) << '-'
+           << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x())
+           << codes[(size_t)figure_];
         return ss.str();
-
      }
-     else if (const bool *value = std::get_if<Rooking>(&turn))
-     {
-            bool direction = *value;
-            if(direction == false)
-                return "0-0";
-            else
-                return "0-0-0";
-     }
-     else
-     {
-         return "NULL TURN";
-      }
 }
 
-bool Turn::operator ==(const Turn &t) const
-{
-    return turn == t.turn;
+bool Turn::operator ==(const Turn& turn){
+    return from_ == turn.from_ &&
+           to_ == turn.to_ &&
+           figure_ == turn.figure_;
 }

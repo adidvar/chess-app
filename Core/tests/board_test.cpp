@@ -1,43 +1,42 @@
-#include "gtest/gtest.h"
+#include <catch2/catch_test_macros.hpp>
 #include "board.h"
 
 class Board_Test : public Board
 {
 public:
-	void Testing()
-	{
+    void Testing()
+    {
+        SECTION( "set and get test" ) {
+            for(int i=0;i<64;i++)
+            {
+                for(size_t fig = 0; fig < 7 ; fig++){
+                    for(size_t color = 0; color < 2; color++){
 
-		for(int i=0;i<64;i++)
-		{
-			Figures fig = 0;
-			Color color = 0;
+                        Set(i,{(Figure)fig,(Color)color});
 
-			for(Figures fig = 0; fig < 7 ; fig++){
-				for(Color color = 0; color < 2; color++){
+                        REQUIRE(Test((Figure)fig,i)) ;
+                        REQUIRE(TestColor((Color)color,i)) ;
+                        REQUIRE(GetFigure(i) == (Figure)fig);
+                        REQUIRE(GetColor(i) == (Color)color);
 
-					Set(i,fig,color);
+                    }
+                }
+            }
+        }
 
-					ASSERT_TRUE(Test(fig,i)) << "Error figure read Test()";
-					ASSERT_TRUE(TestColor(color,i)) << "Error color read TestColor()";
-					ASSERT_TRUE(GetFigure(i) == fig) << "Error figure read GetFigure()";
-					ASSERT_TRUE(GetColor(i) == color) << "Error color read GetColor()";
-					
-				}
-			}
-		}
-
-    Set(0,pawn,white);
-    Set(1,knight,black);
-    Swap(0,1);
-    ASSERT_TRUE(Test(pawn,1));
-    ASSERT_TRUE(Test(knight,0));
-    ASSERT_TRUE(TestColor(black,0));
-    ASSERT_TRUE(TestColor(white,1));
-	}
+        SECTION( "swap test" ) {
+            Set(0,{Figure::kPawn,Color::kWhite});
+            Set(1,{Figure::kKnight,Color::kBlack});
+            Swap(0,1);
+            REQUIRE(Test(Figure::kPawn,1));
+            REQUIRE(Test(Figure::kKnight,0));
+            REQUIRE(TestColor(Color::kBlack,0));
+            REQUIRE(TestColor(Color::kWhite,1));
+        }
+    }
 };
 
-TEST(Core,Board)
-{
-	Board_Test test;
-	test.Testing();
+TEST_CASE( "ChessBoard operators", "[chessboard]" ) {
+    Board_Test test;
+    test.Testing();
 }

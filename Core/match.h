@@ -1,8 +1,11 @@
 #ifndef MATCH_H
 #define MATCH_H
-#include "board.h"
+
 #include <vector>
 
+#include "board.h"
+#include "turn.h"
+/*
 class Match
 {
     enum MatchState
@@ -35,5 +38,6 @@ public:
 
     bool Push(Turn turn);
 };
+*/
 
 #endif // MATCH_H

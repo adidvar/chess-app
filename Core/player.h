@@ -7,13 +7,13 @@ class Player
 {
 protected:
     Board board;
-    Turn lastturn;
+    Position lastturn;
     Color main_color;
 public:
     Player(Color main_color);
     ~Player(){};
-    virtual void UploadMap(Board board , Turn lastturn);
-    virtual Turn GetTurn() = 0;
+    virtual void UploadMap(Board board , Position lastturn);
+    virtual Position GetTurn() = 0;
 };
 
 #endif // PLAYER_H

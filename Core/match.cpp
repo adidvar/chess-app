@@ -1,13 +1,12 @@
 #include "match.h"
-#include "turnexecutor.h"
-#include "turngenerator.h"
 
+/*
 void Match::update_state_and_hash_turns()
 {
     this->current_turns = TurnGenerate(boards_history.back(),boards_history.back().CurrentColor());
 }
 
-bool Match::Push(Turn turn)
+bool Match::Push(Position turn)
 {
     if(!TurnTest(boards_history.back(),turn))
         return false;
@@ -20,3 +19,5 @@ bool Match::Push(Turn turn)
     update_state_and_hash_turns();
     return true;
 }
+
+*/

@@ -4,56 +4,50 @@
 #include <string>
 #include <assert.h>
 
-/**
- * Тип данних по якому здійснюється доступ до дошки
- */
-using Pos = uint8_t;
-
-/**
- * @brief Помилкова позиція
- */
-const Pos error_pos = 64;
-
-/**
- * @brief Повертає позицію за двома координатами
- * @param x Координата x
- * @param y Координата y
- * @return позиція
- */
-constexpr Pos Position(Pos x , Pos y)
+class Position
 {
-    if( x > 7 || y > 7)
-        return error_pos;
+    static constexpr uint8_t kerror_pos_ = 64;
+    uint8_t index_;
+public:
+    Position(uint8_t x , uint8_t y) noexcept
+    {
+        if( x > 7 || y > 7)
+            index_ = kerror_pos_;
+        else
+            index_ = x*8 + y;
+    }
+    constexpr Position() noexcept:
+        index_(kerror_pos_)
+    {
+    }
+    constexpr Position(uint8_t index) noexcept:
+        index_(index)
+    {
+    }
+    constexpr bool Valid() const noexcept
+    {
+        return index_ < kerror_pos_;
+    }
+    constexpr uint8_t Value() const noexcept{
+        return index_;
+    }
+    constexpr uint8_t x() const noexcept{
+        return index_/8;
+    }
+    constexpr uint8_t y() const noexcept{
+        return index_%8;
+    }
 
-    return x*8 + y;
-}
-
-constexpr bool PositionNormal(Pos test)
-{
-    return test < error_pos;
-}
-
-constexpr Pos Position_x(Pos p)
-{
-    return p/8;
-}
-constexpr Pos Position_y(Pos p)
-{
-    return p%8;
-}
-
-inline Pos to_default(std::string pos)
-{
-  //*
-    return error_pos;
-}
-
-inline std::string to_format(Pos pos)
-{
-    std::string str = "00";
-    str[0] = static_cast<char>('a'+Position_y(pos));
-    str[1] = static_cast<char>('8'-Position_x(pos));
-    return str;
-}
+    std::string ToString() const noexcept
+    {
+        std::string str = "00";
+        str[0] = static_cast<char>('a'+y());
+        str[1] = static_cast<char>('8'-x());
+        return str;
+    }
+    bool operator ==(const Position& pos) const noexcept{
+        return index_ == pos.index_;
+    }
+};
 
 #endif // POSITIONS_H

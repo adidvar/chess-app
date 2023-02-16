@@ -9,9 +9,9 @@
 class ChessBoardPlay : public ChessBoardView
 {
     Q_OBJECT
-    size_t current_figure = -1;
+    Position current_figure;
     bool underline_moves = true;
-    QVector<Turn> turns = {};
+    QVector<Position> turns = {};
 public:
     explicit ChessBoardPlay(QWidget *parent = nullptr);
     void Upload(const Board &board);
@@ -19,7 +19,7 @@ public:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void EnableMoveUnderline(bool mode);
 signals:
-    void NewTurn(Turn);
+    void NewTurn(Position);
 };
 
 #endif // CHESSBOARDPLAY_H

@@ -10,7 +10,7 @@
 
 struct texture_pack
 {
-    std::unordered_map<Figures,QImage> figures_texture[2];
+    std::unordered_map<Figure,QImage> figures_texture[2];
 };
 
 class ChessBoardView : public QWidget

@@ -1,60 +1,45 @@
-#include "turnexecutor.h"
-#include "turngenerator.h"
-#include "algorithm"
+#include "board.h"
+#include <algorithm>
 #include <stdexcept>
 
-bool ExecuteTurn(Board &board, Turn turn)
+bool Board::ExecuteTurn(Turn turn)
 {
-    if(TurnTest(board,turn)==false)
+    if(TurnTest(turn)==false)
         return false;
 
-    auto variant = turn.variant();
-    if(auto value = std::get_if<std::tuple<Pos, Pos>>(&variant))
-    {
-        auto& [start , end] = *value;
-        board.Set(end,board.GetFigure(start),board.GetColor(start));
-        board.Set(start,empty,white);
+    Set(turn.to(),{GetFigure(turn.from()),GetColor(turn.from())});
+    Set(turn.from(),{Figure::kEmpty,Color::kWhite});
+    if(turn.figure() != Figure::kEmpty)
+        Set(turn.to(),{turn.figure(),GetColor(turn.from())});
 
-    }
-    else if (auto value = std::get_if<std::tuple<Pos, Pos , Figures>>(&variant))
-    {
-        auto& [start , end , figure] = *value;
-        board.Set(end,figure,board.GetColor(start));
-        board.Set(start,empty,white);
-     }
-     else if (bool *value = std::get_if<bool>(&turn.turn))
-     {
-            bool direction = *value;
-            auto swap_oo = [&board](unsigned h)
-            {
-                board.Swap(Position(h,4),Position(h,6));
-                board.Swap(Position(h,7),Position(h,5));
-            };
-            auto swap_ooo = [&board](unsigned h)
-            {
-                board.Swap(Position(h,4),Position(h,2));
-                board.Swap(Position(h,0),Position(h,3));
-            };
+    /*
+        bool direction = *value;
+        auto swap_oo = [&board](unsigned h)
+        {
+        board.Swap(Position(h,4),Position(h,6));
+        board.Swap(Position(h,7),Position(h,5));
+        };
+        auto swap_ooo = [&board](unsigned h)
+        {
+        board.Swap(Position(h,4),Position(h,2));
+        board.Swap(Position(h,0),Position(h,3));
+        };
 
-            if(direction == false)
-                swap_oo(board.current_color == white ? 7 : 0);
-            else
-                swap_ooo(board.current_color == white ? 7 : 0);
+        if(direction == false)
+        swap_oo(board.current_color == white ? 7 : 0);
+        else
+        swap_ooo(board.current_color == white ? 7 : 0);
 
-            board.r_flags = {false,false,false,false};
-     }
-     else
-     {
-         throw std::runtime_error("Making a null turn");
-     }
+        board.r_flags = {false,false,false,false};
+     */
 
-     board.current_color = board.current_color == white ? black : white;
-     return true;
+    current_player_color_ = current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite;
+    return true;
 }
 
-bool TurnTest(const Board &board, const Turn turn)
+bool Board::TurnTest(Turn turn) const
 {
-      auto turns = TurnGenerate(board,board.CurrentColor());
+      auto turns = GenerateTurns();
       auto count = std::count(turns.begin(),turns.end(),turn);
 
       return count != 0;

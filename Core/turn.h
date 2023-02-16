@@ -1,74 +1,56 @@
-#ifndef TURN_H
+﻿#ifndef TURN_H
 #define TURN_H
-#include "board.h"
-#include <variant>
-#include <tuple>
-#include <vector>
-#include <optional>
 #include <string>
+
+#include "figures.h"
+#include "positions.h"
 
 /**
  * @brief Визначає звичайний шахматний
  *
- * Ходи бувають одного з 3 типів
+ * Ходи бувають одного з 2 типів
  * 1) Звичайних хід
  * 2) Хід пішкою з вибором фігури
- * 3) Рокірування (false -- коротка , true -- довга)
  */
 
-using Rooking = bool;
-enum Rooking_t
+class alignas(4) Turn
 {
-    rooking_oo =0,
-    rooking_ooo=1
-};
+    Position from_;
+    Position to_;
+    Figure figure_;
 
-class Turn
-{
-    using variant_type = std::variant<std::monostate,
-    std::tuple<Pos,Pos>,
-    std::tuple<Pos,Pos,Figures>,Rooking>;
-
-    variant_type turn;
 public:
     /**
      * @brief Пустий хід
      */
-    Turn() = default;
-
+    Turn();
     /**
      * @brief Звичайний хід
      * @param move задає початкову і кінцеву позицію
      */
-    Turn(std::tuple<Pos,Pos> move);
+    Turn(Position from, Position to);
     /**
      * @brief Кінцевий хід пішкою
      * @param pawn_move Початкова кінцева і тип фігури
      */
-    Turn(std::tuple<Pos,Pos,Figures> pawn_move);
+    Turn(Position from, Position to , Figure figure);
     /**
      * @brief Рокірування
      * @param direction напрямок рокіровки
      */
-    Turn(Rooking direction);
 
-    Turn(const Turn&) = default;
-    Turn(Turn&&) = default;
+    Turn(const Turn&)noexcept = default;
+    Turn(Turn&&) noexcept = default;
 
-    Turn& operator =(const Turn& b) = default;
-    Turn& operator =(Turn&& b) = default;
+    Turn& operator =(const Turn& b) noexcept = default;
+    Turn& operator =(Turn&& b) noexcept = default;
+    bool operator ==(const Turn& turn);
 
-    variant_type variant() const {return this->turn;};
+    Position from() const noexcept;
+    Position to() const noexcept;
+    Figure figure() const noexcept;
 
-    std::optional<std::tuple<Pos,Pos>> GetTurn() const;
-    std::optional<std::tuple<Pos,Pos,Figures>> GetPawnTurn() const;
-    std::optional<Rooking> GetRooking() const;
-
-    std::string toChessFormat() const;
-
-    bool operator ==(const Turn &t) const;
-
-friend bool ExecuteTurn(Board &board, Turn turn);
+    std::string ToChessFormat() const;
 };
 
 #endif // TURN_H
