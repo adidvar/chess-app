@@ -135,45 +135,43 @@ void position_find_pawn(const Board &board, std::back_insert_iterator<std::vecto
                 push(Turn({Position(x,y) , Position(x+1,y)}));
             if( board.TestEmp(Position(x+1,y)) && board.TestEmp(Position(x+2,y)) && x == 1) // двойний хід
                 push(Turn({Position(x,y) , Position(x+2,y)}));
-            if( y != 0 && !board.TestEmp(Position(x+1,y-1)) && board.TestColor(Color::kBlack,Position(x+1,y-1)) ) // ліва атака
+            if( y != 0 && !board.TestEmp(Position(x+1,y-1)) && board.TestColor(Color::kWhite,Position(x+1,y-1)) ) // ліва атака
                 push(Turn({Position(x,y) , Position(x+1,y-1)}));
-            if( y != 7 && !board.TestEmp(Position(x+1,y+1)) && board.TestColor(Color::kBlack,Position(x+1,y+1))) // права атака
+            if( y != 7 && !board.TestEmp(Position(x+1,y+1)) && board.TestColor(Color::kWhite,Position(x+1,y+1))) // права атака
                 push(Turn({Position(x,y) , Position(x+1,y+1)}));
         }
         else if( x == 6) ///< ходи з перетворенням
         {
             if( board.TestEmp(Position(x+1,y)) ) // хід прямо
                 pawn_move(Position(x,y) , Position(x+1,y));
-            if( y!=0 && !board.TestEmp(Position(x+1,y-1)) && board.TestColor(Color::kBlack,Position(x+1,y-1))) // атака
+            if( y!=0 && !board.TestEmp(Position(x+1,y-1)) && board.TestColor(Color::kWhite,Position(x+1,y-1))) // атака
                 pawn_move(Position(x,y) , Position(x+1,y-1));
-            if( y!=7 && !board.TestEmp(Position(x+1,y+1)) && board.TestColor(Color::kBlack,Position(x+1,y+1))) // атака
+            if( y!=7 && !board.TestEmp(Position(x+1,y+1)) && board.TestColor(Color::kWhite,Position(x+1,y+1))) // атака
                 pawn_move(Position(x,y) , Position(x+1,y+1));
         }
     }
 }
 
-/*
-void rooking_find(const Board &board, std::back_insert_iterator<std::vector<Position>> &iterator)
+void rooking_find(const Board &board, std::back_insert_iterator<std::vector<Turn>> &iterator)
 {
-    auto push = [&iterator](Position &&turn) ///< лямбда для доповнення списку
+    auto push = [&iterator](Turn &&turn) ///< лямбда для доповнення списку
     {
         *iterator = turn;
         ++iterator;
     };
     if(board.CurrentColor() == Color::kWhite){
         if( board.RookingFlags().white_ooo && board.TestEmp(Position(7,1)) && board.TestEmp(Position(7,2)) && board.TestEmp(Position(7,3))) // ліва рокіровка
-            push(Position(rooking_ooo));
-        if( board.RookingState().white_oo  && board.TestEmp(Position(7,5)) &&  board.TestEmp(Position(7,6))) // права рокіровка
-            push(Position(rooking_oo));
+            push(Turn(Position(7,4),Position(7,2)));
+        if( board.RookingFlags().white_oo  && board.TestEmp(Position(7,5)) &&  board.TestEmp(Position(7,6))) // права рокіровка
+            push(Turn(Position(7,4),Position(7,6)));
     } else
     {
-        if(board.RookingFlags().black_ooo && board.TestEmp(Position(0,1)) && board.TestEmp(Position(0,2)) && board.TestEmp(Position(0,3)) ) // ліва рокіровка
-            push(Position(rooking_ooo));
-        if(board.RookingState().white_oo && board.TestEmp(Position(0,5)) &&  board.TestEmp(Position(0,6)) ) // права рокіровка
-            push(Position(rooking_oo));
+        if( board.RookingFlags().black_ooo && board.TestEmp(Position(0,1)) && board.TestEmp(Position(0,2)) && board.TestEmp(Position(0,3))) // ліва рокіровка
+            push(Turn(Position(0,4),Position(0,2)));
+        if( board.RookingFlags().black_oo  && board.TestEmp(Position(0,5)) &&  board.TestEmp(Position(0,6))) // права рокіровка
+            push(Turn(Position(0,4),Position(0,6)));
     }
 }
-*/
 
 /**
  * @brief Генерує сухий набір ходів без врахування мату
@@ -224,12 +222,16 @@ std::vector<Turn> UnsafeGenerator(Board board , Color color)
             }
         }
     }
- //   rooking_find(board,inserter);
+    rooking_find(board,inserter);
     return turns;
 }
 
-std::vector<Turn> Board::GenerateTurns() const
+std::vector<Turn> Board::GenerateTurns() const{
+   return GenerateTurns(current_player_color_);
+}
+std::vector<Turn> Board::GenerateTurns(Color color) const
 {
+    /*
     auto atack_on = [](Turn turn , Position pos)
     {
         return turn.to() == pos;
@@ -260,14 +262,13 @@ std::vector<Turn> Board::GenerateTurns() const
         }
         return false;
     };
+    */
 
         auto turns = UnsafeGenerator(*this,current_player_color_);
 
-    auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
-    turns.erase(it,turns.end());
+   // auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
+    //turns.erase(it,turns.end());
 
     return turns;
 }
-
-
 

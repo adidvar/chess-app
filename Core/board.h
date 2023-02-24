@@ -20,13 +20,23 @@ class Board
 {
     static const char* kStartPosition_;
 
+    enum MatchState
+    {
+        kActiveNow, ///< Матч продовжується
+        kWhiteCheckmate, ///< Білі зловили мат
+        kBlackCheckmate, ///< Чорні зловили мат
+        kTie, ///< Нічия
+        kWhiteSurrendered, ///<Білі здалися
+        kBlackSurrendered ///<Чорні здалися
+    } state_;
+
     struct Cell
     {
         Figure type:4;
         Color color:4;
     };
 
-    struct RookingFlags
+    struct RookingFlags_t
     {
         bool white_ooo;
         bool white_oo;
@@ -36,14 +46,14 @@ class Board
 
     std::array<Cell,64> board_;
 
-    RookingFlags rooking_flags_;
+    RookingFlags_t rooking_flags_;
     /**
      * @brief Задає флаги можливості виконання рокірування
      */
     /**
      * @brief Рахує ходи без побиття
      */
-    size_t passive_move_counter_;
+    size_t passive_turn_counter_;
     /// номер ходу який буде відбуватся
     size_t turn_counter_;
     /**
@@ -60,6 +70,9 @@ class Board
 protected:
     void Set(Position position , Cell cell); ///< Записує фігуру
     void Swap(Position p1 , Position p2); ///< Змінює фігури місцями
+    void UpdateState();
+
+    std::vector<Turn> GenerateTurns(Color color) const;
 public:
     Board(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
 
@@ -68,9 +81,9 @@ public:
     Board( Board&&) noexcept = default;
 
     Color CurrentColor() const noexcept;
-    RookingFlags RookingFlags() const noexcept;
+    RookingFlags_t RookingFlags() const noexcept;
     size_t TurnCounter() const noexcept;
-    size_t PassiveMoveCounter() const noexcept;
+    size_t PassiveTurnCounter() const noexcept;
 
     bool Test(Figure figure , Position position) const noexcept; ///< Порівнює фігури в заданних координатах
     bool TestColor(Color color ,Position position) const noexcept; ///< Порівнює колір в заданих координатах
@@ -80,7 +93,12 @@ public:
     Figure GetFigure(Position position) const noexcept; ///< Повертає фігуру по координатах
     Color GetColor(Position position) const noexcept; ///< Повертає колір по координатах
 
-   // operator bool();
+    bool MateTest() const;
+    bool End() const;
+    bool Checkmate() const;
+    bool WhiteWin() const;
+    bool BlackWin() const;
+    bool Tie() const;
 
     std::vector<Turn> GenerateTurns() const;
     /**
@@ -96,7 +114,7 @@ public:
  * @param turn хід
  * @return flag правильності
  */
-    bool TurnTest(Turn turn) const;
+    bool TestTurn(Turn turn) const;
 
    // friend bool ExecuteTurn(Board &board, Turn turn);
 };

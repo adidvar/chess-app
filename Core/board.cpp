@@ -141,6 +141,16 @@ Board::Board(std::string_view fen)
     }
 }
 
+Color Board::CurrentColor() const noexcept
+{
+    return current_player_color_;
+}
+
+Board::RookingFlags_t Board::RookingFlags() const noexcept
+{
+    return rooking_flags_;
+}
+
 void Board::Set(Position position, Cell cell)
 {
     board_[position.Value()] = cell;
@@ -149,6 +159,11 @@ void Board::Set(Position position, Cell cell)
 void Board::Swap(Position p1, Position p2)
 {
     std::swap(board_[p1.Value()],board_[p2.Value()]);
+}
+
+void Board::UpdateState()
+{
+
 }
 
 bool Board::Test(Figure figure, Position position) const noexcept
@@ -166,6 +181,11 @@ bool Board::TestEmp(Position position) const noexcept
     return board_[position.Value()].type == Figure::kEmpty;
 }
 
+Board::Cell Board::GetCell(Position position) const noexcept
+{
+    return board_[position.Value()];
+}
+
 Figure Board::GetFigure(Position position) const noexcept
 {
     return board_[position.Value()].type;
@@ -175,6 +195,17 @@ Color Board::GetColor(Position position) const noexcept
 {
     return board_[position.Value()].color;
 }
+
+bool Board::End() const {return state_ != kActiveNow;}
+
+bool Board::Checkmate() const {return state_ == kWhiteCheckmate || state_ == kBlackCheckmate;}
+
+bool Board::WhiteWin() const {return state_ == kBlackSurrendered || state_ == kBlackCheckmate;}
+
+bool Board::BlackWin() const {return state_ == kWhiteSurrendered || state_ == kWhiteCheckmate;}
+
+bool Board::Tie() const {return state_ == kTie;}
+
 /*
 Board::operator bool() const noexcept
 {
