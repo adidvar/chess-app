@@ -22,7 +22,6 @@ const int8_t rook_offsety[4] = {0 , 1 , 0 , -1};
 const int8_t queen_king_offsetx[8] = {1 , -1 , -1 , 1 , 0 , 0 , 1 ,-1};
 const int8_t queen_king_offsety[8] = {1 , -1 , 1 , -1 , 1 , -1, 0 , 0};
 
-}
 
 /**
  * @brief Шукає ходи для фігур (король і кінь)
@@ -173,13 +172,96 @@ void rooking_find(const Board &board, std::back_insert_iterator<std::vector<Turn
     }
 }
 
+bool underatack_test(const Board &board ,Position position)
+{
+    auto color = board.CurrentColor();
+    auto op_color = (color == Color::kWhite ? Color::kBlack : Color::kWhite);
+    //knight
+    for(size_t i=0;i<8;i++)
+    {
+        uint8_t move_x = position.x() + knight_offsetx[i]; ///< задаємо x
+        uint8_t move_y = position.y() + knight_offsety[i]; ///< задаємо y
+
+        if(Position(move_x,move_y).Valid() && !board.TestEmp(Position(move_x,move_y))&& board.TestColor(op_color,Position(move_x,move_y)) && board.Test(Figure::kKnight,Position(move_x,move_y)) )
+            return true;
+    }
+    //king
+    for(size_t i=0;i<8;i++)
+    {
+        uint8_t move_x = position.x() + queen_king_offsetx[i]; ///< задаємо x
+        uint8_t move_y = position.y() + queen_king_offsety[i]; ///< задаємо y
+
+        if(Position(move_x,move_y).Valid() && !board.TestEmp(Position(move_x,move_y))&& board.TestColor(op_color,Position(move_x,move_y)) && board.Test(Figure::kKing,Position(move_x,move_y)) )
+            return true;
+    }
+    //diagonals
+    for(size_t i=0;i<4;i++){
+        uint8_t move_x = position.x();
+        uint8_t move_y = position.y();
+        while(true){
+            move_x += bishop_offsetx[i];
+            move_y += bishop_offsety[i];
+            if(!Position(move_x,move_y).Valid())
+                break;
+            if ((board.Test(Figure::kQueen,Position(move_x,move_y)) || board.Test(Figure::kBishop,Position(move_x,move_y))) &&
+                    board.TestColor(op_color,Position(move_x,move_y)))   ///< тест на стичку з ворогом
+                return true;
+            if(!board.TestEmp(Position(move_x,move_y)))
+                break;
+        }
+    }
+
+
+    //verticals and horizontals
+    for(size_t i=0;i<4;i++){
+        uint8_t move_x = position.x();
+        uint8_t move_y = position.y();
+        while(true){
+            move_x += rook_offsetx[i];
+            move_y += rook_offsety[i];
+            if(!Position(move_x,move_y).Valid())
+                break;
+            if ((board.Test(Figure::kQueen,Position(move_x,move_y)) || board.Test(Figure::kRook,Position(move_x,move_y))) &&
+                    board.TestColor(op_color,Position(move_x,move_y)))   ///< тест на стичку з ворогом
+                return true;
+            if(!board.TestEmp(Position(move_x,move_y)))
+                break;
+        }
+    }
+    //pawns
+    if(position.x() != 0 && position.x()!=7)
+        if(color == Color::kWhite)
+        {
+            if( position.y() != 0 &&
+                    board.TestColor(Color::kBlack,Position(position.x()-1,position.y()-1)) &&
+                    board.Test(Figure::kPawn,Position(position.x()-1,position.y()-1))) // ліва атака
+                return true;
+            if( position.y() != 7 &&
+                    board.TestColor(Color::kBlack,Position(position.x()-1,position.y()+1)) &&
+                    board.Test(Figure::kPawn,Position(position.x()-1,position.y()+1)) ) // ліва атака
+                return true;
+        } else
+        {
+            if( position.y() != 0 &&
+                    board.TestColor(Color::kWhite,Position(position.x()+1,position.y()-1)) &&
+                    board.Test(Figure::kPawn,Position(position.x()+1,position.y()-1))) // ліва атака
+                return true;
+            if( position.y() != 7 &&
+                    board.TestColor(Color::kWhite,Position(position.x()+1,position.y()+1)) &&
+                    board.Test(Figure::kPawn,Position(position.x()+1,position.y()+1)) ) // ліва атака
+                return true;
+        }
+    return false;
+}
+}
+
 /**
  * @brief Генерує сухий набір ходів без врахування мату
  * @param board Дошка
  * @param color Колір за який проводиться рахунок
  * @return Вектор ходів
  */
-std::vector<Turn> UnsafeGenerator(Board board , Color color)
+std::vector<Turn> Board::UnsafeTurns(Color color) const
 {
     std::vector<Turn> turns;turns.reserve(60);
     auto inserter = std::back_inserter(turns);
@@ -188,55 +270,82 @@ std::vector<Turn> UnsafeGenerator(Board board , Color color)
     {
         for(uint8_t y=0;y<8;y++){
 
-            if(board.TestEmp(Position(x,y)) || !board.TestColor(color,Position(x,y))) ///< Пропуск пустих і ворожих клітинок
+            if(TestEmp(Position(x,y)) || !TestColor(color,Position(x,y))) ///< Пропуск пустих і ворожих клітинок
                 continue;
 
-            switch (board.GetFigure(Position(x,y))) {
+            switch (GetFigure(Position(x,y))) {
 
             case Figure::kEmpty:
                 break;
 
             case Figure::kPawn:
-                position_find_pawn(board,inserter,x,y);
+                position_find_pawn(*this,inserter,x,y);
                 break;
 
             case Figure::kKnight:
-                position_find(board,inserter,x,y,knight_offsetx,knight_offsety,8);
+                position_find(*this,inserter,x,y,knight_offsetx,knight_offsety,8);
                 break;
 
             case Figure::kBishop:
-                position_find_rec(board,inserter,x,y,bishop_offsetx,bishop_offsety,4);
+                position_find_rec(*this,inserter,x,y,bishop_offsetx,bishop_offsety,4);
                 break;
 
             case Figure::kRook:
-                position_find_rec(board,inserter,x,y,rook_offsetx,rook_offsety,4);
+                position_find_rec(*this,inserter,x,y,rook_offsetx,rook_offsety,4);
                 break;
 
             case Figure::kQueen:
-                position_find_rec(board,inserter,x,y,queen_king_offsetx,queen_king_offsety,8);
+                position_find_rec(*this,inserter,x,y,queen_king_offsetx,queen_king_offsety,8);
                 break;
 
             case Figure::kKing:
-                position_find(board,inserter,x,y,queen_king_offsetx,queen_king_offsety,8);
+                position_find(*this,inserter,x,y,queen_king_offsetx,queen_king_offsety,8);
                 break;
             }
         }
     }
-    rooking_find(board,inserter);
+    rooking_find(*this,inserter);
     return turns;
 }
 
 std::vector<Turn> Board::GenerateTurns() const{
-   return GenerateTurns(current_player_color_);
+    return GenerateTurns(current_player_color_);
 }
 std::vector<Turn> Board::GenerateTurns(Color color) const
 {
     /*
     auto atack_on = [](Turn turn , Position pos)
     {
-        return turn.to() == pos;
+    return turn.to() == pos;
+    };
+    */
+    auto is_mat = [this](Turn turn) -> bool
+    {
+        auto find_king = [](Board b , Color color)
+        {
+            for(uint8_t i = 0 ; i < 64 ; i++)
+            {
+                if(b.GetFigure(i) == Figure::kKing && b.GetColor(i) == color)
+                    return Position(i);
+            }
+            return Position();
+        };
+        Board copy(*this);
+        copy.UnsafeExecuteTurn(turn);
+        copy.SkipMove();
+        auto king_pos = find_king(copy,CurrentColor());
+        return copy.UnderAtack(king_pos);
     };
 
+    auto turns = UnsafeTurns(current_player_color_);
+
+    auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
+    turns.erase(it,turns.end());
+
+    return turns;
+}
+
+bool Board::MateTest() const {
     auto find_king = [](Board b , Color color)
     {
         for(uint8_t i = 0 ; i < 64 ; i++)
@@ -246,29 +355,14 @@ std::vector<Turn> Board::GenerateTurns(Color color) const
         }
         return Position();
     };
+    auto king_pos = find_king(*this,CurrentColor());
+    return UnderAtack(king_pos);
 
-    auto is_mat = [this,atack_on , find_king](Turn turn)
-    {
-        auto board_copy = *this;
-        board_copy.ExecuteTurn(turn);
+}
 
-        auto turns = UnsafeGenerator(board_copy,(Color)!(int)current_player_color_);
-        auto king_pos = find_king(board_copy,current_player_color_);
 
-        for(auto &t : turns)
-        {
-            if(atack_on(t,king_pos))
-                return true;
-        }
-        return false;
-    };
-    */
-
-        auto turns = UnsafeGenerator(*this,current_player_color_);
-
-   // auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
-    //turns.erase(it,turns.end());
-
-    return turns;
+bool Board::UnderAtack(Position position) const
+{
+    return underatack_test(*this,position);
 }
 

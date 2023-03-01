@@ -2,11 +2,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-bool Board::ExecuteTurn(Turn turn)
+void Board::UnsafeExecuteTurn(Turn turn)
 {
-    if(TestTurn(turn)==false)
-        return false;
-
     Set(turn.to(),{GetFigure(turn.from()),GetColor(turn.from())});
     Set(turn.from(),{Figure::kEmpty,Color::kWhite});
     if(turn.figure() != Figure::kEmpty)
@@ -53,7 +50,15 @@ bool Board::ExecuteTurn(Turn turn)
         passive_turn_counter_++;
     else
         passive_turn_counter_ = 0;
-    current_player_color_ = current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite;
+    current_player_color_ = OpponentColor();
+}
+
+bool Board::ExecuteTurn(Turn turn)
+{
+    if(TestTurn(turn)==false)
+        return false;
+
+    UnsafeExecuteTurn(turn);
     return true;
 }
 
@@ -63,20 +68,4 @@ bool Board::TestTurn(Turn turn) const
       auto count = std::count(turns.begin(),turns.end(),turn);
 
       return count != 0;
-}
-bool Board::MateTest() const {
-    auto turns = GenerateTurns(current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite);
-
-    //find king
-    Position king_pos;
-    for(size_t i = 0 ; i<64;++i){
-        auto cell = GetCell(Position(i));
-        if(cell.color == current_player_color_ && cell.type == Figure::kKing)
-            king_pos = i;
-    }
-
-    for(auto turn : turns)
-        if(turn.to() == king_pos && !Test(Figure::kKing,turn.from()))
-            return true;
-    return false;
 }

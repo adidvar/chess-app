@@ -113,7 +113,7 @@ Board::Board(std::string_view fen)
         current_player_color_ = Color::kBlack;
     else
         throw std::runtime_error("fen invalid format [current_move]");
-    passive_move_counter_ = static_move;
+    passive_turn_counter_ = static_move;
     turn_counter_ = move_counter;
 
     rooking_flags_ = {false,false,false,false};
@@ -146,6 +146,11 @@ Color Board::CurrentColor() const noexcept
     return current_player_color_;
 }
 
+Color Board::OpponentColor() const noexcept
+{
+    return current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite;
+}
+
 Board::RookingFlags_t Board::RookingFlags() const noexcept
 {
     return rooking_flags_;
@@ -161,9 +166,15 @@ void Board::Swap(Position p1, Position p2)
     std::swap(board_[p1.Value()],board_[p2.Value()]);
 }
 
+
 void Board::UpdateState()
 {
 
+}
+
+void Board::SkipMove()
+{
+    current_player_color_ = OpponentColor();
 }
 
 bool Board::Test(Figure figure, Position position) const noexcept
@@ -200,9 +211,9 @@ bool Board::End() const {return state_ != kActiveNow;}
 
 bool Board::Checkmate() const {return state_ == kWhiteCheckmate || state_ == kBlackCheckmate;}
 
-bool Board::WhiteWin() const {return state_ == kBlackSurrendered || state_ == kBlackCheckmate;}
+bool Board::WhiteWin() const {return state_ == kBlackCheckmate;}
 
-bool Board::BlackWin() const {return state_ == kWhiteSurrendered || state_ == kWhiteCheckmate;}
+bool Board::BlackWin() const {return state_ == kWhiteCheckmate;}
 
 bool Board::Tie() const {return state_ == kTie;}
 

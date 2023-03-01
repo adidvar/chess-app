@@ -54,6 +54,7 @@ void ChessBoardView::paintEvent(QPaintEvent *event)
             if(view == Color::kBlack)position = 63-position;
 
             auto figure = board.GetFigure(position);
+            qp.drawText(y*w_tile+dx,x*h_tile+h_tile/2+dy,QString::number(position));
             if(figure == Figure::kEmpty)continue;
 
             auto color = board.GetColor(position);

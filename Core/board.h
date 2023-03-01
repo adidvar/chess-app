@@ -26,8 +26,6 @@ class Board
         kWhiteCheckmate, ///< Білі зловили мат
         kBlackCheckmate, ///< Чорні зловили мат
         kTie, ///< Нічия
-        kWhiteSurrendered, ///<Білі здалися
-        kBlackSurrendered ///<Чорні здалися
     } state_;
 
     struct Cell
@@ -71,7 +69,9 @@ protected:
     void Set(Position position , Cell cell); ///< Записує фігуру
     void Swap(Position p1 , Position p2); ///< Змінює фігури місцями
     void UpdateState();
+    void SkipMove();
 
+    std::vector<Turn> UnsafeTurns(Color color) const;
     std::vector<Turn> GenerateTurns(Color color) const;
 public:
     Board(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
@@ -81,6 +81,7 @@ public:
     Board( Board&&) noexcept = default;
 
     Color CurrentColor() const noexcept;
+    Color OpponentColor() const noexcept;
     RookingFlags_t RookingFlags() const noexcept;
     size_t TurnCounter() const noexcept;
     size_t PassiveTurnCounter() const noexcept;
@@ -93,6 +94,7 @@ public:
     Figure GetFigure(Position position) const noexcept; ///< Повертає фігуру по координатах
     Color GetColor(Position position) const noexcept; ///< Повертає колір по координатах
 
+    bool UnderAtack(Position position) const;
     bool MateTest() const;
     bool End() const;
     bool Checkmate() const;
@@ -108,6 +110,7 @@ public:
  * @return чи виконаний був хід
  */
     bool ExecuteTurn(Turn turn);
+    void UnsafeExecuteTurn(Turn turn);
     /**
  * @brief Перевіряє хід на правильність
  * @param board дошка

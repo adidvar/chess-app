@@ -3,9 +3,9 @@
 
 TEST_CASE( "Positions operators", "[positions]" )
 {
-   REQUIRE(Position(0,0) == true);
-   REQUIRE(Position(7,7) == true);
-   REQUIRE(Position(0) == true) ;
-   REQUIRE(Position(63) == true);
-   REQUIRE(Position(64) == false);
+   REQUIRE(Position(0,0).Valid() == true);
+   REQUIRE(Position(7,7).Valid() == true);
+   REQUIRE(Position(0).Valid() == true) ;
+   REQUIRE(Position(63).Valid() == true);
+   REQUIRE(Position(64).Valid() == false);
 }
