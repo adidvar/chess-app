@@ -8,7 +8,7 @@ GameUI::GameUI(QWidget *parent) :
 {
     ui->setupUi(this);
     SetTimers(300,300);
-    SetNames("Gitler","Stalin");
+    SetNames("Bandera","Melnic");
 }
 
 GameUI::~GameUI()

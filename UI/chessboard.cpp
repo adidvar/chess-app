@@ -20,6 +20,7 @@ ChessBoardView::ChessBoardView(QWidget *parent) : QWidget(parent), view(Color::k
     pack.figures_texture[1][Figure::kRook].load("textures/BRook.png");
     pack.figures_texture[1][Figure::kQueen].load("textures/BQueen.png");
     pack.figures_texture[1][Figure::kKing].load("textures/BKing.png");
+    Upload(Board("r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 3 2"));
 }
 
 void ChessBoardView::resizeEvent(QResizeEvent* event) {

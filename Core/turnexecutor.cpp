@@ -1,14 +1,28 @@
 #include "board.h"
 #include <algorithm>
 #include <stdexcept>
+#include <cmath>
 
 void Board::UnsafeExecuteTurn(Turn turn)
 {
+    if(last_pawn_move_.Valid() &&
+            Test(Figure::kPawn,turn.from()) &&
+            TestEmp(turn.to()) &&
+            abs(last_pawn_move_.x() - turn.to().x())==1 &&
+            last_pawn_move_.y() == turn.to().y())
+    {
+            Set(last_pawn_move_,Cell{Figure::kEmpty,Color::kWhite});
+    }
+    //pawn special moves
+    if(Test(Figure::kPawn,turn.from())&&abs(turn.from().x()-turn.to().x()) == 2)
+        last_pawn_move_ = turn.to();
+    else
+        last_pawn_move_ = Position();
+    //turn
     Set(turn.to(),{GetFigure(turn.from()),GetColor(turn.from())});
     Set(turn.from(),{Figure::kEmpty,Color::kWhite});
     if(turn.figure() != Figure::kEmpty)
         Set(turn.to(),{turn.figure(),GetColor(turn.from())});
-
     //rooking
     auto flags = RookingFlags();
     rooking_flags_ = {false,false,false,false};
@@ -39,11 +53,6 @@ void Board::UnsafeExecuteTurn(Turn turn)
         rooking_flags_.black_oo = false;
         rooking_flags_.black_ooo = false;
     }
-    //pawn special moves
-    if(Test(Figure::kPawn,turn.from())&&abs(turn.from().x()-turn.to().x()) == 2)
-        last_pawn_move_ = turn.to();
-    else
-        last_pawn_move_ = Position();
 
     turn_counter_++;
     if(TestEmp(turn.to()))

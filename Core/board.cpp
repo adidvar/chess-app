@@ -107,6 +107,9 @@ Board::Board(std::string_view fen)
     size_t static_move, move_counter;
     ss >> current_move >> rooking >> pawn >> static_move >> move_counter;
 
+    if(pawn.size()==2)
+        last_pawn_move_ = Position('8'-pawn[1], pawn[0]-'a');
+
     if(current_move.front() == 'w')
         current_player_color_ = Color::kWhite;
     else if(current_move == "b")
@@ -115,6 +118,11 @@ Board::Board(std::string_view fen)
         throw std::runtime_error("fen invalid format [current_move]");
     passive_turn_counter_ = static_move;
     turn_counter_ = move_counter;
+
+    if(current_player_color_ == Color::kWhite)
+        last_pawn_move_ = Position(last_pawn_move_.x()+1,last_pawn_move_.y());
+    else
+        last_pawn_move_ = Position(last_pawn_move_.x()-1,last_pawn_move_.y());
 
     rooking_flags_ = {false,false,false,false};
 

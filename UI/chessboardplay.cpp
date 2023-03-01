@@ -20,8 +20,8 @@ void ChessBoardPlay::paintEvent(QPaintEvent *event)
 
     for(auto && turn : turns_)
     {
-       // if(turn.from() == current_figure_)
-        qp.drawEllipse(QRect(dx+(0.15+turn.to().y())*w_tile,dy+(0.15+turn.to().x())*h_tile,0.7*w_tile,0.7*h_tile));
+        if(turn.from() == current_figure_)
+            qp.drawEllipse(QRect(dx+(0.15+turn.to().y())*w_tile,dy+(0.15+turn.to().x())*h_tile,0.7*w_tile,0.7*h_tile));
     }
     /*
     for(size_t i = 0 ; i < 64 ; i++)

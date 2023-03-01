@@ -172,6 +172,34 @@ void rooking_find(const Board &board, std::back_insert_iterator<std::vector<Turn
     }
 }
 
+void empasant_find(const Board &board,Position last_pawn_move, std::back_insert_iterator<std::vector<Turn>> &iterator)
+{
+    auto push = [&iterator](Turn &&turn) ///< лямбда для доповнення списку
+    {
+        *iterator = turn;
+        ++iterator;
+    };
+    if(last_pawn_move.Valid())
+    {
+        if(board.CurrentColor() == Color::kWhite)
+        {
+            if( last_pawn_move.y() != 0 && board.TestColor(Color::kWhite,Position(last_pawn_move.x(),last_pawn_move.y()-1)) &&
+                    board.Test(Figure::kPawn,Position(last_pawn_move.x(),last_pawn_move.y()-1))) // ліва атака
+                push(Turn({Position(last_pawn_move.x(),last_pawn_move.y()-1) , Position(last_pawn_move.x()-1,last_pawn_move.y())}));
+            if( last_pawn_move.y() != 7 && board.TestColor(Color::kWhite,Position(last_pawn_move.x(),last_pawn_move.y()+1)) &&
+                    board.Test(Figure::kPawn,Position(last_pawn_move.x(),last_pawn_move.y()+1))) // ліва атака
+                push(Turn({Position(last_pawn_move.x(),last_pawn_move.y()+1) , Position(last_pawn_move.x()-1,last_pawn_move.y())}));
+        } else {
+            if( last_pawn_move.y() != 0 && board.TestColor(Color::kBlack,Position(last_pawn_move.x(),last_pawn_move.y()-1)) &&
+                    board.Test(Figure::kPawn,Position(last_pawn_move.x(),last_pawn_move.y()-1))) // ліва атака
+                push(Turn({Position(last_pawn_move.x(),last_pawn_move.y()-1) , Position(last_pawn_move.x()+1,last_pawn_move.y())}));
+            if( last_pawn_move.y() != 7 && board.TestColor(Color::kBlack,Position(last_pawn_move.x(),last_pawn_move.y()+1)) &&
+                    board.Test(Figure::kPawn,Position(last_pawn_move.x(),last_pawn_move.y()+1))) // ліва атака
+                push(Turn({Position(last_pawn_move.x(),last_pawn_move.y()+1) , Position(last_pawn_move.x()+1,last_pawn_move.y())}));
+        }
+    }
+}
+/*
 bool underatack_test(const Board &board ,Position position)
 {
     auto color = board.CurrentColor();
@@ -253,6 +281,7 @@ bool underatack_test(const Board &board ,Position position)
         }
     return false;
 }
+*/
 }
 
 /**
@@ -305,6 +334,8 @@ std::vector<Turn> Board::UnsafeTurns(Color color) const
         }
     }
     rooking_find(*this,inserter);
+    empasant_find(*this,last_pawn_move_,inserter);
+
     return turns;
 }
 
@@ -332,14 +363,31 @@ std::vector<Turn> Board::GenerateTurns(Color color) const
         };
         Board copy(*this);
         copy.UnsafeExecuteTurn(turn);
-        copy.SkipMove();
+        auto turns = copy.UnsafeTurns(copy.CurrentColor());
         auto king_pos = find_king(copy,CurrentColor());
-        return copy.UnderAtack(king_pos);
+        bool flag = false;
+        for(auto turn : turns){
+            if(turn.to() == king_pos){
+                flag = true;
+                break;
+            }
+        }
+        return flag;
+    };
+    auto delete_mate_add = [this](Turn turn) {
+        if(Test(Figure::kKing,turn.from()) && MateTest() &&
+          ( abs(turn.from().y() - turn.to().y()) == 2) )
+        {
+            return true;
+        }
+        return false;
     };
 
     auto turns = UnsafeTurns(current_player_color_);
 
     auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
+    turns.erase(it,turns.end());
+    it = std::remove_if(turns.begin(),turns.end(),delete_mate_add);
     turns.erase(it,turns.end());
 
     return turns;
@@ -357,12 +405,17 @@ bool Board::MateTest() const {
     };
     auto king_pos = find_king(*this,CurrentColor());
     return UnderAtack(king_pos);
-
 }
 
 
 bool Board::UnderAtack(Position position) const
 {
-    return underatack_test(*this,position);
+    auto turns = UnsafeTurns(OpponentColor());
+    for(auto turn : turns){
+        if(turn.to() == position){
+            return true;
+        }
+    }
+    return false;
 }
 
