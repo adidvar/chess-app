@@ -40,14 +40,14 @@ Figure Turn::figure() const noexcept
 
 std::string Turn::ToChessFormat() const
 {
-    if(from_.Valid() || to_.Valid())
+    if(!from_.Valid() || !to_.Valid())
     {
          return "NULL TURN";
     }
-    else if(figure_ != Figure::kEmpty)
+    else if(figure_ == Figure::kEmpty)
     {
         std::stringstream ss;
-        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x()) << '-'
+        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x())
            << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x());
         return ss.str();
     }
@@ -56,7 +56,7 @@ std::string Turn::ToChessFormat() const
         char codes[7] = {' ','p','k','b','r','q',' '} ;
 
         std::stringstream ss;
-        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x()) << '-'
+        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x())
            << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x())
            << codes[(size_t)figure_];
         return ss.str();

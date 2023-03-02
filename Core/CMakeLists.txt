@@ -16,3 +16,4 @@ add_library(ChessCore ${files})
 target_include_directories(ChessCore PUBLIC  .)
 
 add_subdirectory("Tests")
+add_subdirectory("BoardDebugger")

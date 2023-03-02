@@ -28,6 +28,19 @@ void ChessBoardPlay::paintEvent(QPaintEvent *event)
         if(board.UnderAtack(Position(i)))
             qp.drawEllipse(QRect(dx+(0.15+Position(i).y())*w_tile,dy+(0.15+Position(i).x())*h_tile,0.7*w_tile,0.7*h_tile));
             */
+    for (uint8_t x = 0; x < 8; x++)
+    {
+        for (uint8_t y = 0; y < 8; y++)
+        {
+            size_t counter = 0;
+            for(Turn turn : turns_){
+                if(turn.from() == Position(x,y)){
+                    counter++;
+                }
+            }
+            qp.drawText(y*w_tile+dx,x*h_tile+h_tile/4+dy,QString::number(counter));
+        }
+    }
 }
 
 void ChessBoardPlay::mouseReleaseEvent(QMouseEvent *event)

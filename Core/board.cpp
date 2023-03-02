@@ -1,6 +1,7 @@
 #include "board.h"
 #include <stdexcept>
 #include <sstream>
+#include <cassert>
 
 const char* Board::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -166,11 +167,14 @@ Board::RookingFlags_t Board::RookingFlags() const noexcept
 
 void Board::Set(Position position, Cell cell)
 {
+    assert(position.Valid());
     board_[position.Value()] = cell;
 }
 
 void Board::Swap(Position p1, Position p2)
 {
+    assert(p1.Valid());
+    assert(p2.Valid());
     std::swap(board_[p1.Value()],board_[p2.Value()]);
 }
 
@@ -187,31 +191,37 @@ void Board::SkipMove()
 
 bool Board::Test(Figure figure, Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()].type == figure;
 }
 
 bool Board::TestColor(Color color, Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()].color == color;
 }
 
 bool Board::TestEmp(Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()].type == Figure::kEmpty;
 }
 
 Board::Cell Board::GetCell(Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()];
 }
 
 Figure Board::GetFigure(Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()].type;
 }
 
 Color Board::GetColor(Position position) const noexcept
 {
+    assert(position.Valid());
     return board_[position.Value()].color;
 }
 

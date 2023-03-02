@@ -383,11 +383,31 @@ std::vector<Turn> Board::GenerateTurns(Color color) const
         return false;
     };
 
+    auto rooking_lock = [this](Turn turn) {
+        if(Test(Figure::kKing,turn.from()) &&
+          ( turn.from().y() != 0 && turn.from().y() - turn.to().y() == 2) &&
+               UnderAtack(Position(turn.from().x(),turn.from().y()-1))
+                )
+        {
+            return true;
+        }
+        if(Test(Figure::kKing,turn.from()) &&
+          ( turn.from().y() != 7 && turn.from().y() - turn.to().y() == -2) &&
+               UnderAtack(Position(turn.from().x(),turn.from().y()+1))
+                )
+        {
+            return true;
+        }
+        return false;
+    };
+
     auto turns = UnsafeTurns(current_player_color_);
 
     auto it = std::remove_if(turns.begin(),turns.end(),is_mat);
     turns.erase(it,turns.end());
     it = std::remove_if(turns.begin(),turns.end(),delete_mate_add);
+    turns.erase(it,turns.end());
+    it = std::remove_if(turns.begin(),turns.end(),rooking_lock);
     turns.erase(it,turns.end());
 
     return turns;
@@ -410,6 +430,8 @@ bool Board::MateTest() const {
 
 bool Board::UnderAtack(Position position) const
 {
+    assert(position.Valid());
+    assert(!TestEmp(position));
     auto turns = UnsafeTurns(OpponentColor());
     for(auto turn : turns){
         if(turn.to() == position){
