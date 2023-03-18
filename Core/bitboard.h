@@ -1,5 +1,5 @@
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef BITBOARD_H
+#define BITBOARD_H
 #include <cinttypes>
 
 #include <array>
@@ -16,23 +16,20 @@
  * Клас зберігає в собі шахматну доску
  * також містить інформацію про рокіровки і дані для побиття на проході
  */
-class Board
+class BitBoard
 {
     static const char* kStartPosition_;
 
-    enum MatchState
-    {
-        kActiveNow, ///< Матч продовжується
-        kWhiteCheckmate, ///< Білі зловили мат
-        kBlackCheckmate, ///< Чорні зловили мат
-        kTie, ///< Нічия
-    } state_;
+    using bitboard_t = uint64_t;
 
     struct Cell
     {
         Figure type;
         Color color;
     };
+
+    bitboard_t board_[2][7];
+    bitboard_t all_[2];
 
     struct RookingFlags_t
     {
@@ -42,8 +39,6 @@ class Board
         bool black_oo;
     };
 
-    std::array<Cell,64> board_;
-
     RookingFlags_t rooking_flags_;
     /**
      * @brief Задає флаги можливості виконання рокірування
@@ -51,9 +46,9 @@ class Board
     /**
      * @brief Рахує ходи без побиття
      */
-    size_t passive_turn_counter_;
+    uint16_t passive_turn_counter_;
     /// номер ходу який буде відбуватся
-    size_t turn_counter_;
+    uint16_t turn_counter_;
     /**
      * @brief Задає колір гравця який зарас ходить
      */
@@ -66,7 +61,7 @@ class Board
     Position last_pawn_move_;
 
 protected:
-    void Set(Position position , Cell cell); ///< Записує фігуру
+    void Set(Position position, Cell cell); ///< Записує фігуру
     void Swap(Position p1 , Position p2); ///< Змінює фігури місцями
     void UpdateState();
     void SkipMove();
@@ -74,28 +69,25 @@ protected:
     std::vector<Turn> UnsafeTurns(Color color) const;
     std::vector<Turn> GenerateTurns(Color color) const;
 public:
-    Board(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
+    BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
 
-    std::string Fen() const;
-
-    Board& operator =(const Board& b) noexcept = default; ///<Оператор присвоєння
-    Board(const Board&) noexcept = default;
-    Board( Board&&) noexcept = default;
+    BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
+    BitBoard(const BitBoard&) noexcept = default;
+    BitBoard( BitBoard&&) noexcept = default;
 
     Color CurrentColor() const noexcept;
     Color OpponentColor() const noexcept;
     RookingFlags_t RookingFlags() const noexcept;
     size_t TurnCounter() const noexcept;
     size_t PassiveTurnCounter() const noexcept;
-    Position LastPawnMove() const noexcept;
 
     bool Test(Figure figure , Position position) const noexcept; ///< Порівнює фігури в заданних координатах
     bool TestColor(Color color ,Position position) const noexcept; ///< Порівнює колір в заданих координатах
     bool TestEmp(Position position) const noexcept; ///< Перевіряє клітинку на пустоту
 
-    Cell GetCell(Position position) const noexcept; ///< Повертає фігуру по координатах
     Figure GetFigure(Position position) const noexcept; ///< Повертає фігуру по координатах
     Color GetColor(Position position) const noexcept; ///< Повертає колір по координатах
+    Cell GetCell(Position position) const noexcept;
 
     bool UnderAtack(Position position) const;
     bool MateTest() const;
@@ -106,7 +98,6 @@ public:
     bool Tie() const;
 
     std::vector<Turn> GenerateTurns() const;
-    std::vector<Board> GenerateSubBoards() const;
     /**
  * @brief Виконує хід на дошці
  * @param board дошка
@@ -123,7 +114,7 @@ public:
  */
     bool TestTurn(Turn turn) const;
 
-   // friend bool ExecuteTurn(Board &board, Turn turn);
+   // friend bool ExecuteTurn(BitBoard &board, Turn turn);
 };
 
 #endif // BOARD_H

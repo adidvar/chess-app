@@ -8,6 +8,16 @@
 #include <QMouseEvent>
 #include <turn.h>
 
+namespace std {
+  template <> struct hash<Figure>
+  {
+    size_t operator()(const Figure & x) const
+    {
+      return hash<uint8_t>()(x);
+    }
+  };
+}
+
 struct texture_pack
 {
     std::unordered_map<Figure,QImage> figures_texture[2];

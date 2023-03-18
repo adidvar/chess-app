@@ -1,15 +1,12 @@
-#include "board.h"
+#include "bitboard.h"
 #include <stdexcept>
 #include <sstream>
 #include <cassert>
 
-const char* Board::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-Board::Board(std::string_view fen)
+BitBoard::BitBoard(std::string_view fen)
 {
-    for(size_t i = 0 ; i < 64 ; i++)
-        Set(i,{Figure::kEmpty,Color::kWhite});
-
     size_t i = 0;
     size_t position = 0;
     while(i < fen.size() && position != 64 && fen[i]!=' ')
@@ -95,11 +92,11 @@ Board::Board(std::string_view fen)
         default:
             throw std::runtime_error("fen invalid format [board]");
             break;
-       }
+        }
         ++i;
     }
     if(position!=64)
-         throw std::runtime_error("fen invalid format [board]");
+        throw std::runtime_error("fen invalid format [board]");
 
     std::stringstream ss;
     ss << fen.substr(i+1);
@@ -148,195 +145,104 @@ Board::Board(std::string_view fen)
             throw std::runtime_error("fen invalid format [rooking]");
         }
     }
+    all_[0] = 0;
+    all_[1] = 0;
+    for(size_t i = 1 ; i < 7 ; i++){
+        all_[0] |= board_[Color::kWhite][i];
+        all_[1] |= board_[Color::kBlack][i];
+    }
+    board_[0][0] = ~(all_[0] | all_[1]);
+    board_[1][0] = ~(all_[0] | all_[1]);
 }
 
-std::string Board::Fen() const
-{
-    const char *symbols[2] = {
-        " PNBRQK",
-        " pnbrqk"
-    };
-    char buffer[128] = {0};
-    size_t position = 0;
-    size_t bypass_counter = 0;
-    for(size_t i = 0 ; i < 64; i++){
-        if(i%8==0 && i!=0)
-        {
-            if(bypass_counter!=0)
-            {
-                buffer[position] = '0'+bypass_counter;
-                position++;
-                bypass_counter=0;
-            }
-
-            buffer[position] = '/';
-            position++;
-
-        }
-        if(TestEmp(i))
-            bypass_counter++;
-        else
-        {
-            if(bypass_counter!=0)
-            {
-                buffer[position] = '0'+bypass_counter;
-                position++;
-                bypass_counter=0;
-            }
-            buffer[position] = symbols[GetColor(i)][GetFigure(i)];
-            position++;
-        }
-    }
-
-    if(bypass_counter!=0)
-    {
-        buffer[position] = '0'+bypass_counter;
-        position++;
-        bypass_counter=0;
-    }
-
-    std::string string(buffer);
-    string += ' ';
-    string.push_back( CurrentColor() == Color::kWhite ? 'w' : 'b');
-    string += ' ';
-    auto rooking_flags = RookingFlags();
-    if(rooking_flags.white_oo == false &&
-            rooking_flags.white_ooo == false &&
-            rooking_flags.black_oo == false &&
-            rooking_flags.black_ooo == false)
-        string.push_back('-');
-    else{
-    if(rooking_flags.white_oo)
-        string +='K';
-    if(rooking_flags.white_ooo)
-        string +='Q';
-    if(rooking_flags.black_oo)
-        string +='k';
-    if(rooking_flags.black_ooo)
-        string +='q';
-    }
-    string += ' ';
-
-    if(LastPawnMove().Valid())
-        string += LastPawnMove().ToString();
-    else
-        string += '-';
-    string += ' ';
-    string += std::to_string(PassiveTurnCounter());
-    string += ' ';
-    string += std::to_string(TurnCounter());
-
-
-    return string;
-}
-
-Color Board::CurrentColor() const noexcept
+Color BitBoard::CurrentColor() const noexcept
 {
     return current_player_color_;
 }
 
-Color Board::OpponentColor() const noexcept
+Color BitBoard::OpponentColor() const noexcept
 {
     return current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite;
 }
 
-Board::RookingFlags_t Board::RookingFlags() const noexcept
+void BitBoard::Set(Position position, Cell cell) ///< Записує фігуру
 {
-    return rooking_flags_;
+    for(size_t i = 1 ; i < 7 ; i++)
+    {
+        board_[0][i] &= ~((uint64_t)1<<position.Value());
+        board_[1][i] &= ~((uint64_t)1<<position.Value());
+    }
+
+    board_[cell.color][cell.type] |= ((uint64_t)1<<position.Value());
+
+    all_[0] = 0;
+    all_[1] = 0;
+    for(size_t i = 1 ; i < 7 ; i++){
+        all_[0] |= board_[Color::kWhite][i];
+        all_[1] |= board_[Color::kBlack][i];
+    }
+    board_[1][0] = board_[0][0] = ~(all_[0] | all_[1]);
 }
 
-size_t Board::TurnCounter() const noexcept
-{
-    return turn_counter_;
-}
-
-size_t Board::PassiveTurnCounter() const noexcept
-{
-    return passive_turn_counter_;
-}
-
-Position Board::LastPawnMove() const noexcept
-{
-    if(last_pawn_move_.Valid())
-        if(current_player_color_ == Color::kWhite)
-            return Position(last_pawn_move_.x()-1,last_pawn_move_.y());
-        else
-            return Position(last_pawn_move_.x()+1,last_pawn_move_.y());
-    else
-        return Position();
-}
-
-void Board::Set(Position position, Cell cell)
-{
-    assert(position.Valid());
-    board_[position.Value()] = cell;
-}
-
-void Board::Swap(Position p1, Position p2)
+void BitBoard::Swap(Position p1, Position p2)
 {
     assert(p1.Valid());
     assert(p2.Valid());
-    std::swap(board_[p1.Value()],board_[p2.Value()]);
+    auto cell = GetCell(p1);
+    Set(p1,GetCell(p2));
+    Set(p2,cell);
 }
 
-void Board::UpdateState()
+void BitBoard::UpdateState()
 {
 
 }
 
-void Board::SkipMove()
+void BitBoard::SkipMove()
 {
     current_player_color_ = OpponentColor();
 }
-
-bool Board::Test(Figure figure, Position position) const noexcept
+bool BitBoard::Test(Figure figure, Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()].type == figure;
+    return ((board_[Color::kWhite][figure]  | (board_[Color::kBlack][figure])) >> position.Value()) & 1;
 }
 
-bool Board::TestColor(Color color, Position position) const noexcept
+bool BitBoard::TestColor(Color color, Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()].color == color;
+    return (all_[color] >> position.Value()) & 1;
 }
 
-bool Board::TestEmp(Position position) const noexcept
+bool BitBoard::TestEmp(Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()].type == Figure::kEmpty;
+    return ( board_[0][0] >> position.Value()) & 1;
 }
-
-Board::Cell Board::GetCell(Position position) const noexcept
+BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()];
+    return {GetFigure(position),GetColor(position)};
 }
 
-Figure Board::GetFigure(Position position) const noexcept
+Figure BitBoard::GetFigure(Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()].type;
+
+    for(size_t i =0 ; i < 7 ; i++){
+       if( Test(i,position) )
+           return (i);
+    }
 }
 
-Color Board::GetColor(Position position) const noexcept
+Color BitBoard::GetColor(Position position) const noexcept
 {
     assert(position.Valid());
-    return board_[position.Value()].color;
+    return TestColor(Color::kBlack,position);
 }
-
-bool Board::End() const {return state_ != kActiveNow;}
-
-bool Board::Checkmate() const {return state_ == kWhiteCheckmate || state_ == kBlackCheckmate;}
-
-bool Board::WhiteWin() const {return state_ == kBlackCheckmate;}
-
-bool Board::BlackWin() const {return state_ == kWhiteCheckmate;}
-
-bool Board::Tie() const {return state_ == kTie;}
 
 /*
-Board::operator bool() const noexcept
+BitBoard::operator bool() const noexcept
 {
     return TurnGenerate(*this,current_color).size() != 0;
 }

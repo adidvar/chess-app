@@ -199,89 +199,6 @@ void empasant_find(const Board &board,Position last_pawn_move, std::back_insert_
         }
     }
 }
-/*
-bool underatack_test(const Board &board ,Position position)
-{
-    auto color = board.CurrentColor();
-    auto op_color = (color == Color::kWhite ? Color::kBlack : Color::kWhite);
-    //knight
-    for(size_t i=0;i<8;i++)
-    {
-        uint8_t move_x = position.x() + knight_offsetx[i]; ///< задаємо x
-        uint8_t move_y = position.y() + knight_offsety[i]; ///< задаємо y
-
-        if(Position(move_x,move_y).Valid() && !board.TestEmp(Position(move_x,move_y))&& board.TestColor(op_color,Position(move_x,move_y)) && board.Test(Figure::kKnight,Position(move_x,move_y)) )
-            return true;
-    }
-    //king
-    for(size_t i=0;i<8;i++)
-    {
-        uint8_t move_x = position.x() + queen_king_offsetx[i]; ///< задаємо x
-        uint8_t move_y = position.y() + queen_king_offsety[i]; ///< задаємо y
-
-        if(Position(move_x,move_y).Valid() && !board.TestEmp(Position(move_x,move_y))&& board.TestColor(op_color,Position(move_x,move_y)) && board.Test(Figure::kKing,Position(move_x,move_y)) )
-            return true;
-    }
-    //diagonals
-    for(size_t i=0;i<4;i++){
-        uint8_t move_x = position.x();
-        uint8_t move_y = position.y();
-        while(true){
-            move_x += bishop_offsetx[i];
-            move_y += bishop_offsety[i];
-            if(!Position(move_x,move_y).Valid())
-                break;
-            if ((board.Test(Figure::kQueen,Position(move_x,move_y)) || board.Test(Figure::kBishop,Position(move_x,move_y))) &&
-                    board.TestColor(op_color,Position(move_x,move_y)))   ///< тест на стичку з ворогом
-                return true;
-            if(!board.TestEmp(Position(move_x,move_y)))
-                break;
-        }
-    }
-
-
-    //verticals and horizontals
-    for(size_t i=0;i<4;i++){
-        uint8_t move_x = position.x();
-        uint8_t move_y = position.y();
-        while(true){
-            move_x += rook_offsetx[i];
-            move_y += rook_offsety[i];
-            if(!Position(move_x,move_y).Valid())
-                break;
-            if ((board.Test(Figure::kQueen,Position(move_x,move_y)) || board.Test(Figure::kRook,Position(move_x,move_y))) &&
-                    board.TestColor(op_color,Position(move_x,move_y)))   ///< тест на стичку з ворогом
-                return true;
-            if(!board.TestEmp(Position(move_x,move_y)))
-                break;
-        }
-    }
-    //pawns
-    if(position.x() != 0 && position.x()!=7)
-        if(color == Color::kWhite)
-        {
-            if( position.y() != 0 &&
-                    board.TestColor(Color::kBlack,Position(position.x()-1,position.y()-1)) &&
-                    board.Test(Figure::kPawn,Position(position.x()-1,position.y()-1))) // ліва атака
-                return true;
-            if( position.y() != 7 &&
-                    board.TestColor(Color::kBlack,Position(position.x()-1,position.y()+1)) &&
-                    board.Test(Figure::kPawn,Position(position.x()-1,position.y()+1)) ) // ліва атака
-                return true;
-        } else
-        {
-            if( position.y() != 0 &&
-                    board.TestColor(Color::kWhite,Position(position.x()+1,position.y()-1)) &&
-                    board.Test(Figure::kPawn,Position(position.x()+1,position.y()-1))) // ліва атака
-                return true;
-            if( position.y() != 7 &&
-                    board.TestColor(Color::kWhite,Position(position.x()+1,position.y()+1)) &&
-                    board.Test(Figure::kPawn,Position(position.x()+1,position.y()+1)) ) // ліва атака
-                return true;
-        }
-    return false;
-}
-*/
 }
 
 /**
@@ -342,6 +259,19 @@ std::vector<Turn> Board::UnsafeTurns(Color color) const
 std::vector<Turn> Board::GenerateTurns() const{
     return GenerateTurns(current_player_color_);
 }
+
+std::vector<Board> Board::GenerateSubBoards() const
+{
+    std::vector<Board> boards;
+    auto turns = GenerateTurns();
+    for(auto turn : turns)
+    {
+        Board board(*this);
+        board.ExecuteTurn(turn);
+        boards.push_back(board);
+    }
+    return boards;
+}
 std::vector<Turn> Board::GenerateTurns(Color color) const
 {
     /*
@@ -376,7 +306,7 @@ std::vector<Turn> Board::GenerateTurns(Color color) const
     };
     auto delete_mate_add = [this](Turn turn) {
         if(Test(Figure::kKing,turn.from()) && MateTest() &&
-          ( abs(turn.from().y() - turn.to().y()) == 2) )
+                ( abs(turn.from().y() - turn.to().y()) == 2) )
         {
             return true;
         }
@@ -385,15 +315,15 @@ std::vector<Turn> Board::GenerateTurns(Color color) const
 
     auto rooking_lock = [this](Turn turn) {
         if(Test(Figure::kKing,turn.from()) &&
-          ( turn.from().y() != 0 && turn.from().y() - turn.to().y() == 2) &&
-               UnderAtack(Position(turn.from().x(),turn.from().y()-1))
+                ( turn.from().y() != 0 && turn.from().y() - turn.to().y() == 2) &&
+                UnderAtack(Position(turn.from().x(),turn.from().y()-1))
                 )
         {
             return true;
         }
         if(Test(Figure::kKing,turn.from()) &&
-          ( turn.from().y() != 7 && turn.from().y() - turn.to().y() == -2) &&
-               UnderAtack(Position(turn.from().x(),turn.from().y()+1))
+                ( turn.from().y() != 7 && turn.from().y() - turn.to().y() == -2) &&
+                UnderAtack(Position(turn.from().x(),turn.from().y()+1))
                 )
         {
             return true;

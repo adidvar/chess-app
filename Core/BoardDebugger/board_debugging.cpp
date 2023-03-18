@@ -31,9 +31,11 @@ int main()
     using namespace std;
     std::string fen;
     std::getline(std::cin,fen);
+    Board board(fen);
+    std::cout << board.Fen();
+    /*
     size_t depth;
     cin >> depth;
-    Board board(fen);
     SeeBoard(board,depth);
     while(true){
         int move;
@@ -43,5 +45,6 @@ int main()
         depth--;
     SeeBoard(board,depth);
     }
+    */
     return 0;
 }
