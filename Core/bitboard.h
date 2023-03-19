@@ -66,10 +66,12 @@ protected:
     void UpdateState();
     void SkipMove();
 
-    std::vector<Turn> UnsafeTurns(Color color) const;
-    std::vector<Turn> GenerateTurns(Color color) const;
+    template<bool color>
+    std::vector<BitBoard> GenerateSubBoardsTemplate() const;
 public:
     BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
+    std::string Fen() const;
+    void PrintBoard() const;
 
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
     BitBoard(const BitBoard&) noexcept = default;
@@ -98,6 +100,7 @@ public:
     bool Tie() const;
 
     std::vector<Turn> GenerateTurns() const;
+    std::vector<BitBoard> GenerateSubBoards() const;
     /**
  * @brief Виконує хід на дошці
  * @param board дошка
