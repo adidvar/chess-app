@@ -45,10 +45,45 @@ void BenchMaarkBoards(){
 
 }
 
+uint64_t log2_64(uint64_t value)
+{
+    for(size_t i = 0 ; i < 64 ; i++){
+        if((value >> i) == 1)
+            return i;
+    }
+}
+
+constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
+constexpr static const uint64_t row_h = row_a << 7;
+
+constexpr static const uint64_t line_8 = (1) + (1<<1) + (1<<2) + (1<<3) + (1LL<<4) + (1LL<<5) + (1LL<<6) + (1LL<<7);
+constexpr static const uint64_t line_1 = line_8 << 56;
+
+constexpr static const uint64_t window = ~(row_a|row_h|line_1|line_8);
+
+uint64_t attack_masks[4][64];
+// 4 - type of attack 1-horizontal 2-vertical 3 4 - bishops
+// 64 - position
+uint64_t attack_after[4][64][32];
+//4- attack type
+//64 - position
+//32 - mask of borders
+
+uint64_t attack_map(uint64_t figure, uint64_t borders, uint64_t attack_index)
+{
+    figure = log2_64(figure);
+
+    uint64_t attack_mask = attack_masks[attack_index][figure];
+    uint64_t real_borders = borders & window & attack_masks[attack_index][figure];
+    //magic trasform of real borders
+
+    return attack_after[attack_index][figure][real_borders];
+}
+
 
 int main()
 {
-    BenchMaarkBoards();
+    //BenchMaarkBoards();
     using namespace std;
     /*
     std::string fen;
@@ -61,11 +96,17 @@ int main()
         board.PrintBoard();
     }
     */
-/*
+    cout << log2_64(64);
     uint64_t mask = 1 + (1<<9) + (1<<18) + (1<<27) + (1LL<<36);
+    uint64_t data = 1 + (1<<9) + (1<<18);
     PrintBoard(mask);
+    PrintBoard(data);
     auto magic = FindMagic(mask);
     std::cout << magic.first << ' ' << magic.second << std::endl;
+    magic = FindMagicRev(mask);
+    std::cout << magic.first << ' ' << magic.second << std::endl;
+
+/*
     while(true){
         size_t num;
         std::cin >> num;
