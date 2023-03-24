@@ -239,12 +239,6 @@ std::string BitBoard::Fen() const
     return string;
 }
 
-void PrintBoard(uint64_t board);
-void BitBoard::PrintBoard() const
-{
-    ::PrintBoard(board_[Color::kBlack][Figure::kPawn]);
-}
-
 Color BitBoard::CurrentColor() const noexcept
 {
     return current_player_color_;

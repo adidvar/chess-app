@@ -3,7 +3,7 @@
 #include <chrono>
 #include <board.h>
 #include <bitboard.h>
-#include <magicboardtools.h>
+#include "magic.h"
 
 template<class Board>
 static size_t MovesCounter(Board board,size_t depth){
@@ -28,7 +28,6 @@ void SeeBoard(Board board , size_t depth)
     cout << MovesCounter(board,depth) << endl;
 }
 
-void PrintBoard(uint64_t board);
 
 void BenchMaarkBoards(){
 
@@ -53,6 +52,15 @@ uint64_t log2_64(uint64_t value)
     }
 }
 
+void PrintBoard(uint64_t board){
+    for(size_t i = 0 ; i < 64 ; i++){
+        if(i%8==0)
+            std::cout << std::endl;
+        std::cout << (((board >> i ) & 1 )?'1':'0');
+    }
+    std::cout << std::endl;
+}
+
 constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
 constexpr static const uint64_t row_h = row_a << 7;
 
@@ -60,14 +68,106 @@ constexpr static const uint64_t line_8 = (1) + (1<<1) + (1<<2) + (1<<3) + (1LL<<
 constexpr static const uint64_t line_1 = line_8 << 56;
 
 constexpr static const uint64_t window = ~(row_a|row_h|line_1|line_8);
+constexpr static const uint64_t window_v = ~(row_a|row_h);
+constexpr static const uint64_t window_h = ~(line_1|line_8);
 
 uint64_t attack_masks[4][64];
-// 4 - type of attack 1-horizontal 2-vertical 3 4 - bishops
+// 4 - type of attack 0-horizontal 1-vertical 2 3 - bishops main , additional
 // 64 - position
 uint64_t attack_after[4][64][32];
+uint64_t magic[4][64];
+uint64_t magic_shift[4][64];
+
 //4- attack type
 //64 - position
 //32 - mask of borders
+
+uint64_t mask_attack(uint64_t position, uint64_t borders){
+    uint64_t left = position , right = position;
+    uint64_t result = 0;
+    while(left){
+        left <<= 1;
+        result |= left;
+        left &= ~borders;
+    }
+    while(right){
+        right >>= 1;
+        result |= right;
+        right &= ~borders;
+    }
+    return (result & line_8);
+}
+
+
+void fill_constants(){
+    for(size_t position = 0 ; position < 64 ; ++position)
+    {
+        uint64_t value = 0;
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i++;
+                j++;
+        }
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i--;
+                j--;
+        }
+        attack_masks[2][position] = value;
+    }
+    for(size_t position = 0 ; position < 64 ; ++position)
+    {
+        uint64_t value = 0;
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i--;
+                j++;
+        }
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i++;
+                j--;
+        }
+        attack_masks[3][position] = value;
+    }
+    for(size_t position = 0 ; position < 64 ; ++position)
+    {
+        uint64_t value = 0;
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                j++;
+        }
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                j--;
+        }
+        attack_masks[0][position] = value;
+    }
+    for(size_t position = 0 ; position < 64 ; ++position)
+    {
+        uint64_t value = 0;
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i++;
+        }
+        for(size_t i = position/8 , j=position%8 ; i<8 && j<8;){
+                value |= (1LL<<(8*i+j));
+                i--;
+        }
+        attack_masks[1][position] = value;
+    }
+/*
+    for(size_t position = 0 ; position < 64 ;++position){
+        for(size_t borders_plot = 0 ; borders_plot < 256 ;++borders_plot){
+            uint64_t attack_plot = mask_attack(1LL << position,borders_plot);
+            auto simple_border_mask = window & (~(1LL<<position)) & attack_masks[0][position];
+            auto borders = SlowMagic(attack_masks[0][position],borders_plot);
+            auto index = SlowMagicRev(simple_border_mask,borders);
+            attack_after[0][position][index] = SlowMagicRev(attack_masks[0][position],attack_plot);
+        }
+    }
+    */
+}
 
 uint64_t attack_map(uint64_t figure, uint64_t borders, uint64_t attack_index)
 {
@@ -80,11 +180,43 @@ uint64_t attack_map(uint64_t figure, uint64_t borders, uint64_t attack_index)
     return attack_after[attack_index][figure][real_borders];
 }
 
+uint64_t read_mask()
+{
+    uint64_t result = 0;
+    for(size_t i = 0 ; i < 8 ; i++)
+    {
+        std::string line;
+        std::getline(std::cin,line);
+        for(size_t j = 0; j < 8 ; j++){
+            if(line[j] == '1')
+                result |= (1LL << (8*j+i));
+        }
+    }
+    return result;
+}
+/*
+uint64_t test_generation(uint64_t position , uint64_t borders_plot){
+    auto simple_border_mask = window_v & (~(1LL<<position)) & attack_masks[0][position];
+    PrintBoard(attack_masks[0][position] & window_v);
+    PrintBoard(simple_border_mask);
+    auto borders = SlowMagic(attack_masks[0][position],borders_plot);
+    PrintBoard(borders);
+    auto index = SlowMagicRev(simple_border_mask,borders);
+    return attack_after[0][position][index];
+}
+*/
+
 
 int main()
 {
     //BenchMaarkBoards();
     using namespace std;
+    uint64_t num = 68853957121;
+    Magic magic(num);
+    auto encoded = magic.Encode(4+8);
+    PrintBoard(magic.MagicNum());
+    PrintBoard(encoded);
+    PrintBoard( magic.Decode(encoded));
     /*
     std::string fen;
     std::getline(std::cin,fen);
@@ -95,7 +227,7 @@ int main()
     for(auto board : board.GenerateSubBoards()){
         board.PrintBoard();
     }
-    */
+    cout << read_mask();
     cout << log2_64(64);
     uint64_t mask = 1 + (1<<9) + (1<<18) + (1<<27) + (1LL<<36);
     uint64_t data = 1 + (1<<9) + (1<<18);
@@ -105,7 +237,15 @@ int main()
     std::cout << magic.first << ' ' << magic.second << std::endl;
     magic = FindMagicRev(mask);
     std::cout << magic.first << ' ' << magic.second << std::endl;
+    */
+/*
+    fill_constants();
+    PrintBoard(attack_masks[1][0] >> 24);
+    auto mask = FindMagicRev(attack_masks[1][0] >>24 ).first;
+    PrintBoard(mask);
+    PrintBoard((attack_masks[1][0] >> 24)*mask);
 
+    //PrintBoard(test_generation(4,32+2));
 /*
     while(true){
         size_t num;

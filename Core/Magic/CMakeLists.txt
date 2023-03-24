@@ -11,11 +11,6 @@ file(GLOB files
      "*.cpp"
 )
 
-add_library(ChessCore ${files})
+add_library(Magic ${files})
 
-target_include_directories(ChessCore PUBLIC  .)
-
-add_subdirectory("Tests")
-add_subdirectory("BoardDebugger")
-add_subdirectory("Magic")
-
+target_include_directories(Magic PUBLIC  .)

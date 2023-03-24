@@ -9,6 +9,6 @@ if(BUILD_TESTING)
     enable_testing()
 
 add_executable(BoardDebugger board_debugging.cpp)
-target_link_libraries(BoardDebugger ChessCore)
+target_link_libraries(BoardDebugger ChessCore Magic)
 
 endif()
