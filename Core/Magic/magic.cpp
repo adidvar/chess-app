@@ -12,10 +12,10 @@ struct MagicPair
     uint64_t magic;
     uint64_t shift;
 };
-
+void PrintBoard(uint64_t mask);
 static MagicPair FastMagic(uint64_t mask)
 {
-    MagicPair pair;
+    MagicPair pair {0,0};
     uint64_t tests[2 << 10];
     size_t tests_size = 1<<CountOnes(mask);
     assert(tests_size < (2 << 10));
@@ -24,12 +24,12 @@ static MagicPair FastMagic(uint64_t mask)
         tests[i] = Encode(mask,i);
     }
 
-    for(uint64_t i = 0 ; ;++i)
+    for(uint64_t i = 0 ; i < (1 << 3*CountOnes(mask));++i)
     {
         uint64_t magic = 0;
         for(size_t j = 0 ; j < CountOnes(mask); j++)
         {
-
+            magic |= (1LL << (8*j + ((i >> 3*j) & 7)));
         }
         bool flag = true;
         for(size_t i = 0 ; i < tests_size ; i++)
@@ -43,6 +43,21 @@ static MagicPair FastMagic(uint64_t mask)
             break;
         }
     }
+    for(uint64_t shift = 0 ; shift < 64 ; ++shift)
+    {
+        bool flag = true;
+        for(size_t i = 0 ; i < tests_size ; i++)
+            if((((tests[i]*pair.magic) >> shift)&((1LL<<CountOnes(mask))-1)) != i)
+            {
+                flag = false;
+                break;
+            }
+        if(flag){
+            pair.shift = shift;
+            break;
+        }
+    }
+    return pair;
 }
 
 static MagicPair BruteForceMagic(uint64_t mask)
@@ -91,7 +106,9 @@ Magic::Magic(uint64_t mask):
     mask_(mask)
 {
     plot_mask_ = (1LL<<CountOnes(mask))-1;
-    auto pair = BruteForceMagic(mask);
+    auto pair = FastMagic(mask);
+    if(pair.magic == 0)
+        pair = BruteForceMagic(mask);
     magic_ = pair.magic;
     shift_ = pair.shift;
 

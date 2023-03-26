@@ -62,6 +62,12 @@ void PrintBoard(uint64_t board){
 }
 
 constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
+constexpr static const uint64_t row_b = row_a << 1;
+constexpr static const uint64_t row_c = row_a << 2;
+constexpr static const uint64_t row_d = row_a << 3;
+constexpr static const uint64_t row_e = row_a << 4;
+constexpr static const uint64_t row_f = row_a << 5;
+constexpr static const uint64_t row_g = row_a << 6;
 constexpr static const uint64_t row_h = row_a << 7;
 
 constexpr static const uint64_t line_8 = (1) + (1<<1) + (1<<2) + (1<<3) + (1LL<<4) + (1LL<<5) + (1LL<<6) + (1LL<<7);
@@ -71,12 +77,15 @@ constexpr static const uint64_t window = ~(row_a|row_h|line_1|line_8);
 constexpr static const uint64_t window_v = ~(row_a|row_h);
 constexpr static const uint64_t window_h = ~(line_1|line_8);
 
-uint64_t attack_masks[4][64];
+uint64_t verticals_masks[64];
+uint64_t horizontals_masks[64];
 // 4 - type of attack 0-horizontal 1-vertical 2 3 - bishops main , additional
 // 64 - position
-uint64_t attack_after[4][64][32];
-uint64_t magic[4][64];
-uint64_t magic_shift[4][64];
+uint64_t horizontals_processed[64][64];
+uint64_t verticals_processed[64][64];
+
+//define Magic`s here
+//Magic horizontals_magic[8] = {row_a , row_b ,  row_c, row_d , row_e , row_f , row_g , row_h};
 
 //4- attack type
 //64 - position
@@ -100,6 +109,7 @@ uint64_t mask_attack(uint64_t position, uint64_t borders){
 
 
 void fill_constants(){
+    /*
     for(size_t position = 0 ; position < 64 ; ++position)
     {
         uint64_t value = 0;
@@ -130,6 +140,7 @@ void fill_constants(){
         }
         attack_masks[3][position] = value;
     }
+    */
     for(size_t position = 0 ; position < 64 ; ++position)
     {
         uint64_t value = 0;
@@ -141,7 +152,7 @@ void fill_constants(){
                 value |= (1LL<<(8*i+j));
                 j--;
         }
-        attack_masks[0][position] = value;
+        horizontals_masks[position] = value;
     }
     for(size_t position = 0 ; position < 64 ; ++position)
     {
@@ -154,22 +165,51 @@ void fill_constants(){
                 value |= (1LL<<(8*i+j));
                 i--;
         }
-        attack_masks[1][position] = value;
+        verticals_masks[position] = value;
     }
-/*
+    // std::cout << "--------------------------------------";
+    //horizontals
     for(size_t position = 0 ; position < 64 ;++position){
-        for(size_t borders_plot = 0 ; borders_plot < 256 ;++borders_plot){
-            uint64_t attack_plot = mask_attack(1LL << position,borders_plot);
-            auto simple_border_mask = window & (~(1LL<<position)) & attack_masks[0][position];
-            auto borders = SlowMagic(attack_masks[0][position],borders_plot);
-            auto index = SlowMagicRev(simple_border_mask,borders);
-            attack_after[0][position][index] = SlowMagicRev(attack_masks[0][position],attack_plot);
+        for(uint64_t borders_plot = 0 ; borders_plot < 64 ;++borders_plot){
+           // PrintBoard(1LL << position);
+           // PrintBoard(borders_plot);
+            uint64_t attack_plot = mask_attack(1LL << (position%8),borders_plot << 1);
+           // PrintBoard(attack_plot);
+            uint64_t attack_result = attack_plot << 8*(position/8);
+           // PrintBoard(attack_result);
+            uint64_t index = borders_plot;
+           // PrintBoard(index);
+            horizontals_processed[position][index] = attack_result;
         }
     }
-    */
+    for(size_t position = 0 ; position < 64 ;++position){
+        for(uint64_t borders_plot = 0 ; borders_plot < 64 ;++borders_plot){
+           // PrintBoard(1LL << position);
+           // PrintBoard(borders_plot);
+            uint64_t attack_plot = mask_attack(1LL << (position%8),borders_plot << 1);
+           // PrintBoard(attack_plot);
+            uint64_t attack_result = attack_plot << 8*(position/8);
+           // PrintBoard(attack_result);
+            uint64_t index = borders_plot;
+           // PrintBoard(index);
+            horizontals_processed[position][index] = attack_result;
+        }
+    }
+
+
+}
+uint64_t generate_horizontals(uint64_t position, uint64_t borders)
+{
+    position = log2_64(position);
+    borders >>= 8*(position/8);
+    borders >>= 1;
+    borders &= ((1<<6)-1);
+    std::cout << position << ": " << borders << std::endl;
+    return horizontals_processed[position][borders];
 }
 
-uint64_t attack_map(uint64_t figure, uint64_t borders, uint64_t attack_index)
+/*
+uint64_t attack_map(uint64_t figure, uint64_t borders,  )
 {
     figure = log2_64(figure);
 
@@ -179,6 +219,7 @@ uint64_t attack_map(uint64_t figure, uint64_t borders, uint64_t attack_index)
 
     return attack_after[attack_index][figure][real_borders];
 }
+*/
 
 uint64_t read_mask()
 {
@@ -211,12 +252,18 @@ int main()
 {
     //BenchMaarkBoards();
     using namespace std;
-    uint64_t num = 68853957121;
-    Magic magic(num);
-    auto encoded = magic.Encode(4+8);
-    PrintBoard(magic.MagicNum());
-    PrintBoard(encoded);
-    PrintBoard( magic.Decode(encoded));
+    fill_constants();
+    for(size_t i = 56 ; i <= 56 ; i-=8){
+        Magic magic(row_a >> i);
+        PrintBoard(row_a >> i);
+        PrintBoard(magic.MagicNum());
+    }
+    //auto borders = 64;
+    //auto position = 16;
+    //PrintBoard(borders);
+    //PrintBoard(position);
+    //PrintBoard(mask_attack(position,borders));
+    //PrintBoard(generate_horizontals(position,borders));
     /*
     std::string fen;
     std::getline(std::cin,fen);
