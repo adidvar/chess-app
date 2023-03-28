@@ -3,7 +3,7 @@
 #include <chrono>
 #include <board.h>
 #include <bitboard.h>
-#include "magic.h"
+#include <magicnumbers.h>
 
 template<class Board>
 static size_t MovesCounter(Board board,size_t depth){
@@ -79,6 +79,7 @@ constexpr static const uint64_t window_h = ~(line_1|line_8);
 
 uint64_t verticals_masks[64];
 uint64_t horizontals_masks[64];
+uint64_t mdiagonals_masks[64];
 // 4 - type of attack 0-horizontal 1-vertical 2 3 - bishops main , additional
 // 64 - position
 uint64_t horizontals_processed[64][64];
@@ -109,7 +110,6 @@ uint64_t mask_attack(uint64_t position, uint64_t borders){
 
 
 void fill_constants(){
-    /*
     for(size_t position = 0 ; position < 64 ; ++position)
     {
         uint64_t value = 0;
@@ -123,8 +123,9 @@ void fill_constants(){
                 i--;
                 j--;
         }
-        attack_masks[2][position] = value;
+        mdiagonals_masks[position] = value;
     }
+    /*
     for(size_t position = 0 ; position < 64 ; ++position)
     {
         uint64_t value = 0;
@@ -230,7 +231,7 @@ uint64_t read_mask()
         std::getline(std::cin,line);
         for(size_t j = 0; j < 8 ; j++){
             if(line[j] == '1')
-                result |= (1LL << (8*j+i));
+                result |= (1LL << (8*i+j));
         }
     }
     return result;
@@ -247,17 +248,46 @@ uint64_t test_generation(uint64_t position , uint64_t borders_plot){
 }
 */
 
+uint64_t random_uint64() {
+  uint64_t u1, u2, u3, u4;
+  u1 = (uint64_t)(rand()) & 0xFFFF; u2 = (uint64_t)(rand()) & 0xFFFF;
+  u3 = (uint64_t)(rand()) & 0xFFFF; u4 = (uint64_t)(rand()) & 0xFFFF;
+  return u1 | (u2 << 16) | (u3 << 32) | (u4 << 48);
+}
+
+uint64_t random_uint64_fewbits() {
+  return random_uint64() & random_uint64() & random_uint64();
+}
+
 
 int main()
 {
     //BenchMaarkBoards();
     using namespace std;
     fill_constants();
-    for(size_t i = 56 ; i <= 56 ; i-=8){
-        Magic magic(row_a >> i);
-        PrintBoard(row_a >> i);
+    PrintBoard(magic.RMask1[0]);
+
+    /*
+    for(size_t i = 56 ; i >= 24 ; i-=8){
+        Magic magic(row_a>>i);
         PrintBoard(magic.MagicNum());
     }
+    uint64_t num = read_mask();
+    cout <<endl<< num << endl;
+    PrintBoard(num);
+    PrintBoard((row_a >> 8)*num);
+    std::cout << TestMagic(row_a >> 8,num);
+
+    */
+/*
+    for(size_t i = 0 ; i < 8 ; i++){
+        Magic magic((row_a >> 24) << i);
+        PrintBoard((row_a >> 24) << i);
+        PrintBoard(magic.MagicNum());
+        std::cout << read_mask();
+
+    }
+    */
     //auto borders = 64;
     //auto position = 16;
     //PrintBoard(borders);

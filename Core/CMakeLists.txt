@@ -17,5 +17,5 @@ target_include_directories(ChessCore PUBLIC  .)
 
 add_subdirectory("Tests")
 add_subdirectory("BoardDebugger")
-add_subdirectory("Magic")
+add_subdirectory("MagicNumbers")
 

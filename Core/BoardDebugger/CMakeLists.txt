@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(BUILD_TESTING)
     enable_testing()
 
-add_executable(BoardDebugger board_debugging.cpp)
-target_link_libraries(BoardDebugger ChessCore Magic)
 
 endif()
+add_executable(BoardDebugger board_debugging.cpp)
+target_link_libraries(BoardDebugger ChessCore MagicNumbers)
