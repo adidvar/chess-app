@@ -7,7 +7,7 @@
 #include <QMouseEvent>
 
 #include "chessboard.h"
-#include "turn.h"
+#include "turn.hpp"
 
 class ChessBoardPlay : public ChessBoardView
 {

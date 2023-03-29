@@ -1,4 +1,4 @@
-#include "board.h"
+#include "board.hpp"
 #include <stdexcept>
 #include <sstream>
 #include <cassert>

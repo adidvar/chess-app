@@ -1,4 +1,4 @@
-#include "match.h"
+#include "match.hpp"
 
 /*
 void Match::update_state_and_hash_turns()

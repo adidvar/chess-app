@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "turn.h"
-#include "board.h"
+#include "turn.hpp"
+#include "board.hpp"
 
 class Player
 {

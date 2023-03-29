@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB files
-     "*.h"
+     "*.hpp"
      "*.cpp"
 )
 
@@ -15,7 +15,11 @@ add_library(ChessCore ${files})
 
 target_include_directories(ChessCore PUBLIC  .)
 
+if(BUILD_TESTING)
+enable_testing()
 add_subdirectory("Tests")
+endif()
+
 add_subdirectory("BoardDebugger")
-add_subdirectory("MagicNumbers")
+add_subdirectory("Magic")
 

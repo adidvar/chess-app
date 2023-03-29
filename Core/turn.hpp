@@ -2,8 +2,8 @@
 #define TURN_H
 #include <string>
 
-#include "figures.h"
-#include "positions.h"
+#include "figures.hpp"
+#include "positions.hpp"
 
 /**
  * @brief Визначає звичайний шахматний

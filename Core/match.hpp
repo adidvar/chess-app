@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include "board.h"
-#include "turn.h"
+#include "board.hpp"
+#include "turn.hpp"
 
 class Match
 {

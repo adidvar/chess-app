@@ -1,4 +1,4 @@
-#include "board.h"
+#include "board.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <cmath>

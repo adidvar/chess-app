@@ -2,11 +2,11 @@
 #define CHESSBOARD_H
 
 #include <QWidget>
-#include <board.h>
+#include <board.hpp>
 #include <unordered_map>
 #include <QPicture>
 #include <QMouseEvent>
-#include <turn.h>
+#include <turn.hpp>
 
 namespace std {
   template <> struct hash<Figure>

@@ -1,8 +1,8 @@
 #ifndef POSITIONS_H
 #define POSITIONS_H
-#include <inttypes.h>
+#include <cinttypes>
 #include <string>
-#include <assert.h>
+#include <cassert>
 
 class Position
 {

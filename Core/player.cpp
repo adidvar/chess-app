@@ -1,4 +1,4 @@
-#include "player.h"
+#include "player.hpp"
 
 Player::Player(Color main_color):
     main_color(main_color)
