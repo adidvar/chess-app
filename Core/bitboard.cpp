@@ -198,7 +198,6 @@ std::string BitBoard::Fen() const
     {
         buffer[position] = '0'+bypass_counter;
         position++;
-        bypass_counter=0;
     }
 
     std::string string(buffer);

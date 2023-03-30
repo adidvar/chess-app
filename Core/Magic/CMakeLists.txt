@@ -12,4 +12,5 @@ file(GLOB files
 )
 
 add_library(Magic ${files})
+target_include_directories(Magic PUBLIC .)
 
