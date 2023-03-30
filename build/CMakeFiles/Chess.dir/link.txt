@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/Chess.dir/main.cpp.o CMakeFiles/Chess.dir/board.cpp.o CMakeFiles/Chess.dir/bot.cpp.o CMakeFiles/Chess.dir/map_preview.cpp.o CMakeFiles/Chess.dir/player.cpp.o CMakeFiles/Chess.dir/turn.cpp.o CMakeFiles/Chess.dir/turnexecutor.cpp.o CMakeFiles/Chess.dir/turngenerator.cpp.o  -o Chess  -lsfml-window -lsfml-system -lsfml-graphics -lpthread 
