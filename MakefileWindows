@@ -1,0 +1,14 @@
+CC=i686-w64-mingw32-g++-posix
+Objects=UI.o main.o Chess.o MyBot.o NetPlayer.o Chessboard.o ChessController.o
+Include=-Isfml/include
+Lib=-Lsfml/lib -lsfml-window -lsfml-system -lsfml-network -lsfml-graphics -pthread
+Flags=-O3 -static-libgcc -static-libstdc++ 
+
+all: $(Objects)
+	$(CC) $(Objects) -o build/Chess-app.exe  $(Flags) $(Lib)
+
+clear:
+	rm $(Objects)
+
+%.o: sourse/%.cpp
+	$(CC) -c $< -o $@ $(Flags) $(Include)
