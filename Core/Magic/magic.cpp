@@ -25,6 +25,27 @@ static uint64_t BHash1[64][64];
 static uint64_t BHash2[64][64];
 //22kb total
 
+const int tab64[64] = {
+    63,  0, 58,  1, 59, 47, 53,  2,
+    60, 39, 48, 27, 54, 33, 42,  3,
+    61, 51, 37, 40, 49, 18, 28, 20,
+    55, 30, 34, 11, 43, 14, 22,  4,
+    62, 57, 46, 52, 38, 26, 32, 41,
+    50, 36, 17, 19, 29, 10, 13, 21,
+    56, 45, 25, 31, 35, 16,  9, 12,
+    44, 24, 15,  8, 23,  7,  6,  5};
+
+uint64_t log2_64 (uint64_t value)
+{
+    value |= value >> 1;
+    value |= value >> 2;
+    value |= value >> 4;
+    value |= value >> 8;
+    value |= value >> 16;
+    value |= value >> 32;
+    return tab64[((uint64_t)((value - (value >> 1))*0x07EDD5E59A4E28C2)) >> 58];
+}
+
 static uint64_t random_uint64() {
   uint64_t u1, u2, u3, u4;
   u1 = (uint64_t)(rand()) & 0xFFFF; u2 = (uint64_t)(rand()) & 0xFFFF;
@@ -237,6 +258,7 @@ void InitMagic()
 
 uint64_t ProcessRook(uint64_t sq, uint64_t borders)
 {
+    sq = log2_64(sq);
     auto a1 = RHash1[sq][(borders&RMask1[sq])*RMagic1[sq] >> (64-RShift1[sq])];
     auto a2 = RHash2[sq][(borders&RMask2[sq])*RMagic2[sq] >> (64-RShift2[sq])];
     return a1|a2;
@@ -244,6 +266,7 @@ uint64_t ProcessRook(uint64_t sq, uint64_t borders)
 
 uint64_t ProcessBishop(uint64_t sq, uint64_t borders)
 {
+    sq = log2_64(sq);
     auto a1 = BHash1[sq][(borders&BMask1[sq])*BMagic1[sq] >> (64-BShift1[sq])];
     auto a2 = BHash2[sq][(borders&BMask2[sq])*BMagic2[sq] >> (64-BShift2[sq])];
     return a1|a2;

@@ -29,22 +29,39 @@ void SeeBoard(Board board , size_t depth)
 }
 
 
-void BenchMaarkBoards(){
+float BenchMarkOnce(){
 
     using namespace std::chrono;
     auto begin = std::chrono::high_resolution_clock::now();
-    std::cout << MovesCounter<Board>(Board(),4) << std::endl;
+    std::cout << MovesCounter<Board>(Board(),3);
     auto end = std::chrono::high_resolution_clock::now() - begin;
-    std::cout << "Board:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << std::endl;
+    auto last_dur = end;
 
     begin = std::chrono::high_resolution_clock::now();
-    std::cout << MovesCounter<BitBoard>(BitBoard(),4) << std::endl;
+    std::cout << MovesCounter<BitBoard>(BitBoard(),3);
     end = std::chrono::high_resolution_clock::now() - begin;
-    std::cout << "BitBoard:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << std::endl;
+    std::cout << std::endl;
 
+    std::cout << "---------------------------------" << std::endl;
+    std::cout << "   Board:" << std::chrono::duration_cast<std::chrono::milliseconds>(last_dur).count() << "   <--->  ";
+    std::cout << "BitBoard:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << std::endl;
+    std::cout << "   Ratio:" << (float)last_dur.count()/end.count() << 'x' << std::endl;
+    std::cout << "---------------------------------" << std::endl;
+    return (float)last_dur.count()/end.count();
 }
 
-void PrintBoard(uint64_t board){
+void BenchMark(){
+   float value = 0;
+   size_t tests = 20;
+   for(size_t i = 0 ; i < tests ; i++)
+       value+=BenchMarkOnce();
+
+    std::cout << "---------------------------------" << std::endl;
+    std::cout << "   Average Ratio:" << (float)value/tests << 'x' << std::endl;
+    std::cout << "---------------------------------" << std::endl;
+}
+
+void PrintBitBoard(uint64_t board){
     for(size_t i = 0 ; i < 64 ; i++){
         if(i%8==0)
             std::cout << std::endl;
@@ -68,11 +85,56 @@ uint64_t read_mask()
     return result;
 }
 
+template <class T>
+void PrintBoard(const T& board){
+
+    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
+
+    using namespace std;
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
+    for(size_t i = 0 ; i<8;i++){
+        cout << '|';
+        for(size_t j = 0 ; j<8;j++){
+            Position pos(i,j);
+            auto type = board.GetCell(pos);
+            cout << letters[type.color][type.type] << "|";
+        }
+        cout << endl;
+    }
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
+
+}
+
+bool CompareUntillError(Board board , size_t depth){
+    BitBoard bitboard(board.Fen());
+
+    if(board.GenerateSubBoards().size() != bitboard.GenerateSubBoards().size()){
+        PrintBoard(board);
+        return true;
+    }
+    if(depth==0)
+        return false;
+
+    for(auto sub : board.GenerateSubBoards()){
+        if(CompareUntillError(sub,depth-1))
+            return true;
+    }
+
+    return false;
+}
+
 int main()
 {
     //BenchMaarkBoards();
     using namespace std;
     InitMagic();
+    BenchMark();
 
     /*
     for(size_t i = 56 ; i >= 24 ; i-=8){
@@ -92,27 +154,13 @@ int main()
     //PrintBoard(position);
     //PrintBoard(mask_attack(position,borders));
     //PrintBoard(generate_horizontals(position,borders));
-    /*
-    std::string fen;
-    std::getline(std::cin,fen);
-    Board board(fen);
-    std::cout << board.Fen();
-    BitBoard board("rnb1kbnr/pp1ppppp/8/8/8/p6q/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-    board.PrintBoard();
-    for(auto board : board.GenerateSubBoards()){
-        board.PrintBoard();
-    }
-    cout << read_mask();
-    cout << log2_64(64);
-    uint64_t mask = 1 + (1<<9) + (1<<18) + (1<<27) + (1LL<<36);
-    uint64_t data = 1 + (1<<9) + (1<<18);
-    PrintBoard(mask);
-    PrintBoard(data);
-    auto magic = FindMagic(mask);
-    std::cout << magic.first << ' ' << magic.second << std::endl;
-    magic = FindMagicRev(mask);
-    std::cout << magic.first << ' ' << magic.second << std::endl;
-    */
+    BitBoard board("3k4/8/7K/8/8/8/K7/8 w - - 0 1");
+    CompareUntillError(Board(),2);
+    //PrintBoard(board);
+    //board.PrintBoard();
+    //for(auto board : board.GenerateSubBoards()){
+    //    PrintBoard(board);
+    //}
     /*
     fill_constants();
     PrintBoard(attack_masks[1][0] >> 24);
