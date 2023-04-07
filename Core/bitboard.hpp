@@ -34,10 +34,10 @@ class BitBoard
 
     struct RookingFlags_t
     {
-        bool white_ooo;
-        bool white_oo;
-        bool black_ooo;
-        bool black_oo;
+        bool white_ooo:1;
+        bool white_oo:1;
+        bool black_ooo:1;
+        bool black_oo:1;
     };
 
     //bitboards
@@ -51,13 +51,18 @@ class BitBoard
     Color current_player_color_;
     Position last_pawn_move_;
 
-    template<bool color>
-    std::vector<BitBoard> GenerateSubBoardsTemplate() const;
+    std::vector<BitBoard> GenerateSubBoards(Color color) const;
 
     void Move(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
     void Attack(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
 
+    template<typename Type>
+    void ProcessFigure(std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
+    template<typename Type>
+    uint64_t ProcessAttack(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
+
 public:
+    uint64_t AttackMask(Color color) const;
     BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
 

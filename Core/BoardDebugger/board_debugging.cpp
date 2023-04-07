@@ -52,7 +52,7 @@ float BenchMarkOnce(){
 
 void BenchMark(){
    float value = 0;
-   size_t tests = 20;
+   size_t tests = 5;
    for(size_t i = 0 ; i < tests ; i++)
        value+=BenchMarkOnce();
 
@@ -62,12 +62,25 @@ void BenchMark(){
 }
 
 void PrintBitBoard(uint64_t board){
-    for(size_t i = 0 ; i < 64 ; i++){
-        if(i%8==0)
-            std::cout << std::endl;
-        std::cout << (((board >> i ) & 1 )?'1':'0');
+    const char letters[] = " +";
+
+    using namespace std;
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
     }
-    std::cout << std::endl;
+    cout << endl;
+    for(size_t i = 0 ; i<8;i++){
+        cout << '|';
+        for(size_t j = 0 ; j<8;j++){
+            Position pos(i,j);
+            cout << letters[((board >> pos.Value()) & 1) ] << "|";
+        }
+        cout << endl;
+    }
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
 }
 
 uint64_t read_mask()
@@ -116,6 +129,14 @@ bool CompareUntillError(Board board , size_t depth){
 
     if(board.GenerateSubBoards().size() != bitboard.GenerateSubBoards().size()){
         PrintBoard(board);
+        std::cout << board.Fen() << std::endl;
+        std::cout << "Bitboard: "  << bitboard.GenerateSubBoards().size() << std::endl;
+        std::cout << "Board: "  << board.GenerateSubBoards().size() << std::endl;
+
+        for(auto board : bitboard.GenerateSubBoards()){
+            PrintBoard(board);
+        }
+
         return true;
     }
     if(depth==0)
@@ -135,6 +156,7 @@ int main()
     using namespace std;
     InitMagic();
     BenchMark();
+    //PrintBitBoard(BitBoard("rnbqkbnr/pppppppp/8/8/8/8/1PP3PP/RNBQKBNR w KQkq - 0 1").AttackMask(Color::kWhite));
 
     /*
     for(size_t i = 56 ; i >= 24 ; i-=8){
@@ -154,8 +176,8 @@ int main()
     //PrintBoard(position);
     //PrintBoard(mask_attack(position,borders));
     //PrintBoard(generate_horizontals(position,borders));
-    BitBoard board("3k4/8/7K/8/8/8/K7/8 w - - 0 1");
-    CompareUntillError(Board(),2);
+    //BitBoard board("3k4/8/7K/8/8/8/K7/8 w - - 0 1");
+    CompareUntillError(Board(),4);
     //PrintBoard(board);
     //board.PrintBoard();
     //for(auto board : board.GenerateSubBoards()){

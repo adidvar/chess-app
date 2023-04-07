@@ -6,7 +6,6 @@
 
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-
 BitBoard::BitBoard(std::string_view fen):
 board_{{0},{0}}
 {
@@ -113,6 +112,11 @@ BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
     return {GetFigure(position),GetColor(position)};
 }
 
+bool BitBoard::MateTest() const
+{
+    return (AttackMask(OpponentColor()) & board_[CurrentColor()][Figure::kKing]) != 0;
+}
+
 Figure BitBoard::GetFigure(Position position) const noexcept
 {
     assert(position.Valid());
@@ -202,224 +206,108 @@ void BitBoard::Attack(uint64_t from, uint64_t to, Color color, Figure type)
 
 }
 
-uint64_t GenerateKnight(uint64_t figure, uint64_t allies){
-    return
-        (((figure << 10) & ~(row_a | row_b)) |
-        ((figure << 17) & (~row_a)) |
-        ((figure >> 6)) & ~(row_a | row_b) |
-        ((figure >> 15) & ~(row_a)) |
-        ((figure << 6)  & ~(row_g | row_h)) |
-        ((figure << 15) & ~(row_h)) |
-        ((figure >> 10) & ~(row_g | row_h)) |
-        ((figure >> 17) & ~(row_h) )) & ~allies
-        ;
-}
-uint64_t GenerateKing(uint64_t figure, uint64_t allies){
-    return
-        ((figure << 10) & ~(row_a | row_b)) |
-        ((figure << 17) & (~row_a)) |
-        ((figure >> 6)) & ~(row_a | row_b) |
-        ((figure >> 15) & ~(row_a)) |
-        ((figure << 6)  & ~(row_g | row_h)) |
-        ((figure << 15) & ~(row_h)) |
-        ((figure >> 10) & ~(row_g | row_h)) |
-        ((figure >> 17) & ~(row_h) )
-        ;
-}
-uint64_t GenerateBishop(uint64_t figure, uint64_t allies){
-    return
-        ((figure << 10) & ~(row_a | row_b)) |
-        ((figure << 17) & (~row_a)) |
-        ((figure >> 6)) & ~(row_a | row_b) |
-        ((figure >> 15) & ~(row_a)) |
-        ((figure << 6)  & ~(row_g | row_h)) |
-        ((figure << 15) & ~(row_h)) |
-        ((figure >> 10) & ~(row_g | row_h)) |
-        ((figure >> 17) & ~(row_h) )
-        ;
-}
-uint64_t GenerateRook(uint64_t figure, uint64_t allies){
-    return
-        ((figure << 10) & ~(row_a | row_b)) |
-        ((figure << 17) & (~row_a)) |
-        ((figure >> 6)) & ~(row_a | row_b) |
-        ((figure >> 15) & ~(row_a)) |
-        ((figure << 6)  & ~(row_g | row_h)) |
-        ((figure << 15) & ~(row_h)) |
-        ((figure >> 10) & ~(row_g | row_h)) |
-        ((figure >> 17) & ~(row_h) )
-        ;
-}
-uint64_t GenerateQueen(uint64_t figure, uint64_t allies){
-    return
-        ((figure << 10) & ~(row_a | row_b)) |
-        ((figure << 17) & (~row_a)) |
-        ((figure >> 6)) & ~(row_a | row_b) |
-        ((figure >> 15) & ~(row_a)) |
-        ((figure << 6)  & ~(row_g | row_h)) |
-        ((figure << 15) & ~(row_h)) |
-        ((figure >> 10) & ~(row_g | row_h)) |
-        ((figure >> 17) & ~(row_h) )
-        ;
-}
+
+struct Pawn{
+};
+
+struct Knight{
+    static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                (((figure << 10) & ~(row_a | row_b)) |
+                 ((figure << 17) & (~row_a)) |
+                 ((figure >> 6)) & ~(row_a | row_b) |
+                 ((figure >> 15) & ~(row_a)) |
+                 ((figure << 6)  & ~(row_g | row_h)) |
+                 ((figure << 15) & ~(row_h)) |
+                 ((figure >> 10) & ~(row_g | row_h)) |
+                 ((figure >> 17) & ~(row_h) )) & ~allies
+                ;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                Generate(figure,all,allies);
+                ;
+    }
+    constexpr static auto type = Figure::kKnight;
+};
+struct King{
+    static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                (((figure << 1) & ~row_a) |
+                 ((figure << 9) & ~row_a) |
+                 ((figure >> 7) & ~row_a) |
+                 (figure >> 8) |
+                 ((figure >> 1) & ~row_h) |
+                 ((figure >> 9) & ~row_h) |
+                 ((figure << 7) & ~row_h) |
+                 (figure << 8)) & ~allies;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                Generate(figure,all,allies);
+                ;
+    }
+    constexpr static auto type = Figure::kKing;
+};
+struct Bishop{
+    static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                ProcessBishop(figure,all) & ~allies;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
+        uint64_t mask = 0;
+        BitIterator iterator(figure);
+        while(iterator.Valid()){
+            mask |= Generate(iterator.Bit(),all,allies);
+            ++iterator;
+        }
+        return mask;
+    }
+    constexpr static auto type = Figure::kBishop;
+};
+struct Rook{
+    static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                ProcessRook(figure,all) & ~allies;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
+        uint64_t mask = 0;
+        BitIterator iterator(figure);
+        while(iterator.Valid()){
+            mask |= Generate(iterator.Bit(),all,allies);
+            ++iterator;
+        }
+        return mask;
+    }
+    constexpr static auto type = Figure::kRook;
+};
+struct Queen{
+    static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return
+                (ProcessBishop(figure,all) |
+                 ProcessRook(figure,all)) & ~allies;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
+        uint64_t mask = 0;
+        BitIterator iterator(figure);
+        while(iterator.Valid()){
+            mask |= Generate(iterator.Bit(),all,allies);
+            ++iterator;
+        }
+        return mask;
+    }
+    constexpr static auto type = Figure::kQueen;
+};
 
 
-template<bool color>
-std::vector<BitBoard> BitBoard::GenerateSubBoardsTemplate() const
+template<typename Type>
+void BitBoard::ProcessFigure(std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const
 {
-    std::vector<BitBoard> boards;
-
-    Color my_color = color , op_color = !color;
-
-    uint64_t empty = board_[my_color][Figure::kEmpty];
-    uint64_t opponent = all_[op_color];
-    uint64_t yours = all_[my_color];
-    uint64_t all = ~empty;
-
-    //pawns bro
-    {
-        uint64_t map = board_[my_color][Figure::kPawn];
-
-        constexpr size_t move_direction = 8;
-
-        uint64_t possible;
-        if constexpr(color == Color::kWhite)
-                possible = ((map >> move_direction) & empty) << move_direction;
-        else
-        possible = ((map << move_direction) & empty) >> move_direction;
-
-        BitIterator iterator(possible);
-        while(iterator.Valid())
-        {
-            uint64_t after;
-            if constexpr(color == Color::kWhite)
-                    after = iterator.Bit() >> move_direction;
-            else
-            after = iterator.Bit() << move_direction;
-
-            uint64_t reverse = ~iterator.Bit();
-            boards.emplace_back(*this);
-            boards.back().Move(iterator.Bit(),after,my_color,Figure::kPawn);
-
-            ++iterator;
-        }
-
-        if constexpr(color == Color::kWhite)
-                possible = (((map&(~row_a)) >> (move_direction+1)) & opponent) << (move_direction+1);
-        else
-        possible = (((map&(~row_h)) << (move_direction+1)) & opponent) >> (move_direction+1);
-        iterator = possible;
-
-        while(iterator.Valid())
-        {
-            uint64_t after;
-            if constexpr(color == Color::kWhite)
-                    after = iterator.Bit() >> (move_direction+1);
-            else
-            after = iterator.Bit() << (move_direction+1);
-
-            uint64_t reverse = ~iterator.Bit();
-
-            boards.emplace_back(*this);
-            boards.back().Attack(iterator.Bit(),after,my_color,Figure::kPawn);
-
-            ++iterator;
-        }
-
-        if constexpr(color == Color::kWhite)
-            possible = (((map&(~row_h)) >> (move_direction-1)) & opponent) << (move_direction-1);
-        else
-            possible = (((map&(~row_a)) << (move_direction-1)) & opponent) >> (move_direction-1);
-
-        iterator = possible;
-
-        while(iterator.Valid())
-        {
-            uint64_t after;
-            if constexpr(color == Color::kWhite)
-                    after = iterator.Bit() >> (move_direction-1);
-            else
-            after = iterator.Bit() << (move_direction-1);
-
-            uint64_t reverse = ~iterator.Bit();
-
-            boards.emplace_back(*this);
-            boards.back().Attack(iterator.Bit(),after,my_color,Figure::kPawn);
-
-            ++iterator;
-        }
-
-        if constexpr(color == Color::kWhite)
-                possible = (((((map & line_2) >> move_direction) & empty ) >> move_direction) & empty) << 2*move_direction;
-        else
-            possible = (((((map & line_7) << move_direction) & empty ) << move_direction) & empty) >> 2*move_direction;
-        iterator = possible;
-
-        while(iterator.Valid())
-        {
-            uint64_t after;
-            if constexpr(color == Color::kWhite)
-                    after = iterator.Bit() >> 2*move_direction;
-            else
-                after = iterator.Bit() << 2*move_direction;
-
-            uint64_t reverse = ~iterator.Bit();
-
-            boards.emplace_back(*this);
-            boards.back().Move(iterator.Bit(),after,my_color,Figure::kPawn);
-
-            ++iterator;
-        }
-    }
-
-    //knight bro
-    {
-        uint64_t map = board_[my_color][Figure::kKnight];
-        BitIterator iterator(map);
-        while(iterator.Valid())
-        {
-            uint64_t after = GenerateKnight(iterator.Bit(),yours);
-
-            uint64_t attack = after & opponent;
-            after &= ~attack;
-
-            BitIterator to(after);
-            uint64_t reverse = ~iterator.Bit();
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Move(iterator.bit_,to.bit_,my_color,Figure::kKnight);
-
-                ++to;
-            }
-
-            to = BitIterator(attack);
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Attack(iterator.bit_,to.bit_,my_color,Figure::kKnight);
-
-                ++to;
-            }
-            ++iterator;
-        }
-    }
-    //king
-    uint64_t map = board_[my_color][Figure::kKing];
+    uint64_t map = board_[color][Type::type] & from_mask;
     BitIterator iterator(map);
     while(iterator.Valid())
     {
-        uint64_t after =
-                ((iterator.Bit() << 1) & ~row_a) |
-                ((iterator.Bit() << 9) & ~row_a) |
-                ((iterator.Bit() >> 7) & ~row_a) |
-                (iterator.Bit() >> 8) |
-                ((iterator.Bit() >> 1) & ~row_h) |
-                ((iterator.Bit() >> 9) & ~row_h) |
-                ((iterator.Bit() << 7) & ~row_h) |
-                (iterator.Bit() << 8)
-                ;
-
+        uint64_t after = Type::Generate(iterator.Bit(),all,yours) & to_mask;
         after &= ~yours;
         uint64_t attack = after & opponent;
         after &= ~attack;
@@ -429,7 +317,7 @@ std::vector<BitBoard> BitBoard::GenerateSubBoardsTemplate() const
         while(to.Valid()){
 
             boards.emplace_back(*this);
-            boards.back().Move(iterator.bit_,to.bit_,my_color,Figure::kKing);
+            boards.back().Move(iterator.bit_,to.bit_,color,Type::type);
 
             ++to;
         }
@@ -438,108 +326,178 @@ std::vector<BitBoard> BitBoard::GenerateSubBoardsTemplate() const
         while(to.Valid()){
 
             boards.emplace_back(*this);
-            boards.back().Attack(iterator.bit_,to.bit_,my_color,Figure::kKing);
+            boards.back().Attack(iterator.bit_,to.bit_,color,Type::type);
 
             ++to;
         }
         ++iterator;
     }
+}
 
+template<>
+void BitBoard::ProcessFigure<Pawn>(std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const
+{
+        uint64_t map = board_[color][Figure::kPawn] & from_mask;
+
+        constexpr size_t move_direction = 8;
+
+        uint64_t possible;
+        if(color == Color::kWhite)
+            possible = ((map >> move_direction) & ~all) << move_direction;
+        else
+            possible = ((map << move_direction) & ~all) >> move_direction;
+
+        BitIterator iterator(possible);
+        while(iterator.Valid())
+        {
+            uint64_t after;
+            if(color == Color::kWhite)
+                    after = iterator.Bit() >> move_direction;
+            else
+            after = iterator.Bit() << move_direction;
+
+            boards.emplace_back(*this);
+            boards.back().Move(iterator.Bit(),after,color,Figure::kPawn);
+
+            ++iterator;
+        }
+
+        if (color == Color::kWhite)
+                possible = (((map&(~row_a)) >> (move_direction+1)) & opponent) << (move_direction+1);
+        else
+                possible = (((map&(~row_h)) << (move_direction+1)) & opponent) >> (move_direction+1);
+        iterator = possible;
+
+        while(iterator.Valid())
+        {
+            uint64_t after;
+            if(color == Color::kWhite)
+                    after = iterator.Bit() >> (move_direction+1);
+            else
+            after = iterator.Bit() << (move_direction+1);
+
+            boards.emplace_back(*this);
+            boards.back().Attack(iterator.Bit(),after,color,Figure::kPawn);
+
+            ++iterator;
+        }
+
+        if(color == Color::kWhite)
+                possible = (((map&(~row_h)) >> (move_direction-1)) & opponent) << (move_direction-1);
+        else
+        possible = (((map&(~row_a)) << (move_direction-1)) & opponent) >> (move_direction-1);
+
+        iterator = possible;
+
+        while(iterator.Valid())
+        {
+            uint64_t after;
+            if(color == Color::kWhite)
+                    after = iterator.Bit() >> (move_direction-1);
+            else
+            after = iterator.Bit() << (move_direction-1);
+
+            boards.emplace_back(*this);
+            boards.back().Attack(iterator.Bit(),after,color,Figure::kPawn);
+
+            ++iterator;
+        }
+
+        if(color == Color::kWhite)
+            possible = (((((map & line_2) >> move_direction) & ~all ) >> move_direction) & ~all) << 2*move_direction;
+        else
+            possible = (((((map & line_7) << move_direction) & ~all ) << move_direction) & ~all) >> 2*move_direction;
+        iterator = possible;
+
+        while(iterator.Valid())
+        {
+            uint64_t after;
+            if(color == Color::kWhite)
+                    after = iterator.Bit() >> 2*move_direction;
+            else
+            after = iterator.Bit() << 2*move_direction;
+
+            boards.emplace_back(*this);
+            boards.back().Move(iterator.Bit(),after,color,Figure::kPawn);
+
+            ++iterator;
+        }
+}
+
+template<typename Type>
+uint64_t BitBoard::ProcessAttack(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const
+{
+    uint64_t map = board_[color][Type::type] & from_mask;
+    return Type::GenerateAttack(map,all,yours);
+}
+
+template<>
+uint64_t BitBoard::ProcessAttack<Pawn>(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const
+{
+    uint64_t map = board_[color][Figure::kPawn] & from_mask;
+
+    if (color == Color::kWhite)
+    {
+        return  (((map&(~row_a)) >> (8+1)) & opponent) |
+                (((map&(~row_h)) >> (8-1)) & opponent) ;
+    }
+    else
+    {
+        return (((map&(~row_h)) << (8+1)) & opponent) |
+               (((map&(~row_a)) << (8-1)) & opponent) ;
+    }
+}
+
+uint64_t BitBoard::AttackMask(Color color) const
+{
+    uint64_t empty = board_[color][Figure::kEmpty];
+    uint64_t opponent = all_[!color];
+    uint64_t yours = all_[color];
+    uint64_t all = ~empty;
+
+    uint64_t result = 0;
+
+    // pawns
+    result |= ProcessAttack<Pawn>(color,~0ULL,all,yours,opponent);
+    //knight
+    result |= ProcessAttack<Knight>(color,~0ULL,all,yours,opponent);
+    //king
+    result |= ProcessAttack<King>(color,~0ULL,all,yours,opponent);
     // bishop
-    {
-        uint64_t map = board_[my_color][Figure::kBishop];
-        BitIterator iterator(map);
-        while(iterator.Valid())
-        {
-            uint64_t after = ProcessBishop(iterator.Bit(),all);
-            after &= ~yours;
-            uint64_t attack = after & opponent;
-            after &= ~attack;
-
-            BitIterator to(after);
-            uint64_t reverse = ~iterator.Bit();
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Move(iterator.bit_,to.bit_,my_color,Figure::kBishop);
-
-                ++to;
-            }
-
-            to = BitIterator(attack);
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Attack(iterator.bit_,to.bit_,my_color,Figure::kBishop);
-
-                ++to;
-            }
-            ++iterator;
-        }
-    }
+    result |= ProcessAttack<Bishop>(color,~0ULL,all,yours,opponent);
     // rook
-    {
-        uint64_t map = board_[my_color][Figure::kRook];
-        BitIterator iterator(map);
-        while(iterator.Valid())
-        {
-            uint64_t after = ProcessRook(iterator.Bit(),all);
-            after &= ~yours;
-            uint64_t attack = after & opponent;
-            after &= ~attack;
+    result |= ProcessAttack<Rook>(color,~0ULL,all,yours,opponent);
+    // queen
+    result |= ProcessAttack<Queen>(color,~0ULL,all,yours,opponent);
 
-            BitIterator to(after);
-            uint64_t reverse = ~iterator.Bit();
-            while(to.Valid()){
+    return result;
 
-                boards.emplace_back(*this);
-                boards.back().Move(iterator.bit_,to.bit_,my_color,Figure::kRook);
+}
 
-                ++to;
-            }
+std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
+{
+    std::vector<BitBoard> boards;
 
-            to = BitIterator(attack);
-            while(to.Valid()){
+    uint64_t empty = board_[color][Figure::kEmpty];
+    uint64_t opponent = all_[!color];
+    uint64_t yours = all_[color];
+    uint64_t all = ~empty;
 
-                boards.emplace_back(*this);
-                boards.back().Attack(iterator.bit_,to.bit_,my_color,Figure::kRook);
+    // pawns
+    ProcessFigure<Pawn>(boards,color,~0ULL,~0ULL,all,yours,opponent);
+    //knight
+    ProcessFigure<Knight>(boards,color,~0ULL,~0ULL,all,yours,opponent);
+    //king
+    ProcessFigure<King>(boards,color,~0ULL,~AttackMask(!color),all,yours,opponent);
+    // bishop
+    ProcessFigure<Bishop>(boards,color,~0ULL,~0ULL,all,yours,opponent);
+    // rook
+    ProcessFigure<Rook>(boards,color,~0ULL,~0ULL,all,yours,opponent);
+    // queen
+    ProcessFigure<Queen>(boards,color,~0ULL,~0ULL,all,yours,opponent);
 
-                ++to;
-            }
-            ++iterator;
-        }
-    }
-    {
-        uint64_t map = board_[my_color][Figure::kQueen];
-        BitIterator iterator(map);
-        while(iterator.Valid())
-        {
-            uint64_t after = ProcessRook(iterator.Bit(),all) | ProcessBishop(iterator.Bit(),all);
-            after &= ~yours;
-            uint64_t attack = after & opponent;
-            after &= ~attack;
-
-            BitIterator to(after);
-            uint64_t reverse = ~iterator.Bit();
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Move(iterator.bit_,to.bit_,my_color,Figure::kQueen);
-
-                ++to;
-            }
-
-            to = BitIterator(attack);
-            while(to.Valid()){
-
-                boards.emplace_back(*this);
-                boards.back().Attack(iterator.bit_,to.bit_,my_color,Figure::kQueen);
-
-                ++to;
-            }
-            ++iterator;
-        }
-    }
+    auto it = std::remove_if(boards.begin(),boards.end(),[](const BitBoard&b){return b.MateTest();});
+    boards.erase(it,boards.end());
 
     return boards;
 }
@@ -547,9 +505,9 @@ std::vector<BitBoard> BitBoard::GenerateSubBoardsTemplate() const
 std::vector<BitBoard> BitBoard::GenerateSubBoards() const
 {
     if(CurrentColor() == Color::kWhite)
-        return GenerateSubBoardsTemplate<false>();
+        return GenerateSubBoards(Color::kWhite);
     else
-        return GenerateSubBoardsTemplate<true>();
+        return GenerateSubBoards(Color::kBlack);
 }
 
 
