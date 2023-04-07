@@ -57,7 +57,7 @@ class BitBoard
     void Attack(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
 
     template<typename Type>
-    void ProcessFigure(std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
+    void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
     template<typename Type>
     uint64_t ProcessAttack(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
 

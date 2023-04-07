@@ -10,6 +10,11 @@ Board::Board(std::string_view fen)
 {
     FenLoader<Board> tools(*this);
     tools.LoadFromFen(fen);
+
+    if(current_player_color_ == Color::kWhite)
+        last_pawn_move_ = Position(last_pawn_move_.x()+1,last_pawn_move_.y());
+    else
+        last_pawn_move_ = Position(last_pawn_move_.x()-1,last_pawn_move_.y());
 }
 
 std::string Board::Fen() const

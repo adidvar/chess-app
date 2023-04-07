@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
-#include "board.h"
-#include "bitboard.h"
+#include "board.hpp"
+#include "bitboard.hpp"
 
 template<class T>
 class Board_Test : public T

@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <board.h>
+#include <board.hpp>
 
 TEST_CASE( "FenTest ", "[Fen]" )
 {

@@ -127,10 +127,6 @@ public:
     board_.passive_turn_counter_ = static_move;
     board_.turn_counter_ = move_counter;
 
-    if(board_.current_player_color_ == Color::kWhite)
-        board_.last_pawn_move_ = Position(board_.last_pawn_move_.x()+1,board_.last_pawn_move_.y());
-    else
-        board_.last_pawn_move_ = Position(board_.last_pawn_move_.x()-1,board_.last_pawn_move_.y());
 
     board_.rooking_flags_ = {false,false,false,false};
 

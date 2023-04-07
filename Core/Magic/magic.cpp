@@ -2,6 +2,12 @@
 #include <random>
 #include <stdexcept>
 
+struct StartUp{
+    StartUp(){
+        InitMagic();
+    }
+} startup;
+
 //all magic in 16 lines
 //masks index - position
 static uint64_t RMask1[64];

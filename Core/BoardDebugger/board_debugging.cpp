@@ -155,48 +155,17 @@ int main()
     //BenchMaarkBoards();
     using namespace std;
     InitMagic();
-    BenchMark();
-    //PrintBitBoard(BitBoard("rnbqkbnr/pppppppp/8/8/8/8/1PP3PP/RNBQKBNR w KQkq - 0 1").AttackMask(Color::kWhite));
-
-    /*
-    for(size_t i = 56 ; i >= 24 ; i-=8){
-        Magic magic(row_a>>i);
-        PrintBoard(magic.MagicNum());
+    //BenchMark();
+    std::cout << BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateSubBoards().size();
+    for(auto board : BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateSubBoards()){
+        PrintBoard(board);
     }
-    uint64_t num = read_mask();
-    cout <<endl<< num << endl;
-    PrintBoard(num);
-    PrintBoard((row_a >> 8)*num);
-    std::cout << TestMagic(row_a >> 8,num);
+    /*
+    BitBoard board;
+    board = board.GenerateSubBoards()[0];
+    std::cout << (int)board.CurrentColor();
 
-    */
-    //auto borders = 64;
-    //auto position = 16;
-    //PrintBoard(borders);
-    //PrintBoard(position);
-    //PrintBoard(mask_attack(position,borders));
-    //PrintBoard(generate_horizontals(position,borders));
-    //BitBoard board("3k4/8/7K/8/8/8/K7/8 w - - 0 1");
     CompareUntillError(Board(),4);
-    //PrintBoard(board);
-    //board.PrintBoard();
-    //for(auto board : board.GenerateSubBoards()){
-    //    PrintBoard(board);
-    //}
-    /*
-    fill_constants();
-    PrintBoard(attack_masks[1][0] >> 24);
-    auto mask = FindMagicRev(attack_masks[1][0] >>24 ).first;
-    PrintBoard(mask);
-    PrintBoard((attack_masks[1][0] >> 24)*mask);
-
-    //PrintBoard(test_generation(4,32+2));
-    while(true){
-        size_t num;
-        std::cin >> num;
-        PrintBoard(((num*magic.first) >> magic.second)&mask);
-    }
-
     */
     /*
     size_t depth;
