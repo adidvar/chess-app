@@ -55,6 +55,7 @@ class BitBoard
 
     void Move(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
     void Attack(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
+    void Transform(uint64_t sq , Color color, Figure from, Figure to); // recalculates all_ and empty bitboads
 
     template<typename Type>
     void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;

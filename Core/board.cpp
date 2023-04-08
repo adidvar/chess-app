@@ -180,11 +180,13 @@ void Board::UnsafeExecuteTurn(Turn turn)
     else if( turn.to() == Position(0,7) )
         rooking_flags_.black_oo = false;
 
+    /*
     turn_counter_++;
     if(TestEmp(turn.to()))
         passive_turn_counter_++;
     else
         passive_turn_counter_ = 0;
+        */
     current_player_color_ = OpponentColor();
 }
 

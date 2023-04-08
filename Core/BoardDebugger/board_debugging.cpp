@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <map>
 #include <board.hpp>
 #include <bitboard.hpp>
 #include <magic.hpp>
@@ -98,6 +99,32 @@ uint64_t read_mask()
     return result;
 }
 
+void PrintBoardIndexes(){
+    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
+
+    using namespace std;
+
+    for(size_t i = 0 ; i<8;i++){
+        cout << "+--";
+    }
+    cout << "+" << endl;
+    for(size_t i = 0 ; i<8;i++){
+        cout << '|';
+        for(size_t j = 0 ; j<8;j++){
+            Position pos(i,j);
+            if(pos.Value() < 10)
+                cout << ' ';
+            cout << (int)pos.Value() << "|";
+        }
+        cout << endl;
+        for(size_t i = 0 ; i<8;i++){
+            cout << "+--";
+        }
+        cout << "+" << endl;
+    }
+
+}
+
 template <class T>
 void PrintBoard(const T& board){
 
@@ -117,9 +144,15 @@ void PrintBoard(const T& board){
         }
         cout << endl;
     }
-    for(size_t i = 0 ; i<17;i++){
+    auto flags = board.RookingFlags();
+    cout << (flags.white_oo ? 'K' : '-');
+    cout << (flags.white_ooo ? 'Q' : '-');
+    cout << (flags.black_oo ? 'k' : '-');
+    cout << (flags.black_ooo ? 'q' : '-');
+    for(size_t i = 0 ; i<13;i++){
         cout << "-";
     }
+
     cout << endl;
 
 }
@@ -149,23 +182,120 @@ bool CompareUntillError(Board board , size_t depth){
 
     return false;
 }
+bool CompareSubs(Board board,BitBoard bitboard , size_t depth){
+    using namespace std;
+    std::map<std::string,int> table;
+    for(auto sub : board.GenerateSubBoards())
+        table[sub.Fen()]++;
+    for(auto sub : bitboard.GenerateSubBoards())
+        table[sub.Fen()]++;
+    for(auto pair : table)
+        if(pair.second%2==0)
+            table.erase(pair.first);
+    if(table.size()==0)
+        return false;
+    else {
+        for(auto pair : table)
+            cout << pair.first << ":" << pair.second << endl;
+        return true;
+    }
+}
+
+bool CompareSubCount(Board board,BitBoard bitboard , size_t depth){
+    using namespace std;
+    std::map<std::pair<size_t,std::string>,int> table;
+    for(auto sub : board.GenerateSubBoards()){
+        cout << MovesCounter(sub,depth) << ":" << sub.Fen() << endl;
+        table[{MovesCounter(sub,depth),sub.Fen()}]++;
+    }
+    cout << "---------------------" << endl;
+    for(auto sub : bitboard.GenerateSubBoards()){
+        table[{MovesCounter(sub,depth),sub.Fen()}]++;
+        cout << MovesCounter(sub,depth) << ":" << sub.Fen() << endl;
+    }
+    cout << "---------------------" << endl;
+    for(const auto &pair : table)
+        if(pair.second%2==0)
+            table.erase(pair.first);
+    if(table.size()==0)
+        return false;
+    else {
+        for(auto pair : table)
+            cout <<pair.first.first << ":" << pair.first.second << ":" << pair.second << endl;
+        return true;
+    }
+}
+
+bool CompareSubC(Board board,BitBoard bitboard , size_t depth){
+    using namespace std;
+    std::map<std::string,size_t> table;
+    std::map<std::string,size_t> bittable;
+    for(auto sub : board.GenerateSubBoards()){
+        table[sub.Fen()] = MovesCounter(sub,depth-1) ;
+    }
+    for(auto sub : bitboard.GenerateSubBoards()){
+        bittable[sub.Fen()] = MovesCounter(sub,depth-1) ;
+    }
+    for(const auto &pair : bittable){
+        cout << pair.first << endl;
+        cout << pair.second << "<->";
+        cout << table[pair.first] << endl;
+    }
+    for(const auto &pair : table){
+        cout << pair.first << endl;
+        cout << pair.second << "<->";
+        cout << bittable[pair.first] << endl;
+    }
+    return 0;
+}
 
 int main()
 {
     //BenchMaarkBoards();
     using namespace std;
     InitMagic();
-    //BenchMark();
-    std::cout << BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateSubBoards().size();
-    for(auto board : BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateSubBoards()){
-        PrintBoard(board);
-    }
-    /*
-    BitBoard board;
-    board = board.GenerateSubBoards()[0];
-    std::cout << (int)board.CurrentColor();
+    PrintBoardIndexes();
 
-    CompareUntillError(Board(),4);
+    size_t error_depth=1;
+
+    auto string = "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 0";
+    for(auto board : BitBoard(string).GenerateSubBoards())
+        PrintBoard(board);
+    CompareSubs(Board(string),BitBoard(string),1);
+    while(MovesCounter(Board(string),error_depth)==MovesCounter(BitBoard(string),error_depth)){
+        error_depth++;
+    }
+
+    cout << "ERROR DEPTH: -->" << error_depth << endl;
+
+/*
+    CompareSubs(Board(string),BitBoard(string),3);
+    //CompareSubCount(Board(string),BitBoard(string),error_depth);
+
+
+    cout << (MovesCounter(Board(string),2) == MovesCounter(BitBoard(string),2)) << endl;
+
+    CompareSubCount(Board(string),BitBoard(string),1);
+
+    */
+    /*
+    while(true){
+        std::string bord;
+        std::getline(std::cin,bord);
+        cout << MovesCounter(Board(bord),1) << endl;
+        cout << MovesCounter(BitBoard(bord),1) << endl;
+    }
+    */
+    //BenchMark();
+   // for(auto board : BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9").GenerateSubBoards()){
+  //      PrintBoard(board);
+  //  }
+    //BitBoard board;
+    //board = board.GenerateSubBoards()[0];
+    //std::cout << (int)board.CurrentColor();
+
+    //CompareUntillErrorSmart(Board("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"),3);
+    /*
     */
     /*
     size_t depth;
