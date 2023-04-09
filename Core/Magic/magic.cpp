@@ -2,6 +2,24 @@
 #include <random>
 #include <stdexcept>
 
+constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
+constexpr static const uint64_t row_b = row_a << 1;
+constexpr static const uint64_t row_c = row_a << 2;
+constexpr static const uint64_t row_d = row_a << 3;
+constexpr static const uint64_t row_e = row_a << 4;
+constexpr static const uint64_t row_f = row_a << 5;
+constexpr static const uint64_t row_g = row_a << 6;
+constexpr static const uint64_t row_h = row_a << 7;
+
+constexpr static const uint64_t line_8 = (1) + (1<<1) + (1<<2) + (1<<3) + (1LL<<4) + (1LL<<5) + (1LL<<6) + (1LL<<7);
+constexpr static const uint64_t line_7 = line_8 << 8;
+constexpr static const uint64_t line_6 = line_8 << 16;
+constexpr static const uint64_t line_5 = line_8 << 24;
+constexpr static const uint64_t line_4 = line_8 << 32;
+constexpr static const uint64_t line_3 = line_8 << 40;
+constexpr static const uint64_t line_2 = line_8 << 48;
+constexpr static const uint64_t line_1 = line_8 << 56;
+
 struct StartUp{
     StartUp(){
         InitMagic();
@@ -30,6 +48,7 @@ static uint64_t RHash2[64][64];
 static uint64_t BHash1[64][64];
 static uint64_t BHash2[64][64];
 //22kb total
+static uint64_t AttackFromMask[64];
 
 const int tab64[64] = {
     63,  0, 58,  1, 59, 47, 53,  2,
@@ -237,6 +256,23 @@ static uint64_t find_magic(uint64_t sq,uint64_t mask, uint64_t (*attack)(uint64_
     throw std::runtime_error("can't find magic");
 }
 
+uint64_t find_attacks_from(uint64_t sq){
+    sq = 1ULL << sq;
+    uint64_t mask = 0;
+    mask |= ProcessBishop(sq, 0) | ProcessRook(sq,0);
+    mask |= (((sq << 10) & ~(row_a | row_b)) |
+            ((sq << 17) & (~row_a)) |
+            ((sq >> 6)) & ~(row_a | row_b) |
+            ((sq >> 15) & ~(row_a)) |
+            ((sq << 6)  & ~(row_g | row_h)) |
+            ((sq << 15) & ~(row_h)) |
+            ((sq >> 10) & ~(row_g | row_h)) |
+            ((sq>> 17) & ~(row_h) ));
+                ;
+
+    return mask;
+}
+
 void InitMagic()
 {
     for(size_t i = 0 ; i < 64 ; i++){
@@ -260,6 +296,11 @@ void InitMagic()
         BMagic2[i] = find_magic(i,BMask2[i],generate_battack2,BHash2);
     }
 
+    for(size_t i = 0 ; i < 64 ; i++){
+        AttackFromMask[i] = find_attacks_from(i);
+    }
+
+
 }
 
 uint64_t ProcessRook(uint64_t sq, uint64_t borders)
@@ -276,4 +317,10 @@ uint64_t ProcessBishop(uint64_t sq, uint64_t borders)
     auto a1 = BHash1[sq][(borders&BMask1[sq])*BMagic1[sq] >> (64-BShift1[sq])];
     auto a2 = BHash2[sq][(borders&BMask2[sq])*BMagic2[sq] >> (64-BShift2[sq])];
     return a1|a2;
+}
+
+uint64_t AttackFrom(uint64_t sq)
+{
+    sq = log2_64(sq);
+    return AttackFromMask[sq];
 }

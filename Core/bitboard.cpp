@@ -277,6 +277,10 @@ struct Pawn{
 
 struct Knight{
     static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return GenerateAttack(figure,all,allies) & ~allies
+                ;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
         return
                 (((figure << 10) & ~(row_a | row_b)) |
                  ((figure << 17) & (~row_a)) |
@@ -285,18 +289,17 @@ struct Knight{
                  ((figure << 6)  & ~(row_g | row_h)) |
                  ((figure << 15) & ~(row_h)) |
                  ((figure >> 10) & ~(row_g | row_h)) |
-                 ((figure >> 17) & ~(row_h) )) & ~allies
-                ;
-    }
-    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
-        return
-                Generate(figure,all,allies);
+                 ((figure >> 17) & ~(row_h) )) ;
                 ;
     }
     constexpr static auto type = Figure::kKnight;
 };
 struct King{
     static uint64_t Generate(uint64_t figure, uint64_t all, uint64_t allies){
+        return GenerateAttack(figure,all,allies) & ~allies
+                ;
+    }
+    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
         return
                 (((figure << 1) & ~row_a) |
                  ((figure << 9) & ~row_a) |
@@ -305,12 +308,7 @@ struct King{
                  ((figure >> 1) & ~row_h) |
                  ((figure >> 9) & ~row_h) |
                  ((figure << 7) & ~row_h) |
-                 (figure << 8)) & ~allies;
-    }
-    static uint64_t GenerateAttack(uint64_t figure, uint64_t all, uint64_t allies){
-        return
-                Generate(figure,all,allies);
-                ;
+                 (figure << 8));
     }
     constexpr static auto type = Figure::kKing;
 };
@@ -323,7 +321,7 @@ struct Bishop{
         uint64_t mask = 0;
         BitIterator iterator(figure);
         while(iterator.Valid()){
-            mask |= Generate(iterator.Bit(),all,allies);
+            mask |= ProcessBishop(iterator.Bit(),all);
             ++iterator;
         }
         return mask;
@@ -339,7 +337,7 @@ struct Rook{
         uint64_t mask = 0;
         BitIterator iterator(figure);
         while(iterator.Valid()){
-            mask |= Generate(iterator.Bit(),all,allies);
+            mask |= ProcessRook(iterator.Bit(),all);
             ++iterator;
         }
         return mask;
@@ -356,7 +354,8 @@ struct Queen{
         uint64_t mask = 0;
         BitIterator iterator(figure);
         while(iterator.Valid()){
-            mask |= Generate(iterator.Bit(),all,allies);
+            mask |= (ProcessBishop(iterator.Bit(),all) |
+                 ProcessRook(iterator.Bit(),all));
             ++iterator;
         }
         return mask;
@@ -405,49 +404,14 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     uint64_t map = board_[color][Figure::kPawn] & from_mask;
 
     //el passant
-    if(last_pawn_move_.Valid())
-    {
-        uint64_t sq = 1ULL << last_pawn_move_.Value();
-        uint64_t pawns = map;
-        if (color == Color::kWhite)
-        {
-            uint64_t possible = (((pawns&(~row_a)) >> (8+1)) & sq) << (8+1);
-            if(possible){
-                boards.emplace_back(parrent);
-                boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
-                boards.back().Move(sq << 8,sq,color,Figure::kPawn);
-            }
-            possible = (((pawns&(~row_h)) >> (8-1)) & sq) << (8-1);
-            if(possible){
-                boards.emplace_back(parrent);
-                boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
-                boards.back().Move(sq << 8,sq,color,Figure::kPawn);
-            }
-        }
-        else
-        {
-            uint64_t possible = (((pawns&(~row_h)) << (8+1)) & sq) >> (8+1);
-            if(possible){
-                boards.emplace_back(parrent);
-                boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
-                boards.back().Move(sq >> 8,sq,color,Figure::kPawn);
-            }
-            possible = (((pawns&(~row_a)) << (8-1)) & sq) >> (8-1);
-            if(possible){
-                boards.emplace_back(parrent);
-                boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
-                boards.back().Move(sq >> 8,sq,color,Figure::kPawn);
-            }
-        }
-    }
 
     constexpr size_t move_direction = 8;
 
     uint64_t possible;
     if(color == Color::kWhite)
-        possible = ((map >> move_direction) & ~all) << move_direction;
+        possible = (((map >> move_direction) & ~all) & to_mask) << move_direction;
     else
-        possible = ((map << move_direction) & ~all) >> move_direction;
+        possible = (((map << move_direction) & ~all) & to_mask) >> move_direction;
 
     BitIterator iterator(possible);
     while(iterator.Valid())
@@ -476,9 +440,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if (color == Color::kWhite)
-        possible = (((map&(~row_a)) >> (move_direction+1)) & opponent) << (move_direction+1);
+        possible = (((map&(~row_a)) >> (move_direction+1)) & opponent & to_mask) << (move_direction+1);
     else
-        possible = (((map&(~row_h)) << (move_direction+1)) & opponent) >> (move_direction+1);
+        possible = (((map&(~row_h)) << (move_direction+1)) & opponent & to_mask) >> (move_direction+1);
     iterator = possible;
 
     while(iterator.Valid())
@@ -507,9 +471,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if(color == Color::kWhite)
-        possible = (((map&(~row_h)) >> (move_direction-1)) & opponent) << (move_direction-1);
+        possible = (((map&(~row_h)) >> (move_direction-1)) & opponent & to_mask) << (move_direction-1);
     else
-        possible = (((map&(~row_a)) << (move_direction-1)) & opponent) >> (move_direction-1);
+        possible = (((map&(~row_a)) << (move_direction-1)) & opponent & to_mask) >> (move_direction-1);
 
     iterator = possible;
 
@@ -539,9 +503,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if(color == Color::kWhite)
-        possible = (((((map & line_2) >> move_direction) & ~all ) >> move_direction) & ~all) << 2*move_direction;
+        possible = (((((map & line_2) >> move_direction) & ~all ) >> move_direction) & ~all & to_mask) << 2*move_direction;
     else
-        possible = (((((map & line_7) << move_direction) & ~all ) << move_direction) & ~all) >> 2*move_direction;
+        possible = (((((map & line_7) << move_direction) & ~all ) << move_direction) & ~all & to_mask) >> 2*move_direction;
     iterator = possible;
 
     while(iterator.Valid())
@@ -579,13 +543,13 @@ uint64_t BitBoard::ProcessAttack<Pawn>(Color color, uint64_t from_mask, uint64_t
 
     if (color == Color::kWhite)
     {
-        return  (((map&(~row_a)) >> (8+1)) & opponent) |
-                (((map&(~row_h)) >> (8-1)) & opponent) ;
+        return  (((map&(~row_a)) >> (8+1))) |
+                (((map&(~row_h)) >> (8-1))) ;
     }
     else
     {
-        return (((map&(~row_h)) << (8+1)) & opponent) |
-               (((map&(~row_a)) << (8-1)) & opponent) ;
+        return (((map&(~row_h)) << (8+1))) |
+               (((map&(~row_a)) << (8-1))) ;
     }
 }
 
@@ -618,6 +582,7 @@ uint64_t BitBoard::AttackMask(Color color) const
 std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
 {
     std::vector<BitBoard> boards;
+    boards.reserve(128);
 
     uint64_t empty = board_[color][Figure::kEmpty];
     uint64_t opponent = all_[!color];
@@ -629,20 +594,77 @@ std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
     parent.last_pawn_move_ = Position();
     parent.SkipMove();
 
-    // pawns
-    ProcessFigure<Pawn>(parent,boards,color,~0ULL,~0ULL,all,yours,opponent);
-    //knight
-    ProcessFigure<Knight>(parent,boards,color,~0ULL,~0ULL,all,yours,opponent);
-    //king
-    ProcessFigure<King>(parent,boards,color,~0ULL,~attack,all,yours,opponent);
-    // bishop
-    ProcessFigure<Bishop>(parent,boards,color,~0ULL,~0ULL,all,yours,opponent);
-    // rook
-    ProcessFigure<Rook>(parent,boards,color,~0ULL,~0ULL,all,yours,opponent);
-    // queen
-    ProcessFigure<Queen>(parent,boards,color,~0ULL,~0ULL,all,yours,opponent);
 
-    auto it = std::remove_if(boards.begin(),boards.end(),[](const BitBoard&b){return b.MateTest();});
+
+    uint64_t locked_figures = attack & yours & AttackFrom(board_[color][Figure::kKing]);
+
+    // pawns
+    ProcessFigure<Pawn>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    //knight
+    ProcessFigure<Knight>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // bishop
+    ProcessFigure<Bishop>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // rook
+    ProcessFigure<Rook>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // queen
+    ProcessFigure<Queen>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    //king
+    ProcessFigure<King>(parent,boards,color,~locked_figures,~attack,all,yours,opponent);
+
+    auto index = boards.size();
+    if((attack & board_[color][Figure::kKing]) != 0)
+        index = 0;
+
+    // pawns
+    ProcessFigure<Pawn>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    //knight
+    ProcessFigure<Knight>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // bishop
+    ProcessFigure<Bishop>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // rook
+    ProcessFigure<Rook>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // queen
+    ProcessFigure<Queen>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    //king
+    ProcessFigure<King>(parent,boards,color,locked_figures,~attack,all,yours,opponent);
+
+    if(last_pawn_move_.Valid())
+    {
+        uint64_t sq = 1ULL << last_pawn_move_.Value();
+        uint64_t pawns = board_[color][Figure::kPawn];
+        if (color == Color::kWhite)
+        {
+            uint64_t possible = ((((pawns&(~row_a)) >> (8+1)) & sq) ) << (8+1);
+            if(possible){
+                boards.emplace_back(parent);
+                boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
+                boards.back().Move(sq << 8,sq,color,Figure::kPawn);
+            }
+            possible = ((((pawns&(~row_h)) >> (8-1)) & sq) ) << (8-1);
+            if(possible){
+                boards.emplace_back(parent);
+                boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
+                boards.back().Move(sq << 8,sq,color,Figure::kPawn);
+            }
+        }
+        else
+        {
+            uint64_t possible = ((((pawns&(~row_h)) << (8+1)) & sq)) >> (8+1);
+            if(possible){
+                boards.emplace_back(parent);
+                boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
+                boards.back().Move(sq >> 8,sq,color,Figure::kPawn);
+            }
+            possible = ((((pawns&(~row_a)) << (8-1)) & sq) ) >> (8-1);
+            if(possible){
+                boards.emplace_back(parent);
+                boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
+                boards.back().Move(sq >> 8,sq,color,Figure::kPawn);
+            }
+        }
+    }
+
+    auto it = std::remove_if(boards.begin()+index,boards.end(),[](const BitBoard&b){return b.MateTest();});
     boards.erase(it,boards.end());
 
     //rooking
@@ -723,6 +745,7 @@ std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
         }
 
     }
+
 
     return boards;
 }
