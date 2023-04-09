@@ -23,7 +23,6 @@ class BitBoard
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
-    friend void PrintInside(const BitBoard& board);
 
     using bitboard_t = uint64_t;
 
@@ -52,7 +51,7 @@ class BitBoard
     Color current_player_color_;
     Position last_pawn_move_;
 
-    std::vector<BitBoard> GenerateSubBoards(Color color) const;
+    void GenerateSubBoards(Color color, std::vector<BitBoard>&) const;
 
     void Move(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
     void Attack(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
@@ -101,6 +100,7 @@ public:
     bool Tie() const;
 
     std::vector<BitBoard> GenerateSubBoards() const;
+    void GenerateSubBoards(std::vector<BitBoard> &boards) const;
 
     std::vector<Turn> GenerateTurns() const;
     bool ExecuteTurn(Turn turn);

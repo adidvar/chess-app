@@ -3,6 +3,7 @@
 #include <cinttypes>
 
 uint64_t log2_64(uint64_t value);
+int count_1s(uint64_t b);
 
 void InitMagic();
 

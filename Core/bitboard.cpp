@@ -4,6 +4,10 @@
 #include <cassert>
 #include "magic.hpp"
 
+constexpr uint64_t operator ""_b(uint64_t num){
+    return (uint64_t)1 << num;
+}
+
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 BitBoard::BitBoard(std::string_view fen):
@@ -579,10 +583,9 @@ uint64_t BitBoard::AttackMask(Color color) const
 
 }
 
-std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
+void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) const
 {
-    std::vector<BitBoard> boards;
-    boards.reserve(128);
+    boards.clear();
 
     uint64_t empty = board_[color][Figure::kEmpty];
     uint64_t opponent = all_[!color];
@@ -745,14 +748,111 @@ std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
         }
 
     }
-
-
-    return boards;
 }
 
 std::vector<BitBoard> BitBoard::GenerateSubBoards() const
 {
-    return GenerateSubBoards(CurrentColor());
+    std::vector<BitBoard> boards;
+    boards.reserve(120);
+
+    GenerateSubBoards(CurrentColor(),boards);
+    return boards;
+}
+void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards) const
+{
+    return GenerateSubBoards(CurrentColor(),boards);
+}
+
+#include <iostream>
+void PrintbitBoard(uint64_t board){
+    const char letters[] = " +";
+
+    using namespace std;
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
+    for(size_t i = 0 ; i<8;i++){
+        cout << '|';
+        for(size_t j = 0 ; j<8;j++){
+            Position pos(i,j);
+            cout << letters[((board >> pos.Value()) & 1) ] << "|";
+        }
+        cout << endl;
+    }
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
+}
+template <class T>
+void PrintBoard(const T& board){
+
+    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
+
+    using namespace std;
+    for(size_t i = 0 ; i<17;i++){
+        cout << "-";
+    }
+    cout << endl;
+    for(size_t i = 0 ; i<8;i++){
+        cout << '|';
+        for(size_t j = 0 ; j<8;j++){
+            Position pos(i,j);
+            auto type = board.GetCell(pos);
+            cout << letters[type.color][type.type] << "|";
+        }
+        cout << endl;
+    }
+    auto flags = board.RookingFlags();
+    cout << (flags.white_oo ? 'K' : '-');
+    cout << (flags.white_ooo ? 'Q' : '-');
+    cout << (flags.black_oo ? 'k' : '-');
+    cout << (flags.black_ooo ? 'q' : '-');
+    for(size_t i = 0 ; i<13;i++){
+        cout << "-";
+    }
+
+    cout << endl;
+
+}
+
+uint64_t rooking_masks[2][2]{
+    {56_b+58_b+59_b+60_b,60_b+61_b+62_b+63_b},
+    {0_b+2_b+3_b+4_b,4_b+5_b+6_b+7_b}
+};
+
+std::vector<Turn> BitBoard::GenerateTurns() const
+{
+    std::vector<BitBoard> boards;
+    std::vector<Turn> turns;
+    boards.reserve(120);
+    GenerateSubBoards(boards);
+
+    for(auto subboard : boards){
+        PrintBoard(subboard);
+
+        uint64_t delta = all_[CurrentColor()] ^ subboard.all_[CurrentColor()];
+        if(rooking_masks[CurrentColor()][0] == delta){
+            turns.push_back(CurrentColor() == Color::kWhite ? Turn(60,58) : Turn(4,2));
+        }
+        if(rooking_masks[CurrentColor()][1] == delta){
+            turns.push_back(CurrentColor() == Color::kWhite ? Turn(60,62) : Turn(4,6));
+        }
+        else if(count_1s(board_[CurrentColor()][Figure::kPawn]) != count_1s(subboard.board_[CurrentColor()][Figure::kPawn])){
+            uint64_t from = all_[Color::kWhite] & delta;
+            uint64_t to = subboard.all_[Color::kWhite] & delta;
+            turns.push_back(Turn(log2_64(from),log2_64(to),subboard.GetFigure(log2_64(to))));
+        }
+        else {
+            uint64_t from = all_[Color::kWhite] & delta;
+            uint64_t to = subboard.all_[Color::kWhite] & delta;
+            turns.push_back(Turn(log2_64(from),log2_64(to)));
+        }
+    }
+
+
+    return turns;
 }
 
 

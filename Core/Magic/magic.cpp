@@ -82,7 +82,7 @@ static uint64_t random_uint64_fewbits() {
   return random_uint64() & random_uint64() & random_uint64();
 }
 
-static int count_1s(uint64_t b) {
+int count_1s(uint64_t b) {
   int r;
   for(r = 0; b; r++, b &= b - 1);
   return r;
