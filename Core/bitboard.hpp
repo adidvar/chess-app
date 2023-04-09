@@ -23,6 +23,7 @@ class BitBoard
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
+    friend void PrintInside(const BitBoard& board);
 
     using bitboard_t = uint64_t;
 

@@ -458,17 +458,18 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
         else
             after = iterator.Bit() << move_direction;
 
-        boards.emplace_back(parrent);
-        boards.back().Move(iterator.Bit(),after,color,Figure::kPawn);
+        BitBoard copy(parrent);
+        copy.Move(iterator.Bit(),after,color,Figure::kPawn);
+        boards.emplace_back(copy);
         if(after & (line_1|line_8))
         {
             boards.back().Transform(after,color,Figure::kPawn,Figure::kQueen);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kQueen,Figure::kRook);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kRook,Figure::kBishop);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kBishop,Figure::kKnight);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kRook);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kBishop);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kKnight);
         }
 
         ++iterator;
@@ -488,17 +489,18 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
         else
             after = iterator.Bit() << (move_direction+1);
 
-        boards.emplace_back(parrent);
-        boards.back().Attack(iterator.Bit(),after,color,Figure::kPawn);
+        BitBoard copy(parrent);
+        copy.Attack(iterator.Bit(),after,color,Figure::kPawn);
+        boards.emplace_back(copy);
         if(after & (line_1|line_8))
         {
             boards.back().Transform(after,color,Figure::kPawn,Figure::kQueen);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kQueen,Figure::kRook);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kRook,Figure::kBishop);
-            boards.emplace_back(boards.back());
-            boards.back().Transform(after,color,Figure::kBishop,Figure::kKnight);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kRook);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kBishop);
+            boards.emplace_back(copy);
+            boards.back().Transform(after,color,Figure::kPawn,Figure::kKnight);
         }
 
         ++iterator;
@@ -519,16 +521,17 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
         else
             after = iterator.Bit() << (move_direction-1);
 
-        boards.emplace_back(parrent);
-        boards.back().Attack(iterator.Bit(),after,color,Figure::kPawn);
+        BitBoard copy(parrent);
+        copy.Attack(iterator.Bit(),after,color,Figure::kPawn);
+        boards.emplace_back(copy);
         if(after & (line_1|line_8))
         {
             boards.back().Transform(after,color,Figure::kPawn,Figure::kQueen);
-            boards.emplace_back(boards.back());
+            boards.emplace_back(copy);
             boards.back().Transform(after,color,Figure::kPawn,Figure::kRook);
-            boards.emplace_back(boards.back());
+            boards.emplace_back(copy);
             boards.back().Transform(after,color,Figure::kPawn,Figure::kBishop);
-            boards.emplace_back(boards.back());
+            boards.emplace_back(copy);
             boards.back().Transform(after,color,Figure::kPawn,Figure::kKnight);
         }
 
