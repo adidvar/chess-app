@@ -18,5 +18,5 @@ file(GLOB files
 )
 
 add_executable(BoardDebugger ${files})
-target_link_libraries(BoardDebugger ChessCore Magic)
+target_link_libraries(BoardDebugger ChessCore AI)
 

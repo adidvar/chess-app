@@ -5,6 +5,7 @@
 #include <board.hpp>
 #include <bitboard.hpp>
 #include <magic.hpp>
+#include <computer.hpp>
 
 
 template<class Board>
@@ -282,9 +283,13 @@ int main()
     //std::cout << MovesCounter(BitBoard(), 6);
     using namespace std;
     //PrintBitBoard(AttackFrom(1ULL << 35));
+    auto board = BitBoard();
+    Computer cmp(Color::kWhite);
 
-    for(auto turn : BitBoard("rnbkqbnr/pp2pPpp/8/1Pp5/8/8/PP1PP1PP/R3K2R w KQ c6 0 1").GenerateTurns())
-        std::cout << turn.ToChessFormat() << std::endl;
+    for(auto sub: board.GenerateSubBoards()){
+        PrintBoard(sub);
+        std::cout << cmp.Evaluate(sub) << std::endl;
+    }
 
     PrintBoardIndexes();
 

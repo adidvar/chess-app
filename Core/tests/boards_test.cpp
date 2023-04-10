@@ -4,7 +4,7 @@
 #include "board.hpp"
 #include "bitboard.hpp"
 
-TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board]", BitBoard, Board){
+TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board][fen]", BitBoard, Board){
 
     SECTION( "Test of TestColor GetFigure GetColor" ) {
         TestType board;

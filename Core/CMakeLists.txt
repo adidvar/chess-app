@@ -21,7 +21,7 @@ enable_testing()
 add_subdirectory("Tests")
 endif()
 
-add_subdirectory("BoardDebugger")
+
 add_subdirectory("Magic")
 
 target_link_libraries(ChessCore Magic)
