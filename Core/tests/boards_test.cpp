@@ -5,10 +5,9 @@
 #include "bitboard.hpp"
 
 TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board]", BitBoard, Board){
-    TestType board;
 
     SECTION( "Test of TestColor GetFigure GetColor" ) {
-
+        TestType board;
         for(uint8_t i=0;i<64;i++)
         {
             for(uint8_t figure = 1; figure < 7 ; figure++){
@@ -28,21 +27,161 @@ TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board]", BitBoard, Board
     }
 
     SECTION( "Test of TestEmp" ) {
+        TestType board;
         for(int i=0;i<64;i++)
         {
-            board.Set(i,{(Figure)0,(Color)0});
+            board.Set(i,{Figure::kEmpty,Color::kWhite});
             REQUIRE(board.TestEmp(i));
             REQUIRE(board.GetFigure(i) == (Figure)0);
         }
     }
 
     SECTION( "Test of Swap" ) {
-        board.Set(0,{Figure::kPawn,Color::kWhite});
-        board.Set(1,{Figure::kKnight,Color::kBlack});
-        board.Swap(0,1);
-        REQUIRE(board.Test(Figure::kPawn,1));
-        REQUIRE(board.Test(Figure::kKnight,0));
-        REQUIRE(board.TestColor(Color::kBlack,0));
-        REQUIRE(board.TestColor(Color::kWhite,1));
+        TestType board;
+        for(size_t i = 0 ; i < 64 ; i++){
+            for(size_t j = 0 ; j < 64 ; j++){
+                if(i==j)
+                    continue;
+
+                board.Set(i,{Figure::kPawn,Color::kWhite});
+                board.Set(j,{Figure::kKnight,Color::kBlack});
+                board.Swap(i,j);
+                REQUIRE(board.Test(Figure::kPawn,j));
+                REQUIRE(board.Test(Figure::kKnight,i));
+                REQUIRE(board.TestColor(Color::kBlack,i));
+                REQUIRE(board.TestColor(Color::kWhite,j));
+            }
+        }
+    }
+    SECTION( "Test of SkipMove CurrentColor OpponentColor" ) {
+        TestType board;
+        auto copy = board;
+        copy.SkipMove();
+        REQUIRE(board.CurrentColor() == copy.OpponentColor());
+        REQUIRE(copy.CurrentColor() == board.OpponentColor());
+    }
+    SECTION( "Test of ExecuteTurn GenerateTurns TestTurn" ) {
+        TestType board;
+        auto turns = board.GenerateTurns();
+        auto subboards = board.GenerateSubBoards();
+        REQUIRE(turns.size() == subboards.size());
+
+        for(size_t i = 0 ; i < turns.size(); i++){
+            TestType sub = board;
+            sub.ExecuteTurn(turns[i]);
+            REQUIRE(sub.Fen() == subboards[i].Fen());
+        }
+    }
+    SECTION( "Test of el passant" ) {
+        TestType board;
+        REQUIRE(board.ExecuteTurn(Turn(Position(51),Position(35))));
+        REQUIRE(board.LastPawnMove() == Position(43));
+        REQUIRE(board.ExecuteTurn(Turn(Position(9),Position(17))));
+        REQUIRE(board.LastPawnMove() == Position());
+        board = TestType();
+        board.SkipMove();
+        REQUIRE(board.ExecuteTurn(Turn(Position(9),Position(25))));
+        REQUIRE(board.LastPawnMove() == Position(17));
+        REQUIRE(board.ExecuteTurn(Turn(Position(57),Position(42))));
+        REQUIRE(board.LastPawnMove() == Position());
+    }
+    SECTION( "Test of castling" ) {
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(60),Position(62))));
+            REQUIRE(!board.RookingFlags().white_ooo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(60),Position(58))));
+            REQUIRE(!board.RookingFlags().white_ooo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(60),Position(52))));
+            REQUIRE(!board.RookingFlags().white_ooo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(56),Position(48))));
+            REQUIRE(!board.RookingFlags().white_ooo);
+            REQUIRE(board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(63),Position(55))));
+            REQUIRE(board.RookingFlags().white_ooo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(56),Position(0))));
+            REQUIRE(!board.RookingFlags().white_ooo);
+            REQUIRE(!board.RookingFlags().black_ooo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(63),Position(7))));
+            REQUIRE(!board.RookingFlags().black_oo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(4),Position(6))));
+            REQUIRE(!board.RookingFlags().black_ooo);
+            REQUIRE(!board.RookingFlags().black_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(4),Position(2))));
+            REQUIRE(!board.RookingFlags().black_ooo);
+            REQUIRE(!board.RookingFlags().black_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(4),Position(12))));
+            REQUIRE(!board.RookingFlags().black_ooo);
+            REQUIRE(!board.RookingFlags().black_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(0),Position(8))));
+            REQUIRE(!board.RookingFlags().black_ooo);
+            REQUIRE(board.RookingFlags().black_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(7),Position(15))));
+            REQUIRE(board.RookingFlags().black_ooo);
+            REQUIRE(!board.RookingFlags().black_oo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(0),Position(56))));
+            REQUIRE(!board.RookingFlags().black_ooo);
+            REQUIRE(!board.RookingFlags().white_ooo);
+        }
+        {
+            TestType board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+            REQUIRE(board.ExecuteTurn(Turn(Position(7),Position(63))));
+            REQUIRE(!board.RookingFlags().black_oo);
+            REQUIRE(!board.RookingFlags().white_oo);
+        }
     }
 }
+
+
+/*
+    size_t TurnCounter() const noexcept;
+    size_t PassiveTurnCounter() const noexcept;
+
+    bool MateTest() const;
+    bool End() const;
+    bool Checkmate() const;
+    bool WhiteWin() const;
+    bool BlackWin() const;
+    bool Tie() const;
+    */

@@ -792,17 +792,37 @@ std::vector<Turn> BitBoard::GenerateTurns() const
             turns.push_back(CurrentColor() == Color::kWhite ? Turn(60,62) : Turn(4,6));
         }
         else if(count_1s(board_[CurrentColor()][Figure::kPawn]) != count_1s(subboard.board_[CurrentColor()][Figure::kPawn])){
-            uint64_t from = all_[Color::kWhite] & delta;
-            uint64_t to = subboard.all_[Color::kWhite] & delta;
+            uint64_t from = all_[CurrentColor()] & delta;
+            uint64_t to = subboard.all_[CurrentColor()] & delta;
             turns.push_back(Turn(log2_64(from),log2_64(to),subboard.GetFigure(log2_64(to))));
         }
         else {
-            uint64_t from = all_[Color::kWhite] & delta;
-            uint64_t to = subboard.all_[Color::kWhite] & delta;
+            uint64_t from = all_[CurrentColor()] & delta;
+            uint64_t to = subboard.all_[CurrentColor()] & delta;
             turns.push_back(Turn(log2_64(from),log2_64(to)));
         }
     }
 
 
     return turns;
+}
+
+bool BitBoard::ExecuteTurn(Turn turn)
+{
+    auto turns = GenerateTurns();
+    auto maps = GenerateSubBoards();
+    for(size_t i = 0 ; i < turns.size() ; ++i){
+        if(turns[i] == turn)
+        {
+            *this = maps[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BitBoard::TestTurn(Turn turn) const
+{
+    auto turns = GenerateTurns();
+    return std::count(turns.begin(),turns.end(),turn) == 1;
 }

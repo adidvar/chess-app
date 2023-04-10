@@ -564,7 +564,6 @@ bool Board::MateTest() const {
 bool Board::UnderAtack(Position position) const
 {
     assert(position.Valid());
-    assert(!TestEmp(position));
     auto turns = UnsafeTurns(OpponentColor());
     for(auto turn : turns){
         if(turn.to() == position){
