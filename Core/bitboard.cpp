@@ -175,6 +175,31 @@ bool BitBoard::MateTest() const
     return (AttackMask(OpponentColor()) & board_[CurrentColor()][Figure::kKing]) != 0;
 }
 
+bool BitBoard::End() const
+{
+    return GenerateSubBoards().size() == 0;
+}
+
+bool BitBoard::Checkmate() const
+{
+    return End() && MateTest();
+}
+
+bool BitBoard::WhiteWin() const
+{
+    return (CurrentColor() == Color::kBlack) && End();
+}
+
+bool BitBoard::BlackWin() const
+{
+    return (CurrentColor() == Color::kWhite) && End();
+}
+
+bool BitBoard::Tie() const
+{
+    return End() && !MateTest();
+}
+
 bool BitBoard::OpponentMateTest() const
 {
     return (AttackMask(CurrentColor()) & board_[OpponentColor()][Figure::kKing]) != 0;
