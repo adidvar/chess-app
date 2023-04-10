@@ -171,6 +171,62 @@ TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board]", BitBoard, Board
             REQUIRE(!board.RookingFlags().white_oo);
         }
     }
+    SECTION( "Test of MateTest End Checkmate WhiteWin BlackWin Tie" ) {
+        {
+            TestType board;
+            REQUIRE(!board.MateTest());
+            REQUIRE(!board.End());
+            REQUIRE(!board.Checkmate());
+            REQUIRE(!board.WhiteWin());
+            REQUIRE(!board.BlackWin());
+            REQUIRE(!board.Tie());
+        }
+        {
+            TestType board("rnb1kbnr/pppppppp/8/4q3/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+            REQUIRE(board.MateTest());
+            REQUIRE(!board.End());
+            REQUIRE(!board.Checkmate());
+            REQUIRE(!board.WhiteWin());
+            REQUIRE(!board.BlackWin());
+            REQUIRE(!board.Tie());
+        }
+        {
+            TestType board("rnb1k2r/pppppppp/6n1/4bq2/7K/8/PPPP1PPP/RNBQ1BNR w KQkq - 0 1");
+            REQUIRE(board.MateTest());
+            REQUIRE(board.End());
+            REQUIRE(board.Checkmate());
+            REQUIRE(!board.WhiteWin());
+            REQUIRE(board.BlackWin());
+            REQUIRE(!board.Tie());
+        }
+        {
+            TestType board("rnb4r/ppppp3/6N1/4BQ2/7k/8/PPPP1PPP/RNBK3R b KQkq - 0 1");
+            REQUIRE(board.MateTest());
+            REQUIRE(board.End());
+            REQUIRE(board.Checkmate());
+            REQUIRE(board.WhiteWin());
+            REQUIRE(!board.BlackWin());
+            REQUIRE(!board.Tie());
+        }
+        {
+            TestType board("k7/8/1Q6/2K5/8/8/8/8 b - - 0 1");
+            REQUIRE(!board.MateTest());
+            REQUIRE(board.End());
+            REQUIRE(!board.Checkmate());
+            REQUIRE(board.WhiteWin());
+            REQUIRE(!board.BlackWin());
+            REQUIRE(board.Tie());
+        }
+        {
+            TestType board("K7/8/1q6/2k5/8/8/8/8 w - - 0 1");
+            REQUIRE(!board.MateTest());
+            REQUIRE(board.End());
+            REQUIRE(!board.Checkmate());
+            REQUIRE(!board.WhiteWin());
+            REQUIRE(board.BlackWin());
+            REQUIRE(board.Tie());
+        }
+    }
 }
 
 
