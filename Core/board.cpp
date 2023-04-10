@@ -560,6 +560,31 @@ bool Board::MateTest() const {
     return UnderAtack(king_pos);
 }
 
+bool Board::End() const
+{
+    return GenerateSubBoards().size() == 0;
+}
+
+bool Board::Checkmate() const
+{
+    return End() && MateTest();
+}
+
+bool Board::WhiteWin() const
+{
+    return (CurrentColor() == Color::kBlack) && End();
+}
+
+bool Board::BlackWin() const
+{
+    return (CurrentColor() == Color::kWhite) && End();
+}
+
+bool Board::Tie() const
+{
+    return End() && !MateTest();
+}
+
 
 bool Board::UnderAtack(Position position) const
 {
