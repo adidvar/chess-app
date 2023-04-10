@@ -1,5 +1,5 @@
-#ifndef POSITIONS_H
-#define POSITIONS_H
+#ifndef POSITION_H
+#define POSITION_H
 #include <cinttypes>
 #include <string>
 #include <cassert>

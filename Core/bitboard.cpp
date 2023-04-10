@@ -8,6 +8,53 @@ constexpr uint64_t operator ""_b(uint64_t num){
     return (uint64_t)1 << num;
 }
 
+constexpr static const uint64_t row_a = 0_b + 8_b + 16_b + 24_b + 32_b + 40_b + 48_b + 56_b;
+constexpr static const uint64_t row_b = row_a << 1;
+constexpr static const uint64_t row_c = row_a << 2;
+constexpr static const uint64_t row_d = row_a << 3;
+constexpr static const uint64_t row_e = row_a << 4;
+constexpr static const uint64_t row_f = row_a << 5;
+constexpr static const uint64_t row_g = row_a << 6;
+constexpr static const uint64_t row_h = row_a << 7;
+
+constexpr static const uint64_t line_8 = 0_b + 1_b + 2_b + 3_b + 4_b + 5_b + 6_b + 7_b;
+constexpr static const uint64_t line_7 = line_8 << 8;
+constexpr static const uint64_t line_6 = line_8 << 16;
+constexpr static const uint64_t line_5 = line_8 << 24;
+constexpr static const uint64_t line_4 = line_8 << 32;
+constexpr static const uint64_t line_3 = line_8 << 40;
+constexpr static const uint64_t line_2 = line_8 << 48;
+constexpr static const uint64_t line_1 = line_8 << 56;
+
+const static uint64_t rooking_masks[2][2]{
+    { 56_b+58_b+59_b+60_b , 60_b+61_b+62_b+63_b},
+    { 0_b+2_b+3_b+4_b     , 4_b+5_b+6_b+7_b    }
+};
+
+struct BitIterator{
+    uint64_t value_;
+    uint64_t bit_;
+
+    constexpr BitIterator(uint64_t value):
+        value_(value),bit_(0)
+    {
+        operator++();
+    }
+
+    constexpr uint64_t Value(){return value_;}
+    constexpr uint64_t Bit(){return bit_;}
+    constexpr void operator =(uint64_t value){value_ = value;operator++();}
+    constexpr void operator++()
+    {
+        bit_ = value_^((value_-1)&value_);
+        value_ &= ~bit_;
+    }
+    constexpr bool Valid(){
+        return bit_!=0;
+    }
+
+};
+
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 BitBoard::BitBoard(std::string_view fen):
@@ -15,13 +62,16 @@ board_{{0},{0}}
 {
     FenLoader<BitBoard> tools(*this);
     tools.LoadFromFen(fen);
-    all_[1] = 0;
-    for(size_t i = 1 ; i < 7 ; i++){
-        all_[0] |= board_[Color::kWhite][i];
-        all_[1] |= board_[Color::kBlack][i];
+
+    all_[Color::kWhite] = all_[Color::kBlack] = 0;
+
+    for(size_t i = 1 ; i < 7 ; i++)
+    {
+        all_[Color::kWhite] |= board_[Color::kWhite][i];
+        all_[Color::kBlack] |= board_[Color::kBlack][i];
     }
-    board_[0][0] = ~(all_[0] | all_[1]);
-    board_[1][0] = ~(all_[0] | all_[1]);
+
+    board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
 }
 
 std::string BitBoard::Fen() const
@@ -37,7 +87,7 @@ Color BitBoard::CurrentColor() const noexcept
 
 Color BitBoard::OpponentColor() const noexcept
 {
-    return current_player_color_ == Color::kWhite ? Color::kBlack : Color::kWhite;
+    return !current_player_color_;
 }
 
 BitBoard::RookingFlags_t BitBoard::RookingFlags() const noexcept
@@ -64,35 +114,38 @@ void BitBoard::Set(Position position, Cell cell) ///< Записує фігур�
 {
     for(size_t i = 1 ; i < 7 ; i++)
     {
-        board_[0][i] &= ~((uint64_t)1<<position.Value());
-        board_[1][i] &= ~((uint64_t)1<<position.Value());
+        board_[Color::kWhite][i] &= ~((uint64_t)1<<position.Value());
+        board_[Color::kBlack][i] &= ~((uint64_t)1<<position.Value());
     }
 
     board_[cell.color][cell.type] |= ((uint64_t)1<<position.Value());
 
-    all_[0] = 0;
-    all_[1] = 0;
-    for(size_t i = 1 ; i < 7 ; i++){
-        all_[0] |= board_[Color::kWhite][i];
-        all_[1] |= board_[Color::kBlack][i];
+    all_[Color::kWhite] = all_[Color::kBlack] = 0;
+
+    for(size_t i = 1 ; i < 7 ; i++)
+    {
+        all_[Color::kWhite] |= board_[Color::kWhite][i];
+        all_[Color::kBlack] |= board_[Color::kBlack][i];
     }
-    board_[1][0] = board_[0][0] = ~(all_[0] | all_[1]);
+
+    board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
 }
 
 void BitBoard::Swap(Position p1, Position p2)
 {
     assert(p1.Valid());
     assert(p2.Valid());
+
     auto cell = GetCell(p1);
     Set(p1,GetCell(p2));
     Set(p2,cell);
 }
 
-
 void BitBoard::SkipMove()
 {
     current_player_color_ = OpponentColor();
 }
+
 bool BitBoard::Test(Figure figure, Position position) const noexcept
 {
     assert(position.Valid());
@@ -108,8 +161,9 @@ bool BitBoard::TestColor(Color color, Position position) const noexcept
 bool BitBoard::TestEmp(Position position) const noexcept
 {
     assert(position.Valid());
-    return ( board_[0][0] >> position.Value()) & 1;
+    return ( board_[Color::kWhite][Figure::kEmpty] >> position.Value()) & 1;
 }
+
 BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
 {
     assert(position.Valid());
@@ -117,6 +171,11 @@ BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
 }
 
 bool BitBoard::MateTest() const
+{
+    return (AttackMask(OpponentColor()) & board_[CurrentColor()][Figure::kKing]) != 0;
+}
+
+bool BitBoard::OpponentMateTest() const
 {
     return (AttackMask(CurrentColor()) & board_[OpponentColor()][Figure::kKing]) != 0;
 }
@@ -129,6 +188,8 @@ Figure BitBoard::GetFigure(Position position) const noexcept
        if( Test(i,position) )
            return (i);
     }
+
+    return Figure::kEmpty;
 }
 
 Color BitBoard::GetColor(Position position) const noexcept
@@ -137,47 +198,6 @@ Color BitBoard::GetColor(Position position) const noexcept
     return TestColor(Color::kBlack,position);
 }
 
-constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
-constexpr static const uint64_t row_b = row_a << 1;
-constexpr static const uint64_t row_c = row_a << 2;
-constexpr static const uint64_t row_d = row_a << 3;
-constexpr static const uint64_t row_e = row_a << 4;
-constexpr static const uint64_t row_f = row_a << 5;
-constexpr static const uint64_t row_g = row_a << 6;
-constexpr static const uint64_t row_h = row_a << 7;
-
-constexpr static const uint64_t line_8 = (1) + (1<<1) + (1<<2) + (1<<3) + (1LL<<4) + (1LL<<5) + (1LL<<6) + (1LL<<7);
-constexpr static const uint64_t line_7 = line_8 << 8;
-constexpr static const uint64_t line_6 = line_8 << 16;
-constexpr static const uint64_t line_5 = line_8 << 24;
-constexpr static const uint64_t line_4 = line_8 << 32;
-constexpr static const uint64_t line_3 = line_8 << 40;
-constexpr static const uint64_t line_2 = line_8 << 48;
-constexpr static const uint64_t line_1 = line_8 << 56;
-
-struct BitIterator{
-    uint64_t value_;
-    uint64_t bit_;
-
-    constexpr BitIterator(uint64_t value):
-        value_(value),bit_(0)
-    {
-        operator++();
-    }
-
-    constexpr uint64_t Value(){return value_;}
-    constexpr uint64_t Bit(){return bit_;}
-    constexpr void operator =(uint64_t value){value_ = value;operator++();}
-    constexpr void operator++()
-    {
-        bit_ = value_^((value_-1)&value_);
-        value_ &= ~bit_;
-    }
-    constexpr bool Valid(){
-        return bit_!=0;
-    }
-
-};
 
 void BitBoard::Move(uint64_t from, uint64_t to, Color color, Figure type)
 {
@@ -187,27 +207,25 @@ void BitBoard::Move(uint64_t from, uint64_t to, Color color, Figure type)
     all_[color] &= ~from;
     all_[color] |= to;
 
-    board_[1][0] =
-    board_[0][0] =
-            ~(all_[0] | all_[1]);
+    board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
 
-    if(from & (1ULL<<0 | 1ULL<<4 | 1ULL << 7 | 1ULL << 56 | 1ULL << 60 | 1ULL << 63))
+    if(from & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b))
     {
-        if(from & (1ULL<<0) )
+        if(from & 0_b )
             rooking_flags_.black_ooo = false;
-        else if(from & (1ULL<<4) ){
+        else if(from & 4_b ){
             rooking_flags_.black_ooo = false;
             rooking_flags_.black_oo = false;
         }
-        else if(from & (1ULL<<7) )
+        else if(from & 7_b )
             rooking_flags_.black_oo = false;
-        else if(from & (1ULL<<56) )
+        else if(from & 56_b )
             rooking_flags_.white_ooo = false;
-        else if(from & (1ULL<<60) ){
+        else if(from & 60_b ){
             rooking_flags_.white_ooo = false;
             rooking_flags_.white_oo = false;
         }
-        else if(from & (1ULL<<63) )
+        else if(from & 63_b )
             rooking_flags_.white_oo = false;
     }
 }
@@ -224,46 +242,44 @@ void BitBoard::Attack(uint64_t from, uint64_t to, Color color, Figure type)
         board_[!color][i] &= ~to;
     all_[!color] &= ~to;
 
-    board_[1][0] =
-    board_[0][0] =
-            ~(all_[0] | all_[1]);
+    board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
 
-    if(to & (1ULL<<0 | 1ULL<<4 | 1ULL << 7 | 1ULL << 56 | 1ULL << 60 | 1ULL << 63))
+    if(to & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b))
     {
-        if(to & (1ULL<<0) )
+        if(to & 0_b )
             rooking_flags_.black_ooo = false;
-        else if(to & (1ULL<<4) ){
+        else if(to & 4_b ){
             rooking_flags_.black_ooo = false;
             rooking_flags_.black_oo = false;
         }
-        else if(to & (1ULL<<7) )
+        else if(to & 7_b )
             rooking_flags_.black_oo = false;
-        else if(to & (1ULL<<56) )
+        else if(to & 56_b )
             rooking_flags_.white_ooo = false;
-        else if(to & (1ULL<<60) ){
+        else if(to & 60_b ){
             rooking_flags_.white_ooo = false;
             rooking_flags_.white_oo = false;
         }
-        else if(to & (1ULL<<63) )
+        else if(to & 63_b )
             rooking_flags_.white_oo = false;
     }
-    if(from & (1ULL<<0 | 1ULL<<4 | 1ULL << 7 | 1ULL << 56 | 1ULL << 60 | 1ULL << 63))
+    if(from & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b))
     {
-        if(from & (1ULL<<0) )
+        if(from & 0_b )
             rooking_flags_.black_ooo = false;
-        else if(from & (1ULL<<4) ){
+        else if(from & 4_b ){
             rooking_flags_.black_ooo = false;
             rooking_flags_.black_oo = false;
         }
-        else if(from & (1ULL<<7) )
+        else if(from & 7_b )
             rooking_flags_.black_oo = false;
-        else if(from & (1ULL<<56) )
+        else if(from & 56_b )
             rooking_flags_.white_ooo = false;
-        else if(from & (1ULL<<60) ){
+        else if(from & 60_b ){
             rooking_flags_.white_ooo = false;
             rooking_flags_.white_oo = false;
         }
-        else if(from & (1ULL<<63) )
+        else if(from & 63_b )
             rooking_flags_.white_oo = false;
     }
 
@@ -407,24 +423,20 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
 {
     uint64_t map = board_[color][Figure::kPawn] & from_mask;
 
-    //el passant
-
-    constexpr size_t move_direction = 8;
-
     uint64_t possible;
     if(color == Color::kWhite)
-        possible = (((map >> move_direction) & ~all) & to_mask) << move_direction;
+        possible = (((map >> 8) & ~all) & to_mask) << 8;
     else
-        possible = (((map << move_direction) & ~all) & to_mask) >> move_direction;
+        possible = (((map << 8) & ~all) & to_mask) >> 8;
 
     BitIterator iterator(possible);
     while(iterator.Valid())
     {
         uint64_t after;
         if(color == Color::kWhite)
-            after = iterator.Bit() >> move_direction;
+            after = iterator.Bit() >> 8;
         else
-            after = iterator.Bit() << move_direction;
+            after = iterator.Bit() << 8;
 
         BitBoard copy(parrent);
         copy.Move(iterator.Bit(),after,color,Figure::kPawn);
@@ -444,18 +456,18 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if (color == Color::kWhite)
-        possible = (((map&(~row_a)) >> (move_direction+1)) & opponent & to_mask) << (move_direction+1);
+        possible = (((map&(~row_a)) >> (8+1)) & opponent & to_mask) << (8+1);
     else
-        possible = (((map&(~row_h)) << (move_direction+1)) & opponent & to_mask) >> (move_direction+1);
+        possible = (((map&(~row_h)) << (8+1)) & opponent & to_mask) >> (8+1);
     iterator = possible;
 
     while(iterator.Valid())
     {
         uint64_t after;
         if(color == Color::kWhite)
-            after = iterator.Bit() >> (move_direction+1);
+            after = iterator.Bit() >> (8+1);
         else
-            after = iterator.Bit() << (move_direction+1);
+            after = iterator.Bit() << (8+1);
 
         BitBoard copy(parrent);
         copy.Attack(iterator.Bit(),after,color,Figure::kPawn);
@@ -475,9 +487,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if(color == Color::kWhite)
-        possible = (((map&(~row_h)) >> (move_direction-1)) & opponent & to_mask) << (move_direction-1);
+        possible = (((map&(~row_h)) >> (8-1)) & opponent & to_mask) << (8-1);
     else
-        possible = (((map&(~row_a)) << (move_direction-1)) & opponent & to_mask) >> (move_direction-1);
+        possible = (((map&(~row_a)) << (8-1)) & opponent & to_mask) >> (8-1);
 
     iterator = possible;
 
@@ -485,9 +497,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     {
         uint64_t after;
         if(color == Color::kWhite)
-            after = iterator.Bit() >> (move_direction-1);
+            after = iterator.Bit() >> (8-1);
         else
-            after = iterator.Bit() << (move_direction-1);
+            after = iterator.Bit() << (8-1);
 
         BitBoard copy(parrent);
         copy.Attack(iterator.Bit(),after,color,Figure::kPawn);
@@ -507,9 +519,9 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
     }
 
     if(color == Color::kWhite)
-        possible = (((((map & line_2) >> move_direction) & ~all ) >> move_direction) & ~all & to_mask) << 2*move_direction;
+        possible = (((((map & line_2) >> 8) & ~all ) >> 8) & ~all & to_mask) << 2*8;
     else
-        possible = (((((map & line_7) << move_direction) & ~all ) << move_direction) & ~all & to_mask) >> 2*move_direction;
+        possible = (((((map & line_7) << 8) & ~all ) << 8) & ~all & to_mask) >> 2*8;
     iterator = possible;
 
     while(iterator.Valid())
@@ -517,12 +529,12 @@ void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent, std::vector<BitBoard
         uint64_t after;
         uint64_t el_passant;
         if(color == Color::kWhite){
-            after = iterator.Bit() >> 2*move_direction;
-            el_passant = iterator.Bit() >> move_direction;
+            after = iterator.Bit() >> 2*8;
+            el_passant = iterator.Bit() >> 8;
         }
         else{
-            after = iterator.Bit() << 2*move_direction;
-            el_passant = iterator.Bit() << move_direction;
+            after = iterator.Bit() << 2*8;
+            el_passant = iterator.Bit() << 8;
         }
 
         boards.emplace_back(parrent);
@@ -667,7 +679,7 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) con
         }
     }
 
-    auto it = std::remove_if(boards.begin()+index,boards.end(),[](const BitBoard&b){return b.MateTest();});
+    auto it = std::remove_if(boards.begin()+index,boards.end(),[](const BitBoard&b){return b.OpponentMateTest();});
     boards.erase(it,boards.end());
 
     //rooking
@@ -763,64 +775,6 @@ void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards) const
     return GenerateSubBoards(CurrentColor(),boards);
 }
 
-#include <iostream>
-void PrintbitBoard(uint64_t board){
-    const char letters[] = " +";
-
-    using namespace std;
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
-    }
-    cout << endl;
-    for(size_t i = 0 ; i<8;i++){
-        cout << '|';
-        for(size_t j = 0 ; j<8;j++){
-            Position pos(i,j);
-            cout << letters[((board >> pos.Value()) & 1) ] << "|";
-        }
-        cout << endl;
-    }
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
-    }
-    cout << endl;
-}
-template <class T>
-void PrintBoard(const T& board){
-
-    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
-
-    using namespace std;
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
-    }
-    cout << endl;
-    for(size_t i = 0 ; i<8;i++){
-        cout << '|';
-        for(size_t j = 0 ; j<8;j++){
-            Position pos(i,j);
-            auto type = board.GetCell(pos);
-            cout << letters[type.color][type.type] << "|";
-        }
-        cout << endl;
-    }
-    auto flags = board.RookingFlags();
-    cout << (flags.white_oo ? 'K' : '-');
-    cout << (flags.white_ooo ? 'Q' : '-');
-    cout << (flags.black_oo ? 'k' : '-');
-    cout << (flags.black_ooo ? 'q' : '-');
-    for(size_t i = 0 ; i<13;i++){
-        cout << "-";
-    }
-
-    cout << endl;
-
-}
-
-uint64_t rooking_masks[2][2]{
-    {56_b+58_b+59_b+60_b,60_b+61_b+62_b+63_b},
-    {0_b+2_b+3_b+4_b,4_b+5_b+6_b+7_b}
-};
 
 std::vector<Turn> BitBoard::GenerateTurns() const
 {
@@ -830,8 +784,6 @@ std::vector<Turn> BitBoard::GenerateTurns() const
     GenerateSubBoards(boards);
 
     for(auto subboard : boards){
-        PrintBoard(subboard);
-
         uint64_t delta = all_[CurrentColor()] ^ subboard.all_[CurrentColor()];
         if(rooking_masks[CurrentColor()][0] == delta){
             turns.push_back(CurrentColor() == Color::kWhite ? Turn(60,58) : Turn(4,2));
@@ -854,11 +806,3 @@ std::vector<Turn> BitBoard::GenerateTurns() const
 
     return turns;
 }
-
-
-/*
-BitBoard::operator bool() const noexcept
-{
-    return TurnGenerate(*this,current_color).size() != 0;
-}
-*/

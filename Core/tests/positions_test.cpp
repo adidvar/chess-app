@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "positions.hpp"
+#include "position.hpp"
 
 TEST_CASE( "Positions operators", "[positions]" )
 {

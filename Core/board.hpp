@@ -6,7 +6,7 @@
 #include <list>
 #include <vector>
 
-#include "positions.hpp"
+#include "position.hpp"
 #include "figures.hpp"
 #include "turn.hpp"
 #include "boardtools.hpp"

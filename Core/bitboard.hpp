@@ -6,7 +6,7 @@
 #include <list>
 #include <vector>
 
-#include "positions.hpp"
+#include "position.hpp"
 #include "figures.hpp"
 #include "turn.hpp"
 #include "boardtools.hpp"
@@ -62,8 +62,9 @@ class BitBoard
     template<typename Type>
     uint64_t ProcessAttack(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
 
-public:
+    bool OpponentMateTest() const;
     uint64_t AttackMask(Color color) const;
+public:
     BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
 
@@ -91,7 +92,6 @@ public:
     Color GetColor(Position position) const noexcept; ///< Повертає колір по координатах
     Cell GetCell(Position position) const noexcept;
 
-    bool UnderAtack(Position position) const;
     bool MateTest() const;
     bool End() const;
     bool Checkmate() const;

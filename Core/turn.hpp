@@ -3,7 +3,7 @@
 #include <string>
 
 #include "figures.hpp"
-#include "positions.hpp"
+#include "position.hpp"
 
 /**
  * @brief Визначає звичайний шахматний

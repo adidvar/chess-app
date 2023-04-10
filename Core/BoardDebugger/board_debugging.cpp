@@ -6,6 +6,7 @@
 #include <bitboard.hpp>
 #include <magic.hpp>
 
+
 template<class Board>
 static size_t MovesCounter(Board board,size_t depth){
     if(!depth)
@@ -18,14 +19,30 @@ static size_t MovesCounter(Board board,size_t depth){
     return counter;
 }
 
-void SeeBoard(Board board , size_t depth)
+std::vector<std::vector<BitBoard>> hash(9);
+
+static size_t MovesCounterFast(BitBoard board,size_t depth){
+    if(!depth)
+        return 1;
+    size_t counter = 0;
+
+    board.GenerateSubBoards(hash[depth]);
+    for(auto board: hash[depth])
+        counter += MovesCounter(board,depth-1);
+
+    return counter;
+}
+
+void SeeBoard(BitBoard board , size_t depth)
 {
     using namespace std;
-    for(auto turn : board.GenerateTurns()){
-        Board copy(board);
-        copy.ExecuteTurn(turn);
-        cout << turn.ToChessFormat() << ": " << MovesCounter(copy,depth-1) << endl;
+    auto begin = std::chrono::high_resolution_clock::now();
+    for(auto board : board.GenerateSubBoards()){
+        cout << board.Fen() << ": " << MovesCounter(board,depth-1) << endl;
     }
+    auto end = std::chrono::high_resolution_clock::now() - begin;
+    std::cout << "---------------------------------" << std::endl;
+    std::cout << "   BitBoard:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << "   <--->  ";
     cout << MovesCounter(board,depth) << endl;
 }
 
@@ -157,16 +174,6 @@ void PrintBoard(const T& board){
 
 }
 
-void PrintInside(const BitBoard& board){
-
-    for(size_t i = 0 ; i < 2; i++)
-    for(size_t j = 0 ; j < 7; j++)
-        PrintBitBoard(board.board_[i][j]);
-
-    for(size_t i = 0 ; i < 2; i++)
-        PrintBitBoard(board.all_[i]);
-}
-
 bool CompareUntillError(Board board , size_t depth){
     BitBoard bitboard(board.Fen());
 
@@ -270,9 +277,16 @@ bool CompareSubC(Board board,BitBoard bitboard , size_t depth){
 
 int main()
 {
-    BenchMark();
+    //BenchMark();
+   //SeeBoard(BitBoard(),6);
+    //std::cout << MovesCounter(BitBoard(), 6);
     using namespace std;
     //PrintBitBoard(AttackFrom(1ULL << 35));
+
+    for(auto turn : BitBoard("rnbkqbnr/pp2pPpp/8/1Pp5/8/8/PP1PP1PP/R3K2R w KQ c6 0 1").GenerateTurns())
+        std::cout << turn.ToChessFormat() << std::endl;
+
+    PrintBoardIndexes();
 
     //PrintBoardIndexes();
 
