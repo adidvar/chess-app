@@ -12,7 +12,9 @@ public:
     Computer(Color color){
         color_ = color;
     };
-    virtual float Evaluate(BitBoard board);
+    BitBoard GetTurn(BitBoard board);
+    int Evaluate(BitBoard board);
+    int EvaluateA(BitBoard board);
 };
 
 #endif

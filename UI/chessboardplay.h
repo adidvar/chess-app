@@ -8,6 +8,8 @@
 
 #include "chessboard.h"
 #include "turn.hpp"
+#include <figures.hpp>
+#include <computer.hpp>
 
 class ChessBoardPlay : public ChessBoardView
 {
@@ -19,6 +21,7 @@ class ChessBoardPlay : public ChessBoardView
 
     Q_OBJECT
     Position current_figure_;
+    Computer cmp;
     bool underline_moves_ = true;
     std::vector<Turn> turns_ = {};
 public:

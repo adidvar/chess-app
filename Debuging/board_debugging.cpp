@@ -283,15 +283,34 @@ int main()
     //std::cout << MovesCounter(BitBoard(), 6);
     using namespace std;
     //PrintBitBoard(AttackFrom(1ULL << 35));
-    auto board = BitBoard();
+    /*
     Computer cmp(Color::kWhite);
 
-    for(auto sub: board.GenerateSubBoards()){
-        PrintBoard(sub);
-        std::cout << cmp.Evaluate(sub) << std::endl;
+
+    auto board = BitBoard();
+    while(!board.End()){
+        PrintBoard(board);
+        board = cmp.GetTurn(board);
+
     }
 
-    PrintBoardIndexes();
+*/
+    BitBoard board;
+    Computer cw(Color::kWhite);
+    Computer cb(Color::kBlack);
+
+    while(true)
+    {
+        board = cw.GetTurn(board);
+        PrintBoard(board);
+        std::cout << cw.Evaluate(board) << "<--->";
+        std::cout << cw.EvaluateA(board) << std::endl;
+        board = cb.GetTurn(board);
+        PrintBoard(board);
+        std::cout << cb.Evaluate(board) << "<--->";
+        std::cout << cb.EvaluateA(board) << std::endl;
+    }
+
 
     //PrintBoardIndexes();
 

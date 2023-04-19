@@ -1,7 +1,8 @@
 #include "chessboardplay.h"
 #include <QPainter>
 
-ChessBoardPlay::ChessBoardPlay(QWidget *parent) : ChessBoardView(parent)
+ChessBoardPlay::ChessBoardPlay(QWidget *parent) : ChessBoardView(parent),
+  cmp(Color::kBlack)
 {
 }
 
@@ -62,6 +63,7 @@ void ChessBoardPlay::mouseReleaseEvent(QMouseEvent *event)
             if(board.TestEmp(position)||!board.TestColor(board.GetColor(current_figure_),position))
             {
                 board.ExecuteTurn(Turn(current_figure_,position));
+                board = cmp.GetTurn(board);
                 current_figure_ = Position();
                 turns_.clear();
             } else {

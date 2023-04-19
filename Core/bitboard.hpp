@@ -21,6 +21,7 @@ class BitBoard
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
+    friend class Computer;
 
     using bitboard_t = uint64_t;
 
@@ -159,6 +160,7 @@ public:
      */
     Cell GetCell(Position position) const noexcept;
 
+    bitboard_t GetBitBoard(Color color , Figure figure) const noexcept;
     /**
      * @brief MateTest tests mate on current board
      */

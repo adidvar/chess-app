@@ -170,6 +170,11 @@ BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
     return {GetFigure(position),GetColor(position)};
 }
 
+BitBoard::bitboard_t BitBoard::GetBitBoard(Color color, Figure figure) const noexcept
+{
+    return board_[color][figure];
+}
+
 bool BitBoard::MateTest() const
 {
     return (AttackMask(OpponentColor()) & board_[CurrentColor()][Figure::kKing]) != 0;

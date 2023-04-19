@@ -15,6 +15,6 @@ add_library(AI ${files})
 
 target_include_directories(AI PUBLIC  .)
 
-target_link_libraries(AI ChessCore)
+target_link_libraries(AI ChessCore Magic)
 
 

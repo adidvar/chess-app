@@ -20,7 +20,7 @@ ChessBoardView::ChessBoardView(QWidget *parent) : QWidget(parent), view(Color::k
     pack.figures_texture[1][Figure::kRook].load("textures/BRook.png");
     pack.figures_texture[1][Figure::kQueen].load("textures/BQueen.png");
     pack.figures_texture[1][Figure::kKing].load("textures/BKing.png");
-    Upload(Board("2K1Q2r/8/8/8/8/8/8/3k4 w - - 0 1"));
+    Upload(BitBoard());
 }
 
 void ChessBoardView::resizeEvent(QResizeEvent* event) {
@@ -66,7 +66,7 @@ void ChessBoardView::paintEvent(QPaintEvent *event)
     }
 }
 
-void ChessBoardView::Upload( const Board &board)
+void ChessBoardView::Upload( const BitBoard &board)
 {
     this->board = board;
     repaint();

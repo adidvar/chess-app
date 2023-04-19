@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <QPicture>
 #include <QMouseEvent>
-#include <turn.hpp>
+#include <bitboard.hpp>
 
 namespace std {
   template <> struct hash<Figure>
@@ -27,7 +27,7 @@ class ChessBoardView : public QWidget
 {
     Q_OBJECT
 protected:
-    Board board;
+    BitBoard board;
     Color view;
     texture_pack pack;
 
@@ -39,7 +39,7 @@ public:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-    void Upload(const Board &board);
+    void Upload(const BitBoard &board);
 
     void SetView(Color view);
     Color View();
