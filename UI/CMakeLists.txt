@@ -15,5 +15,5 @@ file(GLOB files
 )
 
 add_library(ChessUI ${files})
-target_link_libraries(ChessUI PUBLIC Qt6::Widgets PUBLIC ChessCore AI)
+target_link_libraries(ChessUI PUBLIC Qt6::Widgets PUBLIC ChessCore)
 target_include_directories(ChessUI PUBLIC .)
