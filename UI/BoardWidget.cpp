@@ -50,12 +50,13 @@ Position BoardWidget::ToPosition(QPoint point) const
     p_x -= borderwidth;
     p_y -= borderwidth;
 
-    return Position(8-p_y/rectSizex ,p_x/rectSizey);
+    return Position(p_y/rectSizex ,p_x/rectSizey);
 }
 
 BoardWidget::BoardWidget(QWidget *parent):
 QWidget(parent)
 {
+    possible_ = board_.GenerateTurns();
 }
 
 void BoardWidget::paintEvent(QPaintEvent *event)
@@ -64,10 +65,14 @@ void BoardWidget::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::SmoothPixmapTransform,true);
     RenderGrid(painter);
     RenderFigures(painter);
+    if(chosen_pos_.Valid())
+        RenderPossibleMoves(painter,chosen_pos_);
 }
 
 void BoardWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+    chosen_pos_ = ToPosition(event->pos());
+    repaint();
 }
 
 void BoardWidget::RenderGrid(QPainter &qp)
@@ -103,7 +108,7 @@ void BoardWidget::RenderGrid(QPainter &qp)
             QColor back_color =  is_white ? design_.GetBack() : design_.GetFront();
             qp.setPen(QPen(back_color));
             qp.drawText(QPoint(borderwidth+rectSizex/20+x*rectSizex,borderwidth-rectSizey/20+8*rectSizey),QString(char('a'+x)));
-            qp.drawText(QPoint(borderwidth-rectSizex/7+8*rectSizex,borderwidth+rectSizey/4+x*rectSizey),QString(char('1'+x)));
+            qp.drawText(QPoint(borderwidth-rectSizex/7+8*rectSizex,borderwidth+rectSizey/4+x*rectSizey),QString(char('8'-x)));
             is_white = !is_white;
         }
     }
@@ -128,6 +133,24 @@ void BoardWidget::RenderFigures(QPainter &qp)
         }
     }
 }
+
+void BoardWidget::RenderPossibleMoves(QPainter &qp, Position position)
+{
+    auto size = this->size();
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+    float rectSizey = (size.height()-2*borderwidth) / 8.0;
+
+    for(auto move : possible_){
+        if(move.from() == position){
+            int x = move.to().y() , y = move.to().x();
+            qp.setBrush(QBrush(QColor(0,220,0)));
+            qp.setPen(QPen(Qt::NoPen));
+            float rx = rectSizex/4 , ry = rectSizey/4;
+            qp.drawEllipse(borderwidth+x*rectSizex + rectSizex/2 - rx/2 ,borderwidth+y*rectSizey + rectSizey/2 - ry/2 ,rx,ry);
+        }
+    }
+}
+
 
 int BoardWidget::heightForWidth(int w) const
 {
