@@ -64,9 +64,9 @@ public:
         str[0] = static_cast<char>('a'+y());
         str[1] = static_cast<char>('8'-x());
         if(Valid())
-        return str;
+            return str;
         else
-        return "--";
+            return "--";
     }
     bool operator ==(const Position& pos) const noexcept{
         return index_ == pos.index_;

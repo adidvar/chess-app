@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "figures.hpp"
+#include "position.hpp"
 
 template<class Board>
 class FenLoader{
