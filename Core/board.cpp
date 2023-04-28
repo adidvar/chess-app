@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cassert>
 
+/*
 
 const char* Board::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -113,13 +114,6 @@ Color Board::GetColor(Position position) const noexcept
     return board_[position.Value()].color;
 }
 
-/*
-Board::operator bool() const noexcept
-{
-    return TurnGenerate(*this,current_color).size() != 0;
-}
-*/
-
 void Board::UnsafeExecuteTurn(Turn turn)
 {
     if(last_pawn_move_.Valid() &&
@@ -180,13 +174,6 @@ void Board::UnsafeExecuteTurn(Turn turn)
     else if( turn.to() == Position(0,7) )
         rooking_flags_.black_oo = false;
 
-    /*
-    turn_counter_++;
-    if(TestEmp(turn.to()))
-        passive_turn_counter_++;
-    else
-        passive_turn_counter_ = 0;
-        */
     current_player_color_ = OpponentColor();
 }
 
@@ -207,9 +194,6 @@ bool Board::TestTurn(Turn turn) const
     return count != 0;
 }
 
-/**
- * Константні зміщення ходів
- */
 namespace
 {
 const int8_t knight_offsetx[8] = {2 , 1 , -2 , 1 , 2, -1 , -2 ,-1};
@@ -225,16 +209,6 @@ const int8_t queen_king_offsetx[8] = {1 , -1 , -1 , 1 , 0 , 0 , 1 ,-1};
 const int8_t queen_king_offsety[8] = {1 , -1 , 1 , -1 , 1 , -1, 0 , 0};
 
 
-/**
- * @brief Шукає ходи для фігур (король і кінь)
- * @param[in] board Стартова дошка
- * @param[out] iterator Точка запису в кінцевий вектор
- * @param[in] x Початковий x
- * @param[in] y Початковий y
- * @param[in] offset_x вказівник на список зміщень по x
- * @param[in] offset_y вказівник на список зміщень по x
- * @param[in] size розмір списку
- */
 void position_find(const Board &board, std::back_insert_iterator<std::vector<Turn>> &iterator,const uint8_t x,const uint8_t y, const int8_t offset_x[], const int8_t offset_y[], const size_t size)
 {
     Color main_color = board.GetColor(Position(x,y)); ///< колір за який генеруємо ходи
@@ -251,16 +225,6 @@ void position_find(const Board &board, std::back_insert_iterator<std::vector<Tur
     }
 }
 
-/**
- * @brief Шукає ходи для фігур з рекурсією (офіцер, тура, королева)
- * @param[in] board Стартова дошка
- * @param[out] iterator Точка запису в кінцевий вектор
- * @param[in] x Початковий x
- * @param[in] y Початковий y
- * @param[in] offset_x вказівник на список зміщень по x
- * @param[in] offset_y вказівник на список зміщень по x
- * @param[in] size розмір списку
- */
 void position_find_rec(const Board &board, std::back_insert_iterator<std::vector<Turn>> &iterator, uint8_t x, uint8_t y, const int8_t offset_x[], const int8_t offset_y[], const size_t size)
 {
     bool main_color = (uint8_t)board.GetColor(Position(x,y)); ///< колір за який генеруємо ходи
@@ -283,13 +247,6 @@ void position_find_rec(const Board &board, std::back_insert_iterator<std::vector
     }
 }
 
-/**
- * @brief Шукає ходи пішки
- * @param[in] board Стартова дошка
- * @param[out] iterator Точка запису в кінцевий вектор
- * @param[in] x Початковий x
- * @param[in] y Початковий y
- */
 void position_find_pawn(const Board &board, std::back_insert_iterator<std::vector<Turn>> &iterator, uint8_t x, uint8_t y)
 {
     auto push = [&iterator](Turn &&turn) ///< лямбда для доповнення списку
@@ -403,12 +360,6 @@ void empasant_find(const Board &board,Position last_pawn_move, std::back_insert_
 }
 }
 
-/**
- * @brief Генерує сухий набір ходів без врахування мату
- * @param board Дошка
- * @param color Колір за який проводиться рахунок
- * @return Вектор ходів
- */
 std::vector<Turn> Board::UnsafeTurns(Color color) const
 {
     std::vector<Turn> turns;turns.reserve(60);
@@ -477,12 +428,6 @@ std::vector<Board> Board::GenerateSubBoards() const
 }
 std::vector<Turn> Board::GenerateTurns(Color color) const
 {
-    /*
-    auto atack_on = [](Turn turn , Position pos)
-    {
-    return turn.to() == pos;
-    };
-    */
     auto is_mat = [this](Turn turn) -> bool
     {
         auto find_king = [](Board b , Color color)
@@ -597,3 +542,5 @@ bool Board::UnderAtack(Position position) const
     }
     return false;
 }
+
+*/

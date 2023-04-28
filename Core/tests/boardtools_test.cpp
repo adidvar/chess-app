@@ -4,7 +4,7 @@
 #include <board.hpp>
 #include <bitboard.hpp>
 
-TEMPLATE_TEST_CASE( "Fen conventors testing", "[bitboard][board][fen]", BitBoard, Board)
+TEMPLATE_TEST_CASE( "Fen conventors testing", "[bitboard][board][fen]", BitBoard)
 {
    REQUIRE(TestType("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 1").Fen() == "8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 1");
    REQUIRE(TestType("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").Fen() == "8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1");

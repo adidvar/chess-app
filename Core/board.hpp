@@ -16,7 +16,6 @@
  *
  * Клас зберігає в собі шахматну доску
  * також містить інформацію про рокіровки і дані для побиття на проході
- */
 class Board
 {
     static const char* kStartPosition_;
@@ -93,5 +92,6 @@ public:
     bool ExecuteTurn(Turn turn);
     bool TestTurn(Turn turn) const;
 };
+ */
 
 #endif // BOARD_H

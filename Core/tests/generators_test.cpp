@@ -15,7 +15,7 @@ static size_t MovesCounter(Board board,size_t depth){
     return counter;
 }
 
-TEMPLATE_TEST_CASE( "Boards moves generation test", "[bitboard][board][fen]", BitBoard, Board){
+TEMPLATE_TEST_CASE( "Boards moves generation test", "[bitboard][board][fen]", BitBoard){
    REQUIRE(TestType("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 1").GenerateTurns().size() == 5);
    REQUIRE(TestType("8/8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8 w - - 0 1").GenerateTurns().size() == 8);
    REQUIRE(TestType("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateTurns().size() == 8);

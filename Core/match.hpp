@@ -19,7 +19,6 @@ class Match
     } state_;
 
     std::vector<Turn> turns_history_;
-    std::vector<Board> boards_history_;
     std::vector<Turn> current_turns_; ///< захешовані комбінації ходів
 
 protected:
