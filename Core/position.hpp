@@ -34,7 +34,7 @@ public:
         if( x > 7 || y > 7)
             index_ = kerror_pos_;
         else
-            index_ = x*8 + y;
+            index_ = y*8 + x;
     }
     constexpr Position() noexcept:
         index_(kerror_pos_)
@@ -52,17 +52,17 @@ public:
         return index_;
     }
     constexpr uint8_t x() const noexcept{
-        return index_/8;
+        return index_%8;
     }
     constexpr uint8_t y() const noexcept{
-        return index_%8;
+        return index_/8;
     }
 
     std::string ToString() const noexcept
     {
         std::string str = "00";
-        str[0] = static_cast<char>('a'+y());
-        str[1] = static_cast<char>('8'-x());
+        str[0] = static_cast<char>('a'+x());
+        str[1] = static_cast<char>('8'-y());
         if(Valid())
             return str;
         else

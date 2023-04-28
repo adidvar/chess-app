@@ -117,7 +117,7 @@ public:
     ss >> current_move >> rooking >> pawn >> static_move >> move_counter;
 
     if(pawn.size()==2)
-        board_.last_pawn_move_ = Position('8'-pawn[1], pawn[0]-'a');
+        board_.last_pawn_move_ = Position(pawn[0]-'a','8'-pawn[1]);
 
     if(current_move.front() == 'w')
         board_.current_player_color_ = Color::kWhite;
