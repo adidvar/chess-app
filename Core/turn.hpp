@@ -44,13 +44,19 @@ public:
 
     Turn& operator =(const Turn& b) noexcept = default;
     Turn& operator =(Turn&& b) noexcept = default;
-    bool operator ==(const Turn& turn);
+    bool operator ==(const Turn& turn) const;
 
     Position from() const noexcept;
     Position to() const noexcept;
     Figure figure() const noexcept;
 
     bool Valid() const noexcept;
+
+    bool IsCastling() const noexcept;
+    bool IsLongCastling() const noexcept;
+    bool IsShortCastling() const noexcept;
+
+    bool IsTrasformation() const noexcept;
 
     std::string ToChessFormat() const;
 };
