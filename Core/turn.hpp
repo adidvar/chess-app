@@ -50,6 +50,8 @@ public:
     Position to() const noexcept;
     Figure figure() const noexcept;
 
+    bool Valid() const noexcept;
+
     std::string ToChessFormat() const;
 };
 

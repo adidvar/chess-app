@@ -57,6 +57,12 @@ public:
     constexpr uint8_t y() const noexcept{
         return index_/8;
     }
+    constexpr Position Rotate() const noexcept{
+        if(Valid())
+            return Position(63-index_);
+        else
+            return Position();
+    }
 
     std::string ToString() const noexcept
     {

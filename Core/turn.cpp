@@ -35,20 +35,24 @@ Position Turn::to() const noexcept
 
 Figure Turn::figure() const noexcept
 {
-   return figure_ ;
+    return figure_ ;
+}
+
+bool Turn::Valid() const noexcept
+{
+    return from_.Valid() && to_.Valid();
 }
 
 std::string Turn::ToChessFormat() const
 {
-    if(!from_.Valid() || !to_.Valid())
+    if(!Valid())
     {
          return "NULL TURN";
     }
     else if(figure_ == Figure::kEmpty)
     {
         std::stringstream ss;
-        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x())
-           << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x());
+        ss << from_.ToString() << to_.ToString();
         return ss.str();
     }
     else
@@ -56,8 +60,7 @@ std::string Turn::ToChessFormat() const
         char codes[7] = {' ','p','k','b','r','q',' '} ;
 
         std::stringstream ss;
-        ss << static_cast<char>('a'+from_.y()) << static_cast<char>('8'-from_.x())
-           << static_cast<char>('a'+to_.y())   << static_cast<char>('8'-to_.x())
+        ss << from_.ToString() << to_.ToString()
            << codes[(size_t)figure_];
         return ss.str();
      }
