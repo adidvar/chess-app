@@ -26,6 +26,28 @@ QColor BoardDesign::GetFillMate() const
     return QColor(0,255,255);
 }
 
+QColor BoardDesign::GetMoveColor() const
+{
+    auto color = QColor(50,135,50);
+    color.setAlpha(140);
+    return color;
+}
+
+QColor BoardDesign::GetLastMoveColor() const
+{
+    auto color = QColor(135,120,50);
+    color.setAlpha(140);
+    return color;
+}
+/*
+QColor BoardDesign::GetAttackColor() const
+{
+    auto color = QColor(135,50,50);
+    color.setAlpha(160);
+    return color;
+}
+*/
+
 QRect BoardDesign::GetRenderRect(Figure figure, Color color) const
 {
     int delta_x = pixmap_.width()/6 , delta_y = pixmap_.height()/2;
@@ -33,7 +55,7 @@ QRect BoardDesign::GetRenderRect(Figure figure, Color color) const
     int texture_y  = delta_y * (color == Color::kWhite ? 1 : 0);
 
     int map_rect[7] {
-        0,5,4,3,2,0,1
+        0,5,4,3,2,1,0
     };
 
     int texture_x  = delta_x * map_rect[figure];

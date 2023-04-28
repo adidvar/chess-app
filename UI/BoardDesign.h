@@ -16,6 +16,8 @@ public:
     QColor GetBack() const;
     QColor GetFill() const;
     QColor GetFillMate() const;
+    QColor GetMoveColor() const;
+    QColor GetLastMoveColor() const;
 
     QRect GetRenderRect(Figure figure, Color color) const ;
     const QPixmap &GetTexture() const ;
