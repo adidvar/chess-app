@@ -71,6 +71,9 @@ public:
     bool operator ==(const Position& pos) const noexcept{
         return index_ == pos.index_;
     }
+    bool operator !=(const Position& pos) const noexcept{
+        return index_ != pos.index_;
+    }
 };
 
 #endif // POSITIONS_H
