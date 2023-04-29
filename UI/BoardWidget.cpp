@@ -68,7 +68,8 @@ void BoardWidget::animation_finished()
 {
     animation_enabled = false;
     board_.ExecuteTurn(last_turn_);
-    possible_ = board_.GenerateTurns();
+
+    possible_ = board_.GenerateTurns( mode_ != kPlayerTwoSides ? board_.OpponentColor() : board_.CurrentColor());
     repaint();
     emit TurnDone(last_turn_);
 }
@@ -126,7 +127,9 @@ void BoardWidget::RenderGrid(QPainter &qp)
 {
     auto size = this->size();
 
-    qp.fillRect(QRect(0,0,size.width(),size.height()),QBrush(design_.GetFill()));
+    auto back_color = board_.MateTest() ? design_.GetFillMate() : design_.GetFill();
+    qp.fillRect(QRect(0,0,size.width(),size.height()),QBrush(back_color));
+
 
     float rectSizex = (size.width()-2*borderwidth) / 8.0;
     float rectSizey = (size.height()-2*borderwidth) / 8.0;

@@ -23,7 +23,7 @@ QColor BoardDesign::GetFill() const
 
 QColor BoardDesign::GetFillMate() const
 {
-    return QColor(0,255,255);
+    return QColor(255,0,0);
 }
 
 QColor BoardDesign::GetMoveColor() const
