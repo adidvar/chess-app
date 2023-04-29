@@ -194,11 +194,13 @@ public:
      * @brief GenerateSubBoards returns all possible subboards
      */
     std::vector<BitBoard> GenerateSubBoards() const;
+    std::vector<BitBoard> GenerateSubBoards(Color color) const;
     void GenerateSubBoards(std::vector<BitBoard> &boards) const;
-
+    void GenerateSubBoards(std::vector<BitBoard> &boards, Color color) const;
     /**
      * @brief GenerateTurns returns all possible turns
      */
+    std::vector<Turn> GenerateTurns(Color color) const;
     std::vector<Turn> GenerateTurns() const;
     /**
      * @brief ExecuteTurn executes turn on these board
