@@ -33,12 +33,27 @@ Position Turn::from() const noexcept
 
 Position Turn::to() const noexcept
 {
-   return to_ ;
+    return to_ ;
+}
+
+Position &Turn::from() noexcept
+{
+return from_;
+}
+
+Position &Turn::to() noexcept
+{
+    return to_;
 }
 
 Figure Turn::figure() const noexcept
 {
     return figure_ ;
+}
+
+Figure &Turn::figure() noexcept
+{
+    return figure_;
 }
 
 bool Turn::Valid() const noexcept

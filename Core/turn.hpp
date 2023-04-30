@@ -48,7 +48,10 @@ public:
 
     Position from() const noexcept;
     Position to() const noexcept;
+    Position &from() noexcept;
+    Position &to()  noexcept;
     Figure figure() const noexcept;
+    Figure &figure() noexcept;
 
     bool Valid() const noexcept;
 
