@@ -17,7 +17,9 @@ class BoardWidget : public QWidget
     Position selected_;
     Position hovered_;
     QPoint hovered_p_;
-    bool tracking = false;
+    Turn turn_;
+    bool tracking_ = false;
+    bool choise_mode_ = false;
 
     bool animation_enabled = false;
     float animation_progress_ = 0;
@@ -30,8 +32,10 @@ class BoardWidget : public QWidget
         kViewer,
     } mode_ = kPlayerTwoSides;
 
-    bool Move(Turn turn, bool fromTracking);
+    bool Move(Turn turn);
+    bool IsPawnTransform(Turn turn) const;
     Position ToPosition(QPoint point) const ;
+    QRect GenerateFigureChoisePosition(Position pos) const;
 public:
     explicit BoardWidget(QWidget *parent = nullptr);
     void paintEvent(QPaintEvent *event) override;
@@ -45,6 +49,7 @@ public:
     void RenderFigures(QPainter &event);
     void RenderSelection(QPainter &event);
     void RenderLastMovePositions(QPainter &event , Turn last);
+    void RenderFigureChoise(QPainter &event , Position position);
 
     virtual int heightForWidth(int w) const override;
     virtual bool hasHeightForWidth() const override;

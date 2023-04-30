@@ -5,8 +5,9 @@
 
 
 static float borderwidth = 2;
+const Figure figure_placing[4] = {Figure::kKnight , Figure::kBishop, Figure::kRook, Figure::kQueen};
 
-bool BoardWidget::Move(Turn turn, bool fromTracking)
+bool BoardWidget::Move(Turn turn)
 {
     if(std::count(possible_.begin(),possible_.end(),turn) == 1 && ( mode_ == board_.CurrentColor() || mode_ == kPlayerTwoSides))
     {
@@ -30,6 +31,16 @@ bool BoardWidget::Move(Turn turn, bool fromTracking)
     }
 }
 
+bool BoardWidget::IsPawnTransform(Turn turn) const
+{
+    turn.figure() = Figure::kQueen;
+    if((turn.to().y() == 7 || turn.to().y() == 0) &&
+        board_.Test(Figure::kPawn,turn.from()) && std::count(possible_.begin(),possible_.end(),turn) == 1)
+        return true;
+    else
+        return false;
+}
+
 Position BoardWidget::ToPosition(QPoint point) const
 {
     auto size = this->size();
@@ -50,9 +61,26 @@ Position BoardWidget::ToPosition(QPoint point) const
     return pos;
 }
 
+QRect BoardWidget::GenerateFigureChoisePosition(Position pos) const
+{
+
+    auto size = this->size();
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+    float rectSizey = (size.height()-2*borderwidth) / 8.0;
+
+    int dx = pos.x()*rectSizex;
+    int dy = (pos.y() < 4 ? 1 : -1)*rectSizey*5/4 + pos.y()*rectSizey;
+    int sx = ceil(4*rectSizex + 2*borderwidth) , sy = ceil(rectSizey + 2*borderwidth);
+
+    if(pos.x() >= 4)
+        dx -= sx - borderwidth*2;
+
+    return {dx,dy,sx,sy};
+}
+
 BoardWidget::BoardWidget(QWidget *parent):
 QWidget(parent),
-  board_("rnbqkbnr/pppppppp/8/8/8/8/PP2PPPP/RNBQKBNR w KQkq - 0 1")
+  board_()
 {
     connect(this,&BoardWidget::animation_state_updated,this,&BoardWidget::update_animation_frame);
     setMouseTracking(true);
@@ -80,34 +108,72 @@ void BoardWidget::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform,true);
     RenderGrid(painter);
+    if(!choise_mode_)
     RenderSelection(painter);
     RenderFigures(painter);
+    if(choise_mode_)
+        RenderFigureChoise(painter,turn_.to());
 }
 
 void BoardWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     auto pos = ToPosition(event->pos());
 
-    if(selected_.Valid() && mode_ != kViewer && Move(Turn(selected_,pos),true) ){
+    turn_.from() = selected_;
+    turn_.to() = pos;
+    turn_.figure() = Figure::kEmpty;
+
+    if(selected_.Valid() && mode_ != kViewer && Move(turn_) ){
         selected_ = Position();
     }
+    else if(selected_.Valid() && mode_ != kViewer && IsPawnTransform(turn_)){
+        choise_mode_ = true;
+    }
 
-    tracking = false;
+    tracking_ = false;
     repaint();
 }
 
 void BoardWidget::mousePressEvent(QMouseEvent *event)
 {
-    tracking = true;
+
+    auto size = this->size();
+
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+
+    if(choise_mode_){
+        auto rect = GenerateFigureChoisePosition(turn_.to());
+        if(!rect.contains(event->pos()))
+        {
+            choise_mode_ = false;
+            return;
+        }
+        Figure figure = figure_placing[int((event->pos().x() - rect.x() - borderwidth) /rectSizex)];
+        turn_.figure() = figure;
+        Move(turn_);
+        choise_mode_ = false;
+        return;
+    };
+
+    tracking_ = true;
+
     auto pos = ToPosition(event->pos());
 
-    if(selected_.Valid() && mode_ != kViewer && Move(Turn(selected_,pos),false)){
+    turn_.from() = selected_;
+    turn_.to() = pos;
+    turn_.figure() = Figure::kEmpty;
+
+    if(selected_.Valid() && mode_ != kViewer && Move(turn_)){
         selected_ = Position();
+        turn_ = Turn();
     }
-    else if(pos != selected_)
-        selected_ = pos;
-    else
+    else if(selected_.Valid() && mode_ != kViewer && IsPawnTransform(turn_)){
+        choise_mode_ = true;
+    }
+    else if(pos == selected_)
         selected_ = Position();
+    else
+        selected_ = pos;
 
     repaint();
 }
@@ -196,7 +262,7 @@ void BoardWidget::RenderFigures(QPainter &qp)
 
             if(cell.type == Figure::kEmpty)continue;
 
-            if(position == selected_ && tracking){
+            if(position == selected_ && tracking_){
                 qp.setOpacity(0.5);
             }
             else {
@@ -222,7 +288,7 @@ void BoardWidget::RenderFigures(QPainter &qp)
     }
 
 
-    if(hovered_.Valid() && selected_.Valid() && tracking && !board_.TestEmp(selected_))
+    if(hovered_.Valid() && selected_.Valid() && tracking_ && !board_.TestEmp(selected_))
     {
         auto cell = board_.GetCell(selected_);
         QRect render_rect(borderwidth+hovered_p_.x()-rectSizex/2,borderwidth+hovered_p_.y()-rectSizey/2,ceil(rectSizex),ceil(rectSizey));
@@ -289,6 +355,34 @@ void BoardWidget::RenderSelection(QPainter &qp )
         qp.fillRect(QRect(borderwidth+x*rectSizex,borderwidth+y*rectSizey,ceil(rectSizex),ceil(rectSizey)),QBrush(design_.GetLastMoveColor()));
     }
 
+}
+
+void BoardWidget::RenderFigureChoise(QPainter &qp, Position position)
+{
+    auto size = this->size();
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+    float rectSizey = (size.height()-2*borderwidth) / 8.0;
+
+    auto rect = GenerateFigureChoisePosition(position);
+
+    qp.setPen(Qt::NoPen);
+    qp.setBrush(QBrush(design_.GetFill()));
+    qp.drawRect(rect.x(),rect.y(),rect.width(),rect.height());
+    qp.setPen(Qt::NoPen);
+    qp.setBrush(QBrush(design_.GetFigureChoiseBackground()));
+    qp.drawRect(rect.x()+borderwidth,rect.y()+borderwidth,rect.width()-2*borderwidth,rect.height()-2*borderwidth);
+
+
+    for(size_t x = 0 ; x < 4 ; x++)
+    {
+        QRect render_rect(borderwidth+rect.x()+x*rectSizex,borderwidth+rect.y(),ceil(rectSizex),ceil(rectSizey));
+        if(render_rect.contains(hovered_p_)){
+            qp.setPen(Qt::NoPen);
+            qp.setBrush(QBrush(design_.GetFigureChoiseSelected()));
+            qp.drawRect(borderwidth+rect.x()+x*rectSizex,borderwidth+rect.y(),ceil(rectSizex),ceil(rectSizey));
+        }
+        qp.drawPixmap(render_rect,design_.GetTexture(),design_.GetRenderRect(figure_placing[x],board_.CurrentColor()));
+    }
 }
 
 

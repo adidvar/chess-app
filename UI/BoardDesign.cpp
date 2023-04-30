@@ -39,6 +39,16 @@ QColor BoardDesign::GetLastMoveColor() const
     color.setAlpha(140);
     return color;
 }
+
+QColor BoardDesign::GetFigureChoiseBackground() const
+{
+    return QColor(200,203,100);
+}
+
+QColor BoardDesign::GetFigureChoiseSelected() const
+{
+    return QColor(100,103,0);
+}
 /*
 QColor BoardDesign::GetAttackColor() const
 {
