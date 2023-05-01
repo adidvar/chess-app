@@ -7,101 +7,31 @@
 static float borderwidth = 2;
 const Figure figure_placing[4] = {Figure::kKnight , Figure::kBishop, Figure::kRook, Figure::kQueen};
 
-bool BoardWidget::Move(Turn turn)
-{
-    if(std::count(possible_.begin(),possible_.end(),turn) == 1 && ( mode_ == board_.CurrentColor() || mode_ == kPlayerTwoSides))
-    {
-        qDebug() << turn.ToChessFormat().c_str();
-        last_turn_ = turn;
-
-        animation_enabled = true;
-        animation_progress_ = 0;
-        QPropertyAnimation *anim = new QPropertyAnimation(this, "animation_progress", this);
-        connect(anim,&QPropertyAnimation::finished,this,&BoardWidget::animation_finished);
-        anim->setDuration(500);
-        anim->setEasingCurve(QEasingCurve::InOutCubic);
-        anim->setStartValue(0);
-        anim->setEndValue(1);
-        anim->start();
-
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool BoardWidget::IsPawnTransform(Turn turn) const
-{
-    turn.figure() = Figure::kQueen;
-    if((turn.to().y() == 7 || turn.to().y() == 0) &&
-        board_.Test(Figure::kPawn,turn.from()) && std::count(possible_.begin(),possible_.end(),turn) == 1)
-        return true;
-    else
-        return false;
-}
-
-Position BoardWidget::ToPosition(QPoint point) const
-{
-    auto size = this->size();
-    float rectSizex = (size.width()-2*borderwidth) / 8.0;
-    float rectSizey = (size.height()-2*borderwidth) / 8.0;
-
-    float p_x = point.x() , p_y = point.y();
-
-    if(p_x < borderwidth || p_x > size.width() - borderwidth ||
-       p_y < borderwidth || p_y > size.height() - borderwidth  )
-        return Position();
-
-    p_x -= borderwidth;
-    p_y -= borderwidth;
-    auto pos = Position(p_x/rectSizex ,p_y/rectSizey);
-    if(mode_ == kPlayerBlack)
-        pos = pos.Rotate();
-    return pos;
-}
-
-QRect BoardWidget::GenerateFigureChoisePosition(Position pos) const
-{
-
-    auto size = this->size();
-    float rectSizex = (size.width()-2*borderwidth) / 8.0;
-    float rectSizey = (size.height()-2*borderwidth) / 8.0;
-
-    int dx = pos.x()*rectSizex;
-    int dy = (pos.y() < 4 ? 1 : -1)*rectSizey*5/4 + pos.y()*rectSizey;
-    int sx = ceil(4*rectSizex + 2*borderwidth) , sy = ceil(rectSizey + 2*borderwidth);
-
-    if(pos.x() >= 4)
-        dx -= sx - borderwidth*2;
-
-    return {dx,dy,sx,sy};
-}
-
-BoardWidget::BoardWidget(QWidget *parent):
+BoardWidget::BoardWidget(QWidget *parent, Mode mode, BitBoard board, Turn last_turn):
 QWidget(parent),
-  board_()
+  mode_(mode),
+  board_(board),
+  last_turn_(last_turn)
 {
     connect(this,&BoardWidget::animation_state_updated,this,&BoardWidget::update_animation_frame);
     setMouseTracking(true);
-    possible_ = board_.GenerateTurns();
+    Color color;
+    if(mode_ == kPlayerBlack || mode_ == kPlayerWhite){
+        possible_ = board_.GenerateTurns(mode_);
+    } else {
+        possible_ = board_.GenerateTurns(board.CurrentColor());
+    }
 }
 
-void BoardWidget::update_animation_frame()
+void BoardWidget::PushTurn(Turn turn)
 {
-    repaint();
+
 }
 
-void BoardWidget::animation_finished()
+void BoardWidget::PushBoard(BitBoard board, Turn last_turn)
 {
-    animation_enabled = false;
-    board_.ExecuteTurn(last_turn_);
 
-    possible_ = board_.GenerateTurns( mode_ != kPlayerTwoSides ? board_.OpponentColor() : board_.CurrentColor());
-    repaint();
-    emit TurnDone(last_turn_);
 }
-
 
 void BoardWidget::paintEvent(QPaintEvent *event)
 {
@@ -187,6 +117,13 @@ void BoardWidget::mouseMoveEvent(QMouseEvent *event)
 
 void BoardWidget::leaveEvent(QEvent *event)
 {
+    if(choise_mode_)
+        choise_mode_ = false;
+    if(tracking_)
+        tracking_ = false;
+    if(selected_.Valid())
+        selected_ = Position();
+    repaint();
 }
 
 void BoardWidget::RenderGrid(QPainter &qp)
@@ -383,6 +320,93 @@ void BoardWidget::RenderFigureChoise(QPainter &qp, Position position)
         }
         qp.drawPixmap(render_rect,design_.GetTexture(),design_.GetRenderRect(figure_placing[x],board_.CurrentColor()));
     }
+}
+
+bool BoardWidget::Move(Turn turn)
+{
+    if(std::count(possible_.begin(),possible_.end(),turn) == 1 && ( mode_ == board_.CurrentColor() || mode_ == kPlayerTwoSides))
+    {
+        qDebug() << turn.ToChessFormat().c_str();
+        last_turn_ = turn;
+
+        animation_enabled = true;
+        animation_progress_ = 0;
+        QPropertyAnimation *anim = new QPropertyAnimation(this, "animation_progress", this);
+        connect(anim,&QPropertyAnimation::finished,this,&BoardWidget::animation_finished);
+        anim->setDuration(500);
+        anim->setEasingCurve(QEasingCurve::InOutCubic);
+        anim->setStartValue(0);
+        anim->setEndValue(1);
+        anim->start();
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool BoardWidget::IsPawnTransform(Turn turn) const
+{
+    turn.figure() = Figure::kQueen;
+    if((turn.to().y() == 7 || turn.to().y() == 0) &&
+        board_.Test(Figure::kPawn,turn.from()) && std::count(possible_.begin(),possible_.end(),turn) == 1)
+        return true;
+    else
+        return false;
+}
+
+Position BoardWidget::ToPosition(QPoint point) const
+{
+    auto size = this->size();
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+    float rectSizey = (size.height()-2*borderwidth) / 8.0;
+
+    float p_x = point.x() , p_y = point.y();
+
+    if(p_x < borderwidth || p_x > size.width() - borderwidth ||
+       p_y < borderwidth || p_y > size.height() - borderwidth  )
+        return Position();
+
+    p_x -= borderwidth;
+    p_y -= borderwidth;
+    auto pos = Position(p_x/rectSizex ,p_y/rectSizey);
+    if(mode_ == kPlayerBlack)
+        pos = pos.Rotate();
+    return pos;
+}
+
+QRect BoardWidget::GenerateFigureChoisePosition(Position pos) const
+{
+
+    auto size = this->size();
+    float rectSizex = (size.width()-2*borderwidth) / 8.0;
+    float rectSizey = (size.height()-2*borderwidth) / 8.0;
+
+    int dx = pos.x()*rectSizex;
+    int dy = (pos.y() < 4 ? 1 : -1)*rectSizey*5/4 + pos.y()*rectSizey;
+    int sx = ceil(4*rectSizex + 2*borderwidth) , sy = ceil(rectSizey + 2*borderwidth);
+
+    if(pos.x() >= 4)
+        dx -= sx - borderwidth*2;
+
+    return {dx,dy,sx,sy};
+}
+
+void BoardWidget::update_animation_frame()
+{
+    repaint();
+}
+
+void BoardWidget::animation_finished()
+{
+    animation_enabled = false;
+    board_.ExecuteTurn(last_turn_);
+
+    possible_ = board_.GenerateTurns( mode_ != kPlayerTwoSides ? board_.OpponentColor() : board_.CurrentColor());
+    repaint();
+    emit EnteredTurn(last_turn_);
+    emit EnteredBoard(board_);
 }
 
 
