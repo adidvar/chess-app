@@ -3,8 +3,7 @@
 
 AIWidget::AIWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::AIWidget),
-    home(new BitBoard())
+    ui(new Ui::AIWidget)
 {
     ui->setupUi(this);
 }
@@ -16,7 +15,7 @@ AIWidget::~AIWidget()
 
 void AIWidget::on_set_clicked()
 {
-     home.reset(new BitBoard(ui->fen->text().toStdString()));
-     ui->widget->PushBoard(*home);
+     home = BitBoard(ui->fen->text().toStdString());
+     ui->widget->PushBoard(home);
 }
 

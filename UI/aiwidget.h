@@ -12,8 +12,7 @@ class AIWidget;
 class AIWidget : public QWidget
 {
     Q_OBJECT
-    std::unique_ptr<BitBoard> home;
-    //BitBoard current;
+    BitBoard home;
 public:
     explicit AIWidget(QWidget *parent = nullptr);
     ~AIWidget();
@@ -23,6 +22,8 @@ private slots:
 
 private:
     Ui::AIWidget *ui;
+    //alignas(16) char array[256];
+    //alignas(16) char array1[256];
 };
 
 #endif // AIWIDGET_H

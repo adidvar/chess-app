@@ -21,7 +21,6 @@ class BitBoard
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
-    friend class Computer;
 
     using bitboard_t = uint64_t;
 
@@ -69,6 +68,7 @@ public:
      * @param fen_line string with fen
      */
     BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
+    ~BitBoard() = default;
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
 
     /**

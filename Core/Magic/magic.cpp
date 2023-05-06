@@ -214,7 +214,6 @@ static uint64_t find_magic(uint64_t sq,uint64_t mask, uint64_t (*attack)(uint64_
 {
     using namespace std;
     size_t n = count_1s(mask);
-    assert(n>=1);
     size_t c = 1<<n;
 
     uint64_t input[1024];

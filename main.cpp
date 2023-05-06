@@ -5,7 +5,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    AIWidget *widget = new AIWidget();
-    widget->show();
+    AIWidget widget;
+    widget.show();
     return a.exec();
 }

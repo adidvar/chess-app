@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
-qt_standard_project_setup()
+#qt_standard_project_setup()
 
 file(GLOB files
      "*.h"
