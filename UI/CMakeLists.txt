@@ -14,6 +14,9 @@ file(GLOB files
      "*.ui"
 )
 
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+
 add_library(ChessUI ${files})
 target_link_libraries(ChessUI PUBLIC Qt6::Widgets PUBLIC ChessCore)
 target_include_directories(ChessUI PUBLIC .)

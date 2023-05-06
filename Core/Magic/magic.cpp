@@ -1,6 +1,7 @@
 #include "magic.hpp"
 #include <random>
 #include <stdexcept>
+#include <cassert>
 
 constexpr static const uint64_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
 constexpr static const uint64_t row_b = row_a << 1;
@@ -213,6 +214,7 @@ static uint64_t find_magic(uint64_t sq,uint64_t mask, uint64_t (*attack)(uint64_
 {
     using namespace std;
     size_t n = count_1s(mask);
+    assert(n>=1);
     size_t c = 1<<n;
 
     uint64_t input[1024];
@@ -246,7 +248,7 @@ static uint64_t find_magic(uint64_t sq,uint64_t mask, uint64_t (*attack)(uint64_
         }
         if(flag){
 
-            for(size_t i = 0 ; i < 64;i++) {
+            for(size_t i = 0 ; i < c;i++) {
                 hash_ref[sq][i] = hash[i];
             }
 
