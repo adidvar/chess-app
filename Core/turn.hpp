@@ -62,6 +62,7 @@ public:
     bool IsTrasformation() const noexcept;
 
     std::string ToChessFormat() const;
+    static Turn FromChessFormat(std::string_view string);
 };
 
 #endif // TURN_H

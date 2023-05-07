@@ -26,6 +26,9 @@ public:
     operator uint8_t() const noexcept{
         return value_;
     }
+    bool Valid() const noexcept{
+        return value_ >=kEmpty && value_ <=kKing;
+    }
 };
 
 /// \brief Тип данних для зберігання кольору фігури

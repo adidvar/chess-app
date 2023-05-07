@@ -74,6 +74,15 @@ public:
         else
             return "--";
     }
+    static Position FromString(std::string_view string) noexcept
+    {
+        if(string.size()!=2)
+            return Position();
+        else if(string[0] >= 'a' && string[0] <= 'h' && string[1] >= '1' && string[1] <= '8')
+            return Position(string[0]-'a', '8'-string[1]);
+        else
+            return Position();
+    }
     bool operator ==(const Position& pos) const noexcept{
         return index_ == pos.index_;
     }

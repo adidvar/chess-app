@@ -4,6 +4,8 @@
 const static Turn white_long_castling(60,58), black_long_castling(4,2),
             white_short_castling(60,62), black_short_castling(4,6);
 
+const static char codes[7] = {'\0','p','k','b','r','q','\0'} ;
+
 Turn::Turn():
     figure_(Figure::kEmpty)
 {
@@ -23,7 +25,6 @@ Turn::Turn(Position from, Position to, Figure figure):
     to_(to),
     figure_(figure)
 {
-
 }
 
 Position Turn::from() const noexcept
@@ -58,7 +59,7 @@ Figure &Turn::figure() noexcept
 
 bool Turn::Valid() const noexcept
 {
-    return from_.Valid() && to_.Valid();
+    return from_.Valid() && to_.Valid() && figure_.Valid() && figure_ != Figure::kPawn && figure_ != Figure::kKing;
 }
 
 bool Turn::IsCastling() const noexcept
@@ -95,13 +96,29 @@ std::string Turn::ToChessFormat() const
     }
     else
     {
-        char codes[7] = {' ','p','k','b','r','q',' '} ;
-
         std::stringstream ss;
         ss << from_.ToString() << to_.ToString()
            << codes[(size_t)figure_];
         return ss.str();
-     }
+    }
+}
+
+Turn Turn::FromChessFormat(std::string_view string)
+{
+    Turn turn;
+
+    if(string.size() != 5 && string.size()!=4)
+        return turn;
+
+    turn.from_ = Position::FromString(string.substr(0,2));
+    turn.to_ = Position::FromString(string.substr(2,2));
+
+    //to do ***
+    if(string.size()==5){
+        turn.figure_ = std::find(codes,codes+7,string[4]) - codes;
+    }
+
+    return turn;
 }
 
 bool Turn::operator ==(const Turn& turn) const{
