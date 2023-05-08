@@ -30,7 +30,15 @@ void BoardWidget::PushTurn(Turn turn)
 
 void BoardWidget::PushBoard(BitBoard board, Turn last_turn)
 {
-
+    //todo rewrite ***
+    board_ = board;
+    last_turn_ = last_turn;
+    if(mode_ == kPlayerBlack || mode_ == kPlayerWhite){
+        possible_ = board_.GenerateTurns(mode_);
+    } else {
+        possible_ = board_.GenerateTurns(board.CurrentColor());
+    }
+    repaint();
 }
 
 void BoardWidget::paintEvent(QPaintEvent *event)

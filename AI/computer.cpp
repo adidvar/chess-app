@@ -20,13 +20,11 @@ int Mark(const BitBoard &b, Color color)
     value -= 90*count_1s(b.GetBitBoard(Color::kBlack,Figure::kQueen));
 
     if(color == Color::kBlack)
-       value = -value;
-
-    //value += count_1s(b.GetBitBoard(Color::kWhite,Figure::kEmpty));
+        value = -value;
 
     return value;
 }
-
+/*
 int alphabeta(const BitBoard& bitboard, size_t depth, int a, int b, Color color, bool current){
     if (depth == 0)
         return Mark(bitboard,color);
@@ -57,7 +55,6 @@ int alphabeta(const BitBoard& bitboard, size_t depth, int a, int b, Color color,
         return value;
     }
 }
-/*
 function alphabeta(node, depth, α, β, maximizingPlayer) is
     if depth = 0 or node is a terminal node then
         return the heuristic value of node
@@ -80,31 +77,30 @@ function alphabeta(node, depth, α, β, maximizingPlayer) is
         */
 
 
-int minimax(const BitBoard& bitboard, size_t depth,Color color,bool current)
+int minimax(const BitBoard& bitboard, size_t depth,Color color)
 {
+    auto nodes = bitboard.GenerateSubBoards();
+    if(nodes.size() == 0){
+        return bitboard.CurrentColor() == color ? -inf : inf;
+    }
+
     if (depth == 0)
         return Mark(bitboard,color);
 
-    auto nodes = bitboard.GenerateSubBoards();
-
-    if(nodes.size() == 0){
-        return current ? -inf : inf;
-    }
-
-    if(current){
+    if(bitboard.CurrentColor() == color){
         int value = -inf;
         for( const auto&node : nodes)
-            value = std::max(value, minimax(bitboard, depth-1,color, false));
+            value = std::max(value, minimax(bitboard, depth-1,color));
         return value;
     } else {
         int value = inf;
         for( const auto&node : nodes)
-            value = std::min(value, minimax(node, depth - 1,color, true));
+            value = std::min(value, minimax(node, depth - 1,color));
         return value;
     }
 }
 #include <iostream>
-
+/*
 BitBoard Computer::GetTurn(BitBoard board)
 {
     auto nodes = board.GenerateSubBoards();
@@ -122,14 +118,17 @@ BitBoard Computer::GetTurn(BitBoard board)
     return max_b;
 }
 
-int Computer::Evaluate(BitBoard board)
+*/
+PositionRating Computer::Evaluate(BitBoard board,Color color)
 {
     //return alphabeta(board,4,-inf,inf,color_,board.CurrentColor() == color_);
-    return minimax(board,5,color_,board.CurrentColor() == color_);
+    return PositionRating::FromValue(minimax(board,3,color));
 }
 
+/*
 int Computer::EvaluateA(BitBoard board)
 {
     return alphabeta(board,5,-inf,inf,color_,board.CurrentColor() == color_);
     //return minimax(board,4,color_,board.CurrentColor() == color_);
 }
+*/

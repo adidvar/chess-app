@@ -3,18 +3,14 @@
 
 #include <turn.hpp>
 #include <bitboard.hpp>
+#include <position_rating.hpp>
 
 class Computer
 {
 protected:
-    Color color_;
 public:
-    Computer(Color color){
-        color_ = color;
-    };
-    BitBoard GetTurn(BitBoard board);
-    int Evaluate(BitBoard board);
-    int EvaluateA(BitBoard board);
+    Computer(){};
+    PositionRating Evaluate(BitBoard board,Color color);
 };
 
 #endif

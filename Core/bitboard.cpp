@@ -643,16 +643,16 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) con
 
     uint64_t locked_figures = attack & yours & AttackFrom(board_[color][Figure::kKing]);
 
-    // pawns
-    ProcessFigure<Pawn>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // queen
+    ProcessFigure<Queen>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // rook
+    ProcessFigure<Rook>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
     //knight
     ProcessFigure<Knight>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
     // bishop
     ProcessFigure<Bishop>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
-    // rook
-    ProcessFigure<Rook>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
-    // queen
-    ProcessFigure<Queen>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    // pawns
+    ProcessFigure<Pawn>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
     //king
     ProcessFigure<King>(parent,boards,color,~locked_figures,~attack,all,yours,opponent);
 
@@ -660,16 +660,16 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) con
     if((attack & board_[color][Figure::kKing]) != 0)
         index = 0;
 
-    // pawns
-    ProcessFigure<Pawn>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // queen
+    ProcessFigure<Queen>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // rook
+    ProcessFigure<Rook>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
     //knight
     ProcessFigure<Knight>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
     // bishop
     ProcessFigure<Bishop>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
-    // rook
-    ProcessFigure<Rook>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
-    // queen
-    ProcessFigure<Queen>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    // pawns
+    ProcessFigure<Pawn>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
     //king
     ProcessFigure<King>(parent,boards,color,locked_figures,~attack,all,yours,opponent);
 
