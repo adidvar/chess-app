@@ -27,8 +27,8 @@ public:
         return value_ < value.value_;
     }
 
-    static MateAppraiser CheckMateWin(){return MateAppraiser{10};};
-    static MateAppraiser CheckMateLose(){return MateAppraiser{-10};};
+    static MateAppraiser CheckMateWin(){return MateAppraiser{20};};
+    static MateAppraiser CheckMateLose(){return MateAppraiser{-20};};
     static MateAppraiser Tie(){return MateAppraiser{-1};};
     static MateAppraiser Approximate(BitBoard board, Color color){return MateAppraiser{0};};
     static MateAppraiser Max(){return MateAppraiser{100};};
@@ -36,19 +36,25 @@ public:
 
     std::string ToString(){
         switch(value_){
-            case 10:
-                return "Win";
-            case -10:
-                return "Lose";
             case -1:
                 return "Tie";
             case 0:
                 return "Not enought depth";
         }
-        return "Error";
+        if( value_ > 10)
+            return std::string("Win ") + std::to_string(20-value_);
+        if( value_ < -10)
+            return std::string("Lose ") + std::to_string(20+value_);
     };
 
-    MateAppraiser Process() const { return MateAppraiser(*this);};
+    MateAppraiser Process() const {
+        if(value_ <= 20 && value_ > 10)
+            return MateAppraiser(value_-1);
+        else if(value_ < -10 && value_ >= -20)
+            return MateAppraiser(value_+1);
+        else
+            return MateAppraiser(value_);
+    };
 };
 
 #endif

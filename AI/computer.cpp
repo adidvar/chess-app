@@ -1,9 +1,7 @@
 #include "computer.hpp"
 #include <algorithm>
 #include <limits>
-#include "Magic/magic.hpp"
 
-auto inf = std::numeric_limits<int>::max()-10;
 /*
 int Mark(const BitBoard &b, Color color)
 {
@@ -126,5 +124,5 @@ BitBoard Computer::GetTurn(BitBoard board)
 
 MateAppraiser Evaluate(BitBoard board, Color color)
 {
-    return minimax(board,3,color);
+    return minimax(board,4,color);
 }
