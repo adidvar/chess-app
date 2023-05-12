@@ -4,7 +4,7 @@
 #include "Magic/magic.hpp"
 
 auto inf = std::numeric_limits<int>::max()-10;
-
+/*
 int Mark(const BitBoard &b, Color color)
 {
     int value = 0;
@@ -24,6 +24,7 @@ int Mark(const BitBoard &b, Color color)
 
     return value;
 }
+*/
 /*
 int alphabeta(const BitBoard& bitboard, size_t depth, int a, int b, Color color, bool current){
     if (depth == 0)
@@ -77,29 +78,33 @@ function alphabeta(node, depth, α, β, maximizingPlayer) is
         */
 
 
-int minimax(const BitBoard& bitboard, size_t depth,Color color)
+MateAppraiser minimax(const BitBoard& bitboard, size_t depth, Color color)
 {
     auto nodes = bitboard.GenerateSubBoards();
-    if(nodes.size() == 0){
-        return bitboard.CurrentColor() == color ? -inf : inf;
+
+    bool zero_moves = nodes.size() == 0;
+    bool mate = bitboard.MateTest();
+
+    if(zero_moves && !mate){
+        return MateAppraiser::Tie();
+    } else if(zero_moves && mate){
+        return bitboard.CurrentColor() == color ? MateAppraiser::CheckMateLose() : MateAppraiser::CheckMateWin();
+    } else if(depth == 0){
+        return MateAppraiser::Approximate(bitboard, color);
     }
 
-    if (depth == 0)
-        return Mark(bitboard,color);
-
     if(bitboard.CurrentColor() == color){
-        int value = -inf;
+        MateAppraiser value = MateAppraiser::Min();
         for( const auto&node : nodes)
-            value = std::max(value, minimax(bitboard, depth-1,color));
+            value = std::max(value, minimax(node, depth-1,color).Process());
         return value;
     } else {
-        int value = inf;
+        MateAppraiser value = MateAppraiser::Max();
         for( const auto&node : nodes)
-            value = std::min(value, minimax(node, depth - 1,color));
+            value = std::min(value, minimax(node, depth - 1,color).Process());
         return value;
     }
 }
-#include <iostream>
 /*
 BitBoard Computer::GetTurn(BitBoard board)
 {
@@ -117,18 +122,9 @@ BitBoard Computer::GetTurn(BitBoard board)
     }
     return max_b;
 }
-
 */
-PositionRating Computer::Evaluate(BitBoard board,Color color)
-{
-    //return alphabeta(board,4,-inf,inf,color_,board.CurrentColor() == color_);
-    return PositionRating::FromValue(minimax(board,3,color));
-}
 
-/*
-int Computer::EvaluateA(BitBoard board)
+MateAppraiser Evaluate(BitBoard board, Color color)
 {
-    return alphabeta(board,5,-inf,inf,color_,board.CurrentColor() == color_);
-    //return minimax(board,4,color_,board.CurrentColor() == color_);
+    return minimax(board,3,color);
 }
-*/

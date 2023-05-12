@@ -5,12 +5,6 @@
 #include <bitboard.hpp>
 #include <position_rating.hpp>
 
-class Computer
-{
-protected:
-public:
-    Computer(){};
-    PositionRating Evaluate(BitBoard board,Color color);
-};
+MateAppraiser Evaluate(BitBoard board,Color color);
 
 #endif

@@ -17,7 +17,7 @@ class AIWidget : public QWidget
     Q_OBJECT
     BitBoard home;
     BitBoard current;
-    Computer computer;
+    Color color_;
 public:
     explicit AIWidget(QWidget *parent = nullptr);
     ~AIWidget();
@@ -27,6 +27,10 @@ private slots:
     void setBoard(BitBoard board);
 
     void on_turns_list_itemClicked(QListWidgetItem *item);
+
+    void on_white_radio_clicked();
+
+    void on_black_radio_clicked();
 
 private:
     Ui::AIWidget *ui;
