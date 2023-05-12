@@ -80,7 +80,7 @@ MateAppraiser minimax(const BitBoard& bitboard, size_t depth, Color color)
 {
     auto nodes = bitboard.GenerateSubBoards();
 
-    bool zero_moves = nodes.size() == 0;
+    bool zero_moves = (nodes.size() == 0);
     bool mate = bitboard.MateTest();
 
     if(zero_moves && !mate){
@@ -94,7 +94,7 @@ MateAppraiser minimax(const BitBoard& bitboard, size_t depth, Color color)
     if(bitboard.CurrentColor() == color){
         MateAppraiser value = MateAppraiser::Min();
         for( const auto&node : nodes)
-            value = std::max(value, minimax(node, depth-1,color).Process());
+            value = std::max(value, minimax(node, depth - 1,color).Process());
         return value;
     } else {
         MateAppraiser value = MateAppraiser::Max();
@@ -122,7 +122,7 @@ BitBoard Computer::GetTurn(BitBoard board)
 }
 */
 
-MateAppraiser Evaluate(BitBoard board, Color color)
+MateAppraiser Evaluate(BitBoard board, Color color , int depth)
 {
-    return minimax(board,4,color);
+    return minimax(board,depth,color);
 }

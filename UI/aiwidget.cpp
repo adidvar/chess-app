@@ -32,9 +32,9 @@ void AIWidget::setBoard(BitBoard board)
      {
          BitBoard copy(board);
          copy.ExecuteTurn(turn);
-         marks.push_back({Evaluate(copy,color_),turn.ToChessFormat()});
+         marks.push_back({Evaluate(copy,color_,1),turn.ToChessFormat()});
      }
-     auto current = Evaluate(board,color_);
+     auto current = Evaluate(board,color_,2);
      qDebug() << QString::fromStdString(current.ToString());
      std::sort(marks.begin(),marks.end());
      for(auto &pair : marks)

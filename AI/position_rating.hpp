@@ -43,8 +43,10 @@ public:
         }
         if( value_ > 10)
             return std::string("Win ") + std::to_string(20-value_);
-        if( value_ < -10)
+        else if( value_ < -10)
             return std::string("Lose ") + std::to_string(20+value_);
+        else
+            return "error";
     };
 
     MateAppraiser Process() const {

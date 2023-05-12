@@ -5,6 +5,6 @@
 #include <bitboard.hpp>
 #include <position_rating.hpp>
 
-MateAppraiser Evaluate(BitBoard board,Color color);
+MateAppraiser Evaluate(BitBoard board, Color color , int depth);
 
 #endif
