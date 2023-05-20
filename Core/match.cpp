@@ -21,3 +21,8 @@ bool Match::Push(Position turn)
 }
 
 */
+
+std::vector<Match> LoadFromPGN(std::string text)
+{
+    return {};
+}

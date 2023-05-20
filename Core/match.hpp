@@ -2,8 +2,10 @@
 #define MATCH_H
 
 #include <vector>
+#include <string>
 
 #include "board.hpp"
+#include "bitboard.hpp"
 #include "turn.hpp"
 
 class Match
@@ -18,17 +20,24 @@ class Match
         kBlackSurrendered ///<Чорні здалися
     } state_;
 
-    std::vector<Turn> turns_history_;
-    std::vector<Turn> current_turns_; ///< захешовані комбінації ходів
+    std::vector<Turn> turns_;
+    BitBoard current_;
 
-protected:
-    void UpdateState(); // обновляє стан і перехешовує ходи
+    std::vector<std::pair<std::string,std::string>> tags_;
 public:
     Match(){};
     ~Match() =default;
 
-
     bool Push(Turn turn);
+    bool Surrender(Color color);
+
+    std::vector<Turn> GetTurns() const;
+    BitBoard GetBoard() const;
+
+    bool HaveTag(std::string name) const;
+    std::string GetTagValue(std::string name) const;
 };
+
+std::vector<Match> LoadFromPGN(std::string text);
 
 #endif // MATCH_H

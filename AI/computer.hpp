@@ -4,7 +4,8 @@
 #include <turn.hpp>
 #include <bitboard.hpp>
 #include <position_rating.hpp>
+#include <mateevaluator.hpp>
 
-MateAppraiser Evaluate(BitBoard board, Color color , int depth);
+MateAppraiser EvaluateAB(BitBoard board, Color color , int depth);
 
 #endif

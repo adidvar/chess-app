@@ -6,274 +6,131 @@
 #include <bitboard.hpp>
 #include <magic.hpp>
 #include <computer.hpp>
+#include <match.hpp>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 
-template<class Board>
-static size_t MovesCounter(Board board,size_t depth){
-    if(!depth)
-        return 1;
-    size_t counter = 0;
 
-    for(auto board: board.GenerateSubBoards())
-        counter += MovesCounter(board,depth-1);
+/*
+using Tag = std::pair<std::string,std::string>;
 
-    return counter;
-}
-
-std::vector<std::vector<BitBoard>> hash(9);
-
-static size_t MovesCounterFast(BitBoard board,size_t depth){
-    if(!depth)
-        return 1;
-    size_t counter = 0;
-
-    board.GenerateSubBoards(hash[depth]);
-    for(auto board: hash[depth])
-        counter += MovesCounter(board,depth-1);
-
-    return counter;
-}
-
-void SeeBoard(BitBoard board , size_t depth)
+Tag ParseTag(std::string_view tag)
 {
-    using namespace std;
-    auto begin = std::chrono::high_resolution_clock::now();
-    for(auto board : board.GenerateSubBoards()){
-        cout << board.Fen() << ": " << MovesCounter(board,depth-1) << endl;
-    }
-    auto end = std::chrono::high_resolution_clock::now() - begin;
-    std::cout << "---------------------------------" << std::endl;
-    std::cout << "   BitBoard:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << "   <--->  ";
-    cout << MovesCounter(board,depth) << endl;
+    return Tag();
 }
 
+struct Tags{
+    std::unordered_map<std::string,std::string> tags;
+};
 
-float BenchMarkOnce(){
+Tags ParseTags(std::string_view data){
+    Tags tags;
 
-    using namespace std::chrono;
-    auto begin = std::chrono::high_resolution_clock::now();
-    std::cout << MovesCounter<Board>(Board(),4);
-    auto end = std::chrono::high_resolution_clock::now() - begin;
-    auto last_dur = end;
+    assert(data.front() == '[');
+    assert(data.back() == ']');
 
-    begin = std::chrono::high_resolution_clock::now();
-    std::cout << MovesCounter<BitBoard>(BitBoard(),4);
-    end = std::chrono::high_resolution_clock::now() - begin;
-    std::cout << std::endl;
+    size_t index = 0;
 
-    std::cout << "---------------------------------" << std::endl;
-    std::cout << "   Board:" << std::chrono::duration_cast<std::chrono::milliseconds>(last_dur).count() << "   <--->  ";
-    std::cout << "BitBoard:" << std::chrono::duration_cast<std::chrono::milliseconds>(end).count() << std::endl;
-    std::cout << "   Ratio:" << (float)last_dur.count()/end.count() << 'x' << std::endl;
-    std::cout << "---------------------------------" << std::endl;
-    return (float)last_dur.count()/end.count();
+    for(;;){
+        auto block_begin = data.find('[',index);
+        auto block_end = data.find(']',block_begin);
+
+        if(block_begin == std::string::npos || block_end == std::string::npos)break;
+
+        auto sub_block = data.substr(block_begin,block_end-block_begin+1);
+
+        auto space = sub_block.find(' ',0);
+        assert(space != std::string::npos);
+        auto tag = sub_block.substr(1,space-1);
+        auto value = sub_block.substr(space+2,sub_block.size()-space-4);
+
+        tags.tags[std::string(tag)] = std::string(value);
+
+        index = block_end;
+    }
+
+    return tags;
 }
 
-void BenchMark(){
-   float value = 0;
-   size_t tests = 20;
-   for(size_t i = 0 ; i < tests ; i++)
-       value+=BenchMarkOnce();
+void ParseTurns(std::string_view data){
 
-    std::cout << "---------------------------------" << std::endl;
-    std::cout << "   Average Ratio:" << (float)value/tests << 'x' << std::endl;
-    std::cout << "---------------------------------" << std::endl;
+    size_t index = 0;
+
+    for(;;){
+
+        auto block_index = data.find( delim, index);
+        auto block_text = data.substr( index, block_index - index);
+        index = block_index + delim.size();
+        return block_text;
+
+    }
 }
 
-void PrintBitBoard(uint64_t board){
-    const char letters[] = " +";
+std::string_view delim = "\n\n";
 
-    using namespace std;
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
-    }
-    cout << endl;
-    for(size_t i = 0 ; i<8;i++){
-        cout << '|';
-        for(size_t j = 0 ; j<8;j++){
-            Position pos(i,j);
-            cout << letters[((board >> pos.Value()) & 1) ] << "|";
-        }
-        cout << endl;
-    }
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
-    }
-    cout << endl;
-}
-
-uint64_t read_mask()
+std::string_view ReadBlock(std::string_view data, size_t & index)
 {
-    uint64_t result = 0;
-    for(size_t i = 0 ; i < 8 ; i++)
-    {
-        std::string line;
-        std::getline(std::cin,line);
-        for(size_t j = 0; j < 8 ; j++){
-            if(line[j] == '1')
-                result |= (1LL << (8*i+j));
-        }
-    }
-    return result;
+    auto block_index = data.find( delim, index);
+    auto block_text = data.substr( index, block_index - index);
+    index = block_index + delim.size();
+    return block_text;
 }
 
-void PrintBoardIndexes(){
-    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
+Match ReadMatch(std::string_view data, size_t & index){
+    //auto data_index = data.find("\n\n",header_index+1);
+    //auto data_text = data.substr(header_index,data_index-header_index-1);
 
-    using namespace std;
+    auto header = ReadBlock(data,index);
+    auto content = ReadBlock(data,index);
 
-    for(size_t i = 0 ; i<8;i++){
-        cout << "+--";
-    }
-    cout << "+" << endl;
-    for(size_t i = 0 ; i<8;i++){
-        cout << '|';
-        for(size_t j = 0 ; j<8;j++){
-            Position pos(i,j);
-            if(pos.Value() < 10)
-                cout << ' ';
-            cout << (int)pos.Value() << "|";
-        }
-        cout << endl;
-        for(size_t i = 0 ; i<8;i++){
-            cout << "+--";
-        }
-        cout << "+" << endl;
-    }
+    auto Tags = ParseTags(header);
+    Match match;
 
+
+    return {};
+}
+*/
+/*
+Turns ParseTurns(std::string_view data, size_t & index){
+    Turns turns;
+
+    auto line_end = data.find("\n\n",index+1);
+    auto sub_line = data.substr(index+1,line_end-index-1);
+
+    std::cout << sub_line << std::endl;
+
+    return turns;
+}
+*/
+
+Match Parse(std::string text, size_t &position){
+
+
+
+
+    return {};
 }
 
-template <class T>
-void PrintBoard(const T& board){
-
-    const char letters[2][8] = {" pnbrqk"," PNBRQK"};
-
-    using namespace std;
-    for(size_t i = 0 ; i<17;i++){
-        cout << "-";
+std::string LoadFile(std::string name){
+    std::ifstream t("Adams.pgn");
+    if(!t.is_open()){
+        std::cerr << "Error while oppening file";
+        exit(1);
     }
-    cout << endl;
-    for(size_t i = 0 ; i<8;i++){
-        cout << '|';
-        for(size_t j = 0 ; j<8;j++){
-            Position pos(i,j);
-            auto type = board.GetCell(pos);
-            cout << letters[type.color][type.type] << "|";
-        }
-        cout << endl;
-    }
-    auto flags = board.RookingFlags();
-    cout << (flags.white_oo ? 'K' : '-');
-    cout << (flags.white_ooo ? 'Q' : '-');
-    cout << (flags.black_oo ? 'k' : '-');
-    cout << (flags.black_ooo ? 'q' : '-');
-    for(size_t i = 0 ; i<13;i++){
-        cout << "-";
-    }
-
-    cout << endl;
-
-}
-
-bool CompareUntillError(Board board , size_t depth){
-    BitBoard bitboard(board.Fen());
-
-    if(board.GenerateSubBoards().size() != bitboard.GenerateSubBoards().size()){
-        PrintBoard(board);
-        std::cout << board.Fen() << std::endl;
-        std::cout << "Bitboard: "  << bitboard.GenerateSubBoards().size() << std::endl;
-        std::cout << "Board: "  << board.GenerateSubBoards().size() << std::endl;
-
-        for(auto board : bitboard.GenerateSubBoards()){
-            PrintBoard(board);
-        }
-
-        return true;
-    }
-    if(depth==0)
-        return false;
-
-    for(auto sub : board.GenerateSubBoards()){
-        if(CompareUntillError(sub,depth-1))
-            return true;
-    }
-
-    return false;
-}
-bool CompareSubs(Board board,BitBoard bitboard , size_t depth){
-    using namespace std;
-    std::map<std::string,int> table;
-    for(auto sub : board.GenerateSubBoards())
-        table[sub.Fen()]++;
-    for(auto sub : bitboard.GenerateSubBoards())
-        table[sub.Fen()]++;
-    for(auto pair : table)
-        if(pair.second%2==0)
-            table.erase(pair.first);
-    if(table.size()==0)
-        return false;
-    else {
-        for(auto pair : table)
-            cout << pair.first << ":" << pair.second << endl;
-        return true;
-    }
-}
-
-bool CompareSubCount(Board board,BitBoard bitboard , size_t depth){
-    using namespace std;
-    std::map<std::pair<size_t,std::string>,int> table;
-    for(auto sub : board.GenerateSubBoards()){
-        cout << MovesCounter(sub,depth) << ":" << sub.Fen() << endl;
-        table[{MovesCounter(sub,depth),sub.Fen()}]++;
-    }
-    cout << "---------------------" << endl;
-    for(auto sub : bitboard.GenerateSubBoards()){
-        table[{MovesCounter(sub,depth),sub.Fen()}]++;
-        cout << MovesCounter(sub,depth) << ":" << sub.Fen() << endl;
-    }
-    cout << "---------------------" << endl;
-    for(const auto &pair : table)
-        if(pair.second%2==0)
-            table.erase(pair.first);
-    if(table.size()==0)
-        return false;
-    else {
-        for(auto pair : table)
-            cout <<pair.first.first << ":" << pair.first.second << ":" << pair.second << endl;
-        return true;
-    }
-}
-
-bool CompareSubC(Board board,BitBoard bitboard , size_t depth){
-    using namespace std;
-    std::map<std::string,size_t> table;
-    std::map<std::string,size_t> bittable;
-    for(auto sub : board.GenerateSubBoards()){
-        table[sub.Fen()] = MovesCounter(sub,depth) ;
-    }
-    for(auto sub : bitboard.GenerateSubBoards()){
-        bittable[sub.Fen()] = MovesCounter(sub,depth) ;
-    }
-    for(const auto &pair : bittable){
-        cout << pair.first << endl;
-        cout << pair.second << "<->";
-        cout << table[pair.first] << "(:";
-
-        auto turns = bitboard.GenerateSubBoards();
-
-        for(size_t i = 0 ; i < turns.size(); i++)
-            if(turns[i].Fen() == pair.first){
-                cout << i ;
-                break;
-            }
-        cout << ":)" << endl;
-    }
-    for(const auto &pair : table){
-        cout << pair.first << endl;
-        cout << pair.second << "<->";
-        cout << bittable[pair.first] << endl;
-    }
-    return 0;
+    int length;
+    t.seekg(0, std::ios::end);    // go to the end
+    length = t.tellg();           // report location (this is the length)
+    t.seekg(0, std::ios::beg);    // go back to the beginning
+    char *buffer = new char[length];    // allocate memory for a buffer of appropriate dimension
+    t.read(buffer, length);       // read the whole file into the buffer
+    std::string string(buffer,length);
+    t.close();                    // close file handle
+    delete[] buffer;
+    return string;
 }
 
 int main()
@@ -295,21 +152,11 @@ int main()
     }
 
 */
-    BitBoard board;
-    Computer cw(Color::kWhite);
-    Computer cb(Color::kBlack);
-
-    while(true)
-    {
-        board = cw.GetTurn(board);
-        PrintBoard(board);
-        std::cout << cw.Evaluate(board) << "<--->";
-        std::cout << cw.EvaluateA(board) << std::endl;
-        board = cb.GetTurn(board);
-        PrintBoard(board);
-        std::cout << cb.Evaluate(board) << "<--->";
-        std::cout << cb.EvaluateA(board) << std::endl;
-    }
+    /*
+    auto text = LoadFile("Adam.pgn");
+    size_t len = 0;
+    ReadMatch(text,len);
+    */
 
 
     //PrintBoardIndexes();

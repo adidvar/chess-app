@@ -76,7 +76,8 @@ function alphabeta(node, depth, α, β, maximizingPlayer) is
         */
 
 
-MateAppraiser minimax(const BitBoard& bitboard, size_t depth, Color color)
+
+MateAppraiser minimaxab(const BitBoard& bitboard, size_t depth, Color color, MateAppraiser a, MateAppraiser b)
 {
     auto nodes = bitboard.GenerateSubBoards();
 
@@ -94,12 +95,22 @@ MateAppraiser minimax(const BitBoard& bitboard, size_t depth, Color color)
     if(bitboard.CurrentColor() == color){
         MateAppraiser value = MateAppraiser::Min();
         for( const auto&node : nodes)
-            value = std::max(value, minimax(node, depth - 1,color).Process());
+        {
+            value = std::max(value, minimaxab(node, depth - 1,color,a ,b).Process());
+            if(value > b)
+                break;
+            a = std::max(a,value);
+        }
         return value;
     } else {
         MateAppraiser value = MateAppraiser::Max();
         for( const auto&node : nodes)
-            value = std::min(value, minimax(node, depth - 1,color).Process());
+        {
+            value = std::min(value, minimaxab(node, depth - 1,color,a ,b).Process());
+            if(value < a)
+                break;
+            b = std::min(b,value);
+        }
         return value;
     }
 }
@@ -122,7 +133,8 @@ BitBoard Computer::GetTurn(BitBoard board)
 }
 */
 
-MateAppraiser Evaluate(BitBoard board, Color color , int depth)
+
+MateAppraiser EvaluateAB(BitBoard board, Color color , int depth)
 {
-    return minimax(board,depth,color);
+    return minimaxab(board,depth,color,MateAppraiser::Min(),MateAppraiser::Max());
 }
