@@ -1,13 +1,14 @@
 #include "aiwidget.h"
 #include "ui_aiwidget.h"
 #include <QDebug>
+#include <statistics.hpp>
+#include <alphabeta.hpp>
 
 AIWidget::AIWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AIWidget)
 {
     ui->setupUi(this);
-    setBoard({});
 }
 
 AIWidget::~AIWidget()
@@ -23,6 +24,7 @@ void AIWidget::on_set_clicked()
 
 void AIWidget::setBoard(BitBoard board)
 {
+    NoStatistics stat;
     current = board;
      ui->widget->PushBoard(board);
      ui->turns_list->clear();
@@ -32,9 +34,9 @@ void AIWidget::setBoard(BitBoard board)
      {
          BitBoard copy(board);
          copy.ExecuteTurn(turn);
-         marks.push_back({EvaluateAB(copy,color_,3),turn.ToChessFormat()});
+         marks.push_back({AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(copy,color_,6,stat),turn.ToChessFormat()});
      }
-     auto current = EvaluateAB(board,color_,4);
+     auto current = AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(board,color_,7,stat);
      qDebug() << QString::fromStdString(current.ToString());
      std::sort(marks.begin(),marks.end());
      for(auto &pair : marks)

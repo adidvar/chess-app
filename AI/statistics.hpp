@@ -18,12 +18,21 @@ public:
     virtual void ApproximationTimerEnd() = 0;
     virtual void GenerationTimerBegin() = 0;
     virtual void GenerationTimerEnd() = 0;
+    virtual void Clear() = 0;
 };
 
 class Statistics final : public IStatistics{
 public:
     Statistics()
     {
+        Clear();
+    }
+    void Clear() override {
+        nodescount_ = 0;
+        approximationcount_ = 0;
+        all_= duration{0};
+        generation_ = duration{0};
+        approximation_= duration{0};
     }
 
     virtual void NewNodeEvent() override
@@ -33,7 +42,7 @@ public:
 
     virtual void NewApproximationEvent() override
     {
-        approximation_++;
+        approximationcount_++;
     };
 
     virtual void AllTimerBegin() override
@@ -95,14 +104,20 @@ private:
 };
 
 class NoStatistics final: public IStatistics{
+public:
     virtual void NewNodeEvent() override
     { };
     virtual void NewApproximationEvent() override
     { };
     virtual void AllTimerBegin() override
-    { };
+    {
+       allp_ = clock::now();
+    };
+
     virtual void AllTimerEnd() override
-    { };
+    {
+       all_ += clock::now() - allp_;
+    };
     virtual void ApproximationTimerBegin() override
     { };
     virtual void ApproximationTimerEnd() override
@@ -111,6 +126,18 @@ class NoStatistics final: public IStatistics{
     { };
     virtual void GenerationTimerEnd() override
     { };
+    NoStatistics(){
+        Clear();
+    }
+    void Clear() override {
+        all_= duration{0};
+    }
+    duration GetAllTime() const {
+        return all_;
+    }
+private:
+    duration all_;
+    point allp_;
 };
 
 #endif

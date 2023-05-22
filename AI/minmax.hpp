@@ -2,15 +2,20 @@
 #define MINIMAX_HPP
 
 #include <bitboard.hpp>
+#include <statistics.hpp>
 
-template<typename T>
+template<typename T, typename S = NoStatistics>
 class MinMax
 {
     Color color_;
+    S &stat_;
 
     T minimax(const BitBoard& bitboard, size_t depth)
     {
+        stat_.NewNodeEvent();
+        stat_.GenerationTimerBegin();
         auto nodes = bitboard.GenerateSubBoards();
+        stat_.GenerationTimerEnd();
 
         bool zero_moves = (nodes.size() == 0);
         bool mate = bitboard.MateTest();
@@ -20,7 +25,13 @@ class MinMax
         } else if(zero_moves && mate){
             return bitboard.CurrentColor() == color_ ? T::CheckMateLose() : T::CheckMateWin();
         } else if(depth == 0){
-            return T::Approximate(bitboard, color_);
+
+            stat_.NewApproximationEvent();
+            stat_.ApproximationTimerBegin();
+            auto approx = T::Approximate(bitboard, color_);
+            stat_.ApproximationTimerEnd();
+
+            return approx;
         }
 
         if(bitboard.CurrentColor() == color_){
@@ -38,14 +49,24 @@ class MinMax
 
 public:
 
-    MinMax(Color color):
-    color_(color){}
+    MinMax(Color color, S &s):
+    color_(color),
+      stat_(s)
+    {}
 
     T Evaluate(BitBoard board, int depth)
     {
-        return minimax(board,depth);
+        stat_.Clear();
+        stat_.AllTimerBegin();
+        auto value = minimax(board,depth);
+        stat_.AllTimerEnd();
+        return value;
     }
 
+    static T Evaluate(BitBoard board, Color color, int depth, S &stat ){
+         MinMax core(color,stat);
+         return core.Evaluate(board,depth);
+    }
 };
 
 #endif

@@ -15,6 +15,12 @@ public:
     bool operator > (const MateAppraiser &value) const {
         return value_ > value.value_;
     }
+    bool operator <= (const MateAppraiser &value) const {
+        return value_ <= value.value_;
+    }
+    bool operator >= (const MateAppraiser &value) const {
+        return value_ >= value.value_;
+    }
 
     static MateAppraiser CheckMateWin(){return MateAppraiser{20};};
     static MateAppraiser CheckMateLose(){return MateAppraiser{-20};};
