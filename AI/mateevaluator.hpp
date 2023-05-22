@@ -36,12 +36,16 @@ public:
             case 0:
                 return "Not enought depth";
         }
-        if( value_ > 10)
+        if( value_ > 10 && value_ <= 20)
             return std::string("Win ") + std::to_string(20-value_);
-        else if( value_ < -10)
+        else if( value_ < -10 && value_ >= -20)
             return std::string("Lose ") + std::to_string(20+value_);
+        else if (value_ == 100)
+            return "Max";
+        else if (value_ == -100)
+            return "Min";
         else
-            return "error";
+            return "Error";
     };
 
     MateAppraiser Process() const {

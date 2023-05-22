@@ -4,13 +4,17 @@
 #include <bitboard.hpp>
 #include <statistics.hpp>
 
+#include <iostream>
+#include "minmax.hpp"
+#include "mateevaluator.hpp"
+#include <statistics.hpp>
+
 template<typename T, typename S = NoStatistics>
 class AlphaBeta
 {
     Color color_;
     S &stat_;
 
-    //T minimax(const BitBoard& bitboard, size_t depth);
     T alphabeta(const BitBoard& bitboard, size_t depth, T a, T b)
     {
         stat_.NewNodeEvent();
@@ -39,9 +43,9 @@ class AlphaBeta
             T value = T::Min();
             for( const auto&node : nodes)
             {
-                value = std::max(value, alphabeta(node, depth - 1,a ,b).Process());
+                value = std::max(value, alphabeta(node, depth - 1, a, b).Process());
                 a = std::max(a,value);
-                if(b <= a)
+                if(a >= b)
                     break;
             }
             return value;
@@ -49,9 +53,9 @@ class AlphaBeta
             T value = T::Max();
             for( const auto&node : nodes)
             {
-                value = std::min(value, alphabeta(node, depth - 1,a ,b).Process());
+                value = std::min(value, alphabeta(node, depth - 1, a, b).Process());
                 b = std::min(b,value);
-                if(b <= a)
+                if(a >= b)
                     break;
             }
             return value;

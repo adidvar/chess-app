@@ -34,9 +34,9 @@ void AIWidget::setBoard(BitBoard board)
      {
          BitBoard copy(board);
          copy.ExecuteTurn(turn);
-         marks.push_back({AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(copy,color_,6,stat),turn.ToChessFormat()});
+         marks.push_back({AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(copy,color_,5,stat),turn.ToChessFormat()});
      }
-     auto current = AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(board,color_,7,stat);
+     auto current = AlphaBeta<MateAppraiser,NoStatistics>::Evaluate(board,color_,6,stat);
      qDebug() << QString::fromStdString(current.ToString());
      std::sort(marks.begin(),marks.end());
      for(auto &pair : marks)
