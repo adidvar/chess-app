@@ -43,12 +43,46 @@ void Bench(BitBoard board , uint64_t depth){
     cout << "------------------------------------------------------" << endl;
 
     cout << endl;
+}
 
+Position GenPos(){
+    return Position(rand()%64);
+}
+
+BitBoard GenBoard(){
+    BitBoard board("8/8/8/8/8/8/8/8 w - - 0 1");
+
+    board.Set(GenPos(),{Figure::kKing,Color::kWhite});
+    board.Set(GenPos(),{Figure::kKing,Color::kBlack});
+    board.Set(GenPos(),{Figure::kQueen,Color::kBlack});
+
+    return board;
 }
 
 int main(){
-    auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
+    auto b = BitBoard("8/8/8/8/3k4/8/7q/2K5 w - - 0 1");
+    //auto b = BitBoard("8/8/2Q2q2/k6K/2Q2q2/8/8/8 w - - 0 1");
     auto d = 6;
-    Bench<MinMax<MateAppraiser,Statistics>>(b,d);
-    Bench<AlphaBeta<MateAppraiser,Statistics>>(b,d);
+    Bench<MinMax<ValueAppraiser,Statistics>>(b,d);
+    Bench<AlphaBeta<ValueAppraiser,Statistics>>(b,d);
+/*
+    for(;;){
+       // std::string string;
+        //std::getline(std::cin, string);
+
+        auto board = GenBoard();
+
+        for(;;){
+            NoStatistics stat;
+            auto stat1 = MinMax<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite, 6, stat);
+            auto stat2 =  AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite, 6, stat);
+            if(stat1 != stat2){
+                std::cout << board.Fen() << " " << stat1.ToString() << "  " << stat2.ToString() << std::endl;
+            }
+            auto turns = board.GenerateSubBoards();
+            board = GenBoard();
+            std::cout << "L" << std::endl;
+        }
+    }
+    */
 }

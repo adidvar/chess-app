@@ -3,32 +3,32 @@
 
 #include <mateevaluator.hpp>
 
-TEMPLATE_TEST_CASE( "Approximation basic rules", "[approximation][ai]", MateAppraiser){
+TEMPLATE_TEST_CASE( "Approximation basic rules", "[approximation][ai]", MateAppraiser ,ValueAppraiser){
 
     SECTION( "Test of Max Min" ) {
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::Min());
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::CheckMateLose());
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::CheckMateWin());
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::Tie());
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::Approximate(BitBoard(),Color::kWhite));
-        REQUIRE(MateAppraiser::Max() > MateAppraiser::Approximate(BitBoard(),Color::kBlack));
+        REQUIRE(TestType::Max() > TestType::Min());
+        REQUIRE(TestType::Max() > TestType::CheckMateLose());
+        REQUIRE(TestType::Max() > TestType::CheckMateWin());
+        REQUIRE(TestType::Max() > TestType::Tie());
+        REQUIRE(TestType::Max() > TestType::Approximate(BitBoard(),Color::kWhite));
+        REQUIRE(TestType::Max() > TestType::Approximate(BitBoard(),Color::kBlack));
 
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::Max());
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::CheckMateLose());
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::CheckMateWin());
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::Tie());
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::Approximate(BitBoard(),Color::kWhite));
-        REQUIRE(MateAppraiser::Min() < MateAppraiser::Approximate(BitBoard(),Color::kBlack));
+        REQUIRE(TestType::Min() < TestType::Max());
+        REQUIRE(TestType::Min() < TestType::CheckMateLose());
+        REQUIRE(TestType::Min() < TestType::CheckMateWin());
+        REQUIRE(TestType::Min() < TestType::Tie());
+        REQUIRE(TestType::Min() < TestType::Approximate(BitBoard(),Color::kWhite));
+        REQUIRE(TestType::Min() < TestType::Approximate(BitBoard(),Color::kBlack));
     }
 
     SECTION( "Test of Win Lose Tie" ) {
-        REQUIRE(MateAppraiser::CheckMateWin() > MateAppraiser::CheckMateLose());
-        REQUIRE(MateAppraiser::CheckMateLose() < MateAppraiser::CheckMateWin());
+        REQUIRE(TestType::CheckMateWin() > TestType::CheckMateLose());
+        REQUIRE(TestType::CheckMateLose() < TestType::CheckMateWin());
 
-        REQUIRE(MateAppraiser::CheckMateWin() > MateAppraiser::CheckMateWin().Process());
-        REQUIRE(MateAppraiser::CheckMateLose().Process() < MateAppraiser::CheckMateWin().Process());
+        REQUIRE(TestType::CheckMateWin() > TestType::CheckMateWin().Process());
+        REQUIRE(TestType::CheckMateLose().Process() < TestType::CheckMateWin().Process());
 
-        REQUIRE(MateAppraiser::CheckMateWin() > MateAppraiser::Tie());
-        REQUIRE(MateAppraiser::CheckMateLose() < MateAppraiser::Tie());
+        REQUIRE(TestType::CheckMateWin() > TestType::Tie());
+        REQUIRE(TestType::CheckMateLose() < TestType::Tie());
     }
 }

@@ -4,11 +4,6 @@
 #include <bitboard.hpp>
 #include <statistics.hpp>
 
-#include <iostream>
-#include "minmax.hpp"
-#include "mateevaluator.hpp"
-#include <statistics.hpp>
-
 template<typename T, typename S = NoStatistics>
 class AlphaBeta
 {
@@ -23,12 +18,12 @@ class AlphaBeta
         stat_.GenerationTimerEnd();
 
         bool zero_moves = (nodes.size() == 0);
-        bool mate = bitboard.MateTest();
 
-        if(zero_moves && !mate){
-            return T::Tie();
-        } else if(zero_moves && mate){
-            return bitboard.CurrentColor() == color_ ? T::CheckMateLose() : T::CheckMateWin();
+        if(zero_moves){
+            if(!bitboard.MateTest())
+                return T::Tie();
+            else
+                return bitboard.CurrentColor() == color_ ? T::CheckMateLose() : T::CheckMateWin();
         } else if(depth == 0){
 
             stat_.NewApproximationEvent();
@@ -43,9 +38,10 @@ class AlphaBeta
             T value = T::Min();
             for( const auto&node : nodes)
             {
-                value = std::max(value, alphabeta(node, depth - 1, a, b).Process());
+                auto nvalue = alphabeta(node, depth - 1, a, b).Process();
+                value = std::max(value, nvalue);
                 a = std::max(a,value);
-                if(a >= b)
+                if(b <= a)
                     break;
             }
             return value;
@@ -53,9 +49,10 @@ class AlphaBeta
             T value = T::Max();
             for( const auto&node : nodes)
             {
-                value = std::min(value, alphabeta(node, depth - 1, a, b).Process());
+                auto nvalue = alphabeta(node, depth - 1, a, b).Process();
+                value = std::min(value, nvalue);
                 b = std::min(b,value);
-                if(a >= b)
+                if(b <= a)
                     break;
             }
             return value;
@@ -65,8 +62,8 @@ class AlphaBeta
 public:
 
     AlphaBeta(Color color, S &s):
-    color_(color),
-      stat_(s)
+        color_(color),
+        stat_(s)
     {}
 
     T Evaluate(BitBoard board, int depth)
@@ -79,8 +76,8 @@ public:
     }
 
     static T Evaluate(BitBoard board, Color color, int depth, S &stat ){
-         AlphaBeta core(color,stat);
-         return core.Evaluate(board,depth);
+        AlphaBeta core(color,stat);
+        return core.Evaluate(board,depth);
     }
 };
 
