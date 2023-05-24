@@ -121,6 +121,16 @@ Turn Turn::FromChessFormat(std::string_view string)
     return turn;
 }
 
+Turn Turn::GetShortCastling(Color color)
+{
+    return color == Color::kWhite ? white_short_castling : black_short_castling;
+}
+
+Turn Turn::GetLongCastling(Color color)
+{
+    return color == Color::kWhite ? white_long_castling : black_long_castling;
+}
+
 bool Turn::operator ==(const Turn& turn) const{
     return from_ == turn.from_ &&
            to_ == turn.to_ &&

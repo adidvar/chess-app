@@ -63,6 +63,8 @@ public:
 
     std::string ToChessFormat() const;
     static Turn FromChessFormat(std::string_view string);
+    static Turn GetShortCastling(Color color);
+    static Turn GetLongCastling(Color color);
 };
 
 #endif // TURN_H

@@ -824,10 +824,11 @@ std::vector<Turn> BitBoard::GenerateTurns(Color color) const
 {
     std::vector<BitBoard> boards;
     std::vector<Turn> turns;
+    turns.reserve(120);
     boards.reserve(120);
     GenerateSubBoards(boards,color);
 
-    for(auto subboard : boards){
+    for(const auto &subboard : boards){
         uint64_t delta = all_[color] ^ subboard.all_[color];
         if(rooking_masks[color][0] == delta){
             turns.push_back(color == Color::kWhite ? Turn(60,58) : Turn(4,2));
