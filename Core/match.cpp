@@ -2,6 +2,7 @@
 
 #include <map>
 #include <algorithm>
+#include <iostream>
 
 /*
 void Match::update_state_and_hash_turns()
@@ -380,7 +381,11 @@ Match ReadMatch(std::string_view data, size_t & index){
     else
         match.SetResult(Match::Unknown);
 
-    return{};
+    static size_t i = 1 ;
+    std::cout << i << std::endl;
+    i++;
+
+    return match;
 }
 
 std::vector<Match> Match::LoadFromPGN(std::string text)

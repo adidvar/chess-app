@@ -59,15 +59,6 @@ public:
         else
             return "Error";
     };
-
-    MateAppraiser Process() const {
-        if(value_ <= 20 && value_ > 10)
-            return MateAppraiser(value_-1);
-        else if(value_ < -10 && value_ >= -20)
-            return MateAppraiser(value_+1);
-        else
-            return MateAppraiser(value_);
-    };
 };
 
 class ValueAppraiser{
@@ -101,8 +92,8 @@ public:
         return value_ != value.value_;
     }
 
-    static ValueAppraiser CheckMateWin(){return ValueAppraiser{max_-1};};
-    static ValueAppraiser CheckMateLose(){return ValueAppraiser{min_+1};};
+    static ValueAppraiser CheckMateWin(int depth = 0){return ValueAppraiser{max_mate_+depth};};
+    static ValueAppraiser CheckMateLose(int depth = 0){return ValueAppraiser{min_mate_-depth};};
     static ValueAppraiser Tie(){return ValueAppraiser{0};};
     static ValueAppraiser Approximate(BitBoard board, Color color)
     {
@@ -127,26 +118,17 @@ public:
     static ValueAppraiser Max(){return ValueAppraiser{max_};};
     static ValueAppraiser Min(){return ValueAppraiser{min_};};
 
-    std::string ToString(){
+    std::string ToString(size_t depth){
         if( value_ > max_mate_ && value_ < max_)
-            return std::string("Win ") + std::to_string(max_-value_ -1);
+            return std::string("Win ") + std::to_string(depth-(value_-max_mate_));
         else if( value_ < min_mate_ && value_ > min_)
-            return std::string("Lose ") + std::to_string(value_-min_ -1);
+            return std::string("Lose ") + std::to_string(depth-(min_mate_-value_));
         else if (value_ == max_)
             return "Max";
         else if (value_ == min_)
             return "Min";
         else
             return std::to_string(value_);
-    };
-
-    ValueAppraiser Process() const {
-        if(value_ < max_  && value_ > max_mate_)
-            return ValueAppraiser(value_-1);
-        else if(value_ < min_mate_ && value_ > min_)
-            return ValueAppraiser(value_+1);
-        else
-            return ValueAppraiser(value_);
     };
 };
 

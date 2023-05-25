@@ -37,13 +37,13 @@ void AIWidget::setBoard(BitBoard board)
          marks.push_back({AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(copy,color_,5,stat),turn.ToChessFormat()});
      }
      auto current = AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(board,color_,6,stat);
-     qDebug() << QString::fromStdString(current.ToString());
+     qDebug() << QString::fromStdString(current.ToString(6));
      std::sort(marks.begin(),marks.end());
      for(auto &pair : marks)
      {
-        ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString()));
+        ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString(5)));
      }
-     ui->score->setText(QString::fromStdString(current.ToString()));
+     ui->score->setText(QString::fromStdString(current.ToString(6)));
 }
 
 

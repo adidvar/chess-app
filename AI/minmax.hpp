@@ -23,7 +23,7 @@ class MinMax
         if(zero_moves && !mate){
             return T::Tie();
         } else if(zero_moves && mate){
-            return bitboard.CurrentColor() == color_ ? T::CheckMateLose() : T::CheckMateWin();
+            return bitboard.CurrentColor() == color_ ? T::CheckMateLose(depth) : T::CheckMateWin(depth);
         } else if(depth == 0){
 
             stat_.NewApproximationEvent();
@@ -37,12 +37,12 @@ class MinMax
         if(bitboard.CurrentColor() == color_){
             T value = T::Min();
             for( const auto&node : nodes)
-                value = std::max(value, minimax(node, depth - 1).Process());
+                value = std::max(value, minimax(node, depth - 1));
             return value;
         } else {
             T value = T::Max();
             for( const auto&node : nodes)
-                value = std::min(value, minimax(node, depth - 1).Process());
+                value = std::min(value, minimax(node, depth - 1));
             return value;
         }
     }

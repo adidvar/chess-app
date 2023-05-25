@@ -39,7 +39,7 @@ int main()
     std::ios_base::sync_with_stdio(false);
     using namespace std;
 
-    auto text = LoadFile("Adams.pgn");
+    auto text = LoadFile("BenkoGambit.pgn");
     auto matches = Match::LoadFromPGN(text);
 
     std::cout << matches.size() << std::endl;

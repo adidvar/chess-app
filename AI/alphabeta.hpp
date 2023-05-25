@@ -4,6 +4,8 @@
 #include <bitboard.hpp>
 #include <statistics.hpp>
 
+#include <iostream>
+
 template<typename T, typename S = NoStatistics>
 class AlphaBeta
 {
@@ -23,7 +25,7 @@ class AlphaBeta
             if(!bitboard.MateTest())
                 return T::Tie();
             else
-                return bitboard.CurrentColor() == color_ ? T::CheckMateLose() : T::CheckMateWin();
+                return bitboard.CurrentColor() == color_ ? T::CheckMateLose(depth) : T::CheckMateWin(depth);
         } else if(depth == 0){
 
             stat_.NewApproximationEvent();
@@ -38,7 +40,7 @@ class AlphaBeta
             T value = T::Min();
             for( const auto&node : nodes)
             {
-                auto nvalue = alphabeta(node, depth - 1, a, b).Process();
+                auto nvalue = alphabeta(node, depth - 1, a, b);
                 value = std::max(value, nvalue);
                 a = std::max(a,value);
                 if(b <= a)
@@ -49,7 +51,7 @@ class AlphaBeta
             T value = T::Max();
             for( const auto&node : nodes)
             {
-                auto nvalue = alphabeta(node, depth - 1, a, b).Process();
+                auto nvalue = alphabeta(node, depth - 1, a, b);
                 value = std::min(value, nvalue);
                 b = std::min(b,value);
                 if(b <= a)

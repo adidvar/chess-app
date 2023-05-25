@@ -25,9 +25,6 @@ TEMPLATE_TEST_CASE( "Approximation basic rules", "[approximation][ai]", MateAppr
         REQUIRE(TestType::CheckMateWin() > TestType::CheckMateLose());
         REQUIRE(TestType::CheckMateLose() < TestType::CheckMateWin());
 
-        REQUIRE(TestType::CheckMateWin() > TestType::CheckMateWin().Process());
-        REQUIRE(TestType::CheckMateLose().Process() < TestType::CheckMateWin().Process());
-
         REQUIRE(TestType::CheckMateWin() > TestType::Tie());
         REQUIRE(TestType::CheckMateLose() < TestType::Tie());
     }

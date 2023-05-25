@@ -96,7 +96,7 @@ MateAppraiser minimaxab(const BitBoard& bitboard, size_t depth, Color color, Mat
         MateAppraiser value = MateAppraiser::Min();
         for( const auto&node : nodes)
         {
-            value = std::max(value, minimaxab(node, depth - 1,color,a ,b).Process());
+            value = std::max(value, minimaxab(node, depth - 1,color,a ,b));
            // if(value > b)
             //    break;
             a = std::max(a,value);
@@ -106,7 +106,7 @@ MateAppraiser minimaxab(const BitBoard& bitboard, size_t depth, Color color, Mat
         MateAppraiser value = MateAppraiser::Max();
         for( const auto&node : nodes)
         {
-            value = std::min(value, minimaxab(node, depth - 1,color,a ,b).Process());
+            value = std::min(value, minimaxab(node, depth - 1,color,a ,b));
           //  if(value < a)
          //       break;
             b = std::min(b,value);

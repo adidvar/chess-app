@@ -39,7 +39,7 @@ void Bench(BitBoard board , uint64_t depth){
     cout << "------------------------------------------------------" << endl;
     cout << "N: " << stat.GetNodesCount() << ":      AN: " << stat.GetApproximationCount() << endl;
     cout << "------------------------------------------------------" << endl;
-    cout << "R: "<< res.ToString() << endl;
+    cout << "R: "<< res.ToString(depth) << endl;
     cout << "------------------------------------------------------" << endl;
 
     cout << endl;
@@ -60,11 +60,11 @@ BitBoard GenBoard(){
 }
 
 int main(){
-    auto b = BitBoard("8/8/8/8/3k4/8/7q/2K5 w - - 0 1");
-    //auto b = BitBoard("8/8/2Q2q2/k6K/2Q2q2/8/8/8 w - - 0 1");
+    //auto b = BitBoard();
+    auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
     auto d = 6;
-    Bench<MinMax<ValueAppraiser,Statistics>>(b,d);
     Bench<AlphaBeta<ValueAppraiser,Statistics>>(b,d);
+    Bench<MinMax<ValueAppraiser,Statistics>>(b,d);
 /*
     for(;;){
        // std::string string;
