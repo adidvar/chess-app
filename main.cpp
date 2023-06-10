@@ -1,11 +1,11 @@
 #include <QApplication>
 #include <QHBoxLayout>
-#include "aiwidget.h"
+#include "mainmenu.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    AIWidget widget;
+    MainMenu widget;
     widget.show();
     return a.exec();
 }
