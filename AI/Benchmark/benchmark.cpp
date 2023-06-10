@@ -60,9 +60,10 @@ BitBoard GenBoard(){
 }
 
 int main(){
-    //auto b = BitBoard();
-    auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
-    auto d = 6;
+    auto b = BitBoard();
+    //b.SkipMove();
+    //auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
+    auto d = 5;
     Bench<AlphaBeta<ValueAppraiser,Statistics>>(b,d);
     Bench<MinMax<ValueAppraiser,Statistics>>(b,d);
 /*

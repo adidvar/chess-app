@@ -64,6 +64,13 @@ void TestTurn(T board)
     auto opturns = board.GenerateTurns(board.OpponentColor());
     REQUIRE(mysubs.size() == myturns.size());
     REQUIRE(opsubs.size() == opturns.size());
+
+    for(size_t i = 0 ; i < mysubs.size() ; ++i)
+    {
+        T temp(board);
+        temp.ExecuteTurn(myturns[i]);
+        REQUIRE(temp.Fen() == mysubs[i].Fen());
+    }
 }
 
 TEMPLATE_TEST_CASE( "Boards moves generation test", "[bitboard][board][fen][turns]", BitBoard){

@@ -828,25 +828,8 @@ std::vector<Turn> BitBoard::GenerateTurns(Color color) const
     boards.reserve(120);
     GenerateSubBoards(boards,color);
 
-    for(const auto &subboard : boards){
-        uint64_t delta = all_[color] ^ subboard.all_[color];
-        if(rooking_masks[color][0] == delta){
-            turns.push_back(color == Color::kWhite ? Turn(60,58) : Turn(4,2));
-        }
-        else if(rooking_masks[color][1] == delta){
-            turns.push_back(color == Color::kWhite ? Turn(60,62) : Turn(4,6));
-        }
-        else if(count_1s(board_[color][Figure::kPawn]) != count_1s(subboard.board_[color][Figure::kPawn])){
-            uint64_t from = all_[color] & delta;
-            uint64_t to = subboard.all_[color] & delta;
-            turns.push_back(Turn(log2_64(from),log2_64(to),subboard.GetFigure(log2_64(to))));
-        }
-        else {
-            uint64_t from = all_[color] & delta;
-            uint64_t to = subboard.all_[color] & delta;
-            turns.push_back(Turn(log2_64(from),log2_64(to)));
-        }
-    }
+    for(const auto &subboard : boards)
+        turns.push_back(GetTurn(*this,subboard,color));
     return turns;
 }
 
@@ -874,4 +857,36 @@ bool BitBoard::TestTurn(Turn turn) const
 {
     auto turns = GenerateTurns();
     return std::count(turns.begin(),turns.end(),turn) == 1;
+}
+
+Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color color)
+{
+    uint64_t delta = board.all_[color] ^ subboard.all_[color];
+    if(rooking_masks[color][0] == delta){
+        return Turn::GetLongCastling(color);
+    }
+    else if(rooking_masks[color][1] == delta){
+        return Turn::GetShortCastling(color);
+
+    }
+    else if(count_1s(board.board_[color][Figure::kPawn]) != count_1s(subboard.board_[color][Figure::kPawn])){
+        uint64_t from = board.all_[color] & delta;
+        uint64_t to = subboard.all_[color] & delta;
+        return Turn(log2_64(from),log2_64(to),subboard.GetFigure(log2_64(to)));
+    }
+    else {
+        uint64_t from = board.all_[color] & delta;
+        uint64_t to = subboard.all_[color] & delta;
+        return Turn(log2_64(from),log2_64(to));
+    }
+}
+
+std::vector<Turn> BitBoard::GenerateTurns(const BitBoard &main, const std::vector<BitBoard> &subboards, Color color)
+{
+    std::vector<Turn> turns;
+    turns.reserve(120);
+
+    for(const auto &subboard : subboards)
+        turns.push_back(GetTurn(main,subboard,color));
+    return turns;
 }

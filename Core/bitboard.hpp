@@ -197,6 +197,7 @@ public:
     std::vector<BitBoard> GenerateSubBoards(Color color) const;
     void GenerateSubBoards(std::vector<BitBoard> &boards) const;
     void GenerateSubBoards(std::vector<BitBoard> &boards, Color color) const;
+
     /**
      * @brief GenerateTurns returns all possible turns
      */
@@ -213,6 +214,9 @@ public:
      * @return true if ok, otherwise false
      */
     bool TestTurn(Turn turn) const;
+
+    static Turn GetTurn(const BitBoard &from, const BitBoard& to, Color color);
+    static std::vector<Turn> GenerateTurns(const BitBoard &main, const std::vector<BitBoard>& subboards, Color color);
 };
 
 #endif // BOARD_H

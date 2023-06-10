@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(AI)
+project(ChessCore)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(BUILD_TESTING)
-    enable_testing()
+enable_testing()
 
 Include(FetchContent)
 
@@ -19,12 +18,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 file(GLOB files
-    "*.h"
-    "*.cpp"
+        "*.cpp"
 )
 
-add_executable(AITests ${files})
-target_link_libraries(AITests AI Catch2::Catch2WithMain)
-add_test(NAME AITests COMMAND AITests)
-
-endif()
+add_executable(Tests ${files})
+target_link_libraries(Tests ChessCore AI Catch2::Catch2WithMain)
+add_test(NAME Tests COMMAND Tests)

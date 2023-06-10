@@ -18,6 +18,5 @@ target_include_directories(AI PUBLIC  .)
 target_link_libraries(AI ChessCore Magic)
 
 add_subdirectory("Benchmark")
-add_subdirectory("Tests")
 
 

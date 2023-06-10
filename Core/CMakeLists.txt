@@ -13,14 +13,7 @@ file(GLOB files
 
 add_library(ChessCore ${files})
 
-
 target_include_directories(ChessCore PUBLIC  .)
-
-if(BUILD_TESTING)
-enable_testing()
-add_subdirectory("Tests")
-endif()
-
 
 add_subdirectory("Magic")
 
