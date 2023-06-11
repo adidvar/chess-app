@@ -38,8 +38,8 @@ class BitBoard
     };
 
     //bitboards
-    bitboard_t board_[2][7];
-    bitboard_t all_[2];
+    bitboard_t board_[Color::Max()][Figure::Max()];
+    bitboard_t all_[Color::Max()];
 
     //additional state
     RookingFlags_t rooking_flags_;
@@ -56,6 +56,7 @@ class BitBoard
 
     template<typename Type>
     void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards, Color color, bitboard_t from_mask, bitboard_t to_mask, bitboard_t all, bitboard_t yours, bitboard_t opponent) const;
+
     template<typename Type>
     bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all, bitboard_t yours, bitboard_t opponent) const;
 

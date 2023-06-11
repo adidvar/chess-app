@@ -5,7 +5,6 @@
 #include <board.hpp>
 #include <bitboard.hpp>
 #include <magic.hpp>
-//#include <computer.hpp>
 #include <match.hpp>
 #include <fstream>
 #include <vector>
@@ -17,7 +16,7 @@
 std::string LoadFile(std::string name){
     std::ifstream t(name);
     if(!t.is_open()){
-        std::cerr << "Error while oppening file";
+        std::cerr << "Error while oppening file" << std::endl;
         exit(1);
     }
 

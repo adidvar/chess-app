@@ -8,24 +8,6 @@ constexpr bitboard_t operator ""_b(bitboard_t num){
     return (bitboard_t)1 << num;
 }
 
-constexpr static const bitboard_t row_a = 0_b + 8_b + 16_b + 24_b + 32_b + 40_b + 48_b + 56_b;
-constexpr static const bitboard_t row_b = row_a << 1;
-constexpr static const bitboard_t row_c = row_a << 2;
-constexpr static const bitboard_t row_d = row_a << 3;
-constexpr static const bitboard_t row_e = row_a << 4;
-constexpr static const bitboard_t row_f = row_a << 5;
-constexpr static const bitboard_t row_g = row_a << 6;
-constexpr static const bitboard_t row_h = row_a << 7;
-
-constexpr static const bitboard_t line_8 = 0_b + 1_b + 2_b + 3_b + 4_b + 5_b + 6_b + 7_b;
-constexpr static const bitboard_t line_7 = line_8 << 8;
-constexpr static const bitboard_t line_6 = line_8 << 16;
-constexpr static const bitboard_t line_5 = line_8 << 24;
-constexpr static const bitboard_t line_4 = line_8 << 32;
-constexpr static const bitboard_t line_3 = line_8 << 40;
-constexpr static const bitboard_t line_2 = line_8 << 48;
-constexpr static const bitboard_t line_1 = line_8 << 56;
-
 const static bitboard_t rooking_masks[2][2]{
     { 56_b+58_b+59_b+60_b , 60_b+61_b+62_b+63_b},
     { 0_b+2_b+3_b+4_b     , 4_b+5_b+6_b+7_b    }
@@ -65,13 +47,15 @@ board_{{0},{0}}
 
     all_[Color::kWhite] = all_[Color::kBlack] = 0;
 
-    for(size_t i = 1 ; i < 7 ; i++)
+    for(size_t i = 1 ; i < Figure::Max() ; i++)
     {
         all_[Color::kWhite] |= board_[Color::kWhite][i];
         all_[Color::kBlack] |= board_[Color::kBlack][i];
     }
 
-    board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
+    board_[Color::kWhite][Figure::kEmpty] =
+            board_[Color::kBlack][Figure::kEmpty] =
+            ~(all_[Color::kWhite] | all_[Color::kBlack]);
 }
 
 std::string BitBoard::Fen() const
@@ -112,7 +96,7 @@ Position BitBoard::LastPawnMove() const noexcept
 
 void BitBoard::Set(Position position, Cell cell) ///< Записує фігуру
 {
-    for(size_t i = 1 ; i < 7 ; i++)
+    for(size_t i = 1 ; i < Figure::Max() ; i++)
     {
         board_[Color::kWhite][i] &= ~((bitboard_t)1<<position.Value());
         board_[Color::kBlack][i] &= ~((bitboard_t)1<<position.Value());
@@ -122,7 +106,7 @@ void BitBoard::Set(Position position, Cell cell) ///< Записує фігур�
 
     all_[Color::kWhite] = all_[Color::kBlack] = 0;
 
-    for(size_t i = 1 ; i < 7 ; i++)
+    for(size_t i = 1 ; i < Figure::Max() ; i++)
     {
         all_[Color::kWhite] |= board_[Color::kWhite][i];
         all_[Color::kBlack] |= board_[Color::kBlack][i];
@@ -214,7 +198,7 @@ Figure BitBoard::GetFigure(Position position) const noexcept
 {
     assert(position.Valid());
 
-    for(size_t i =0 ; i < 7 ; i++){
+    for(size_t i =0 ; i < Figure::Max() ; i++){
        if( Test(i,position) )
            return (i);
     }
