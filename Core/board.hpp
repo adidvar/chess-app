@@ -1,5 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
+/**
 #include <cinttypes>
 
 #include <array>
@@ -11,7 +12,6 @@
 #include "turn.hpp"
 #include "boardtools.hpp"
 
-/**
  * \brief Клас доски який описує позиції фігур і надає інтерфейс для доступу читання
  *
  * Клас зберігає в собі шахматну доску

@@ -36,27 +36,34 @@ public:
         else
             index_ = y*8 + x;
     }
+
     constexpr Position() noexcept:
         index_(kerror_pos_)
     {
     }
+
     constexpr Position(uint8_t index) noexcept:
         index_(index)
     {
     }
+
     constexpr bool Valid() const noexcept
     {
         return index_ < kerror_pos_;
     }
+
     constexpr uint8_t Value() const noexcept{
         return index_;
     }
+
     constexpr uint8_t x() const noexcept{
         return index_%8;
     }
+
     constexpr uint8_t y() const noexcept{
         return index_/8;
     }
+
     constexpr Position Rotate() const noexcept{
         if(Valid())
             return Position(63-index_);
@@ -74,6 +81,7 @@ public:
         else
             return "--";
     }
+
     static Position FromString(std::string_view string) noexcept
     {
         if(string.size()!=2)
@@ -83,12 +91,16 @@ public:
         else
             return Position();
     }
+
     bool operator ==(const Position& pos) const noexcept{
         return index_ == pos.index_;
     }
+
     bool operator !=(const Position& pos) const noexcept{
         return index_ != pos.index_;
     }
+
+    constexpr static uint8_t Max() { return kerror_pos_;};
 };
 
 #endif // POSITIONS_H

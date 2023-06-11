@@ -12,7 +12,7 @@ std::string pt(T t){
 }
 
 template<typename T>
-void Bench(BitBoard board , uint64_t depth){
+void Bench(BitBoard board , bitboard_t depth){
     using namespace std;
 
     cout << "-------------------BENCH------------------------------" << endl;

@@ -15,14 +15,13 @@
  * @brief class is board representation using bitboards
  *
  */
+
 class BitBoard
 {
     static const char* kStartPosition_;
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
-
-    using bitboard_t = uint64_t;
 
     struct Cell
     {
@@ -51,17 +50,17 @@ class BitBoard
 
     void GenerateSubBoards(Color color, std::vector<BitBoard>&) const;
 
-    void Move(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
-    void Attack(uint64_t from , uint64_t to, Color color, Figure type); // recalculates all_ and empty bitboads
-    void Transform(uint64_t sq , Color color, Figure from, Figure to); // recalculates all_ and empty bitboads
+    void Move(bitboard_t from , bitboard_t to, Color color, Figure type); // recalculates all_ and empty bitboads
+    void Attack(bitboard_t from , bitboard_t to, Color color, Figure type); // recalculates all_ and empty bitboads
+    void Transform(bitboard_t sq , Color color, Figure from, Figure to); // recalculates all_ and empty bitboads
 
     template<typename Type>
-    void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards, Color color, uint64_t from_mask, uint64_t to_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
+    void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards, Color color, bitboard_t from_mask, bitboard_t to_mask, bitboard_t all, bitboard_t yours, bitboard_t opponent) const;
     template<typename Type>
-    uint64_t ProcessAttack(Color color, uint64_t from_mask, uint64_t all, uint64_t yours, uint64_t opponent) const;
+    bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all, bitboard_t yours, bitboard_t opponent) const;
 
     bool OpponentMateTest() const;
-    uint64_t AttackMask(Color color) const;
+    bitboard_t AttackMask(Color color) const;
 public:
     /**
      * @brief BitBoard construct class using fen string
@@ -125,7 +124,6 @@ public:
      * @return position, that last pawn move go through
      */
     Position LastPawnMove() const noexcept;
-
     /**
      * @brief Test test if figure on position is figure
      * @param position position on which we testing
@@ -143,7 +141,6 @@ public:
      * @return
      */
     bool TestEmp(Position position) const noexcept; ///< Перевіряє клітинку на пустоту
-
     /**
      * @brief GetFigure return figure from position
      * @return figure
@@ -189,7 +186,6 @@ public:
      * @return
      */
     bool Tie() const;
-
     /**
      * @brief GenerateSubBoards returns all possible subboards
      */
@@ -197,7 +193,6 @@ public:
     std::vector<BitBoard> GenerateSubBoards(Color color) const;
     void GenerateSubBoards(std::vector<BitBoard> &boards) const;
     void GenerateSubBoards(std::vector<BitBoard> &boards, Color color) const;
-
     /**
      * @brief GenerateTurns returns all possible turns
      */

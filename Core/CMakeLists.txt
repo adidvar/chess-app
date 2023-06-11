@@ -14,8 +14,3 @@ file(GLOB files
 add_library(ChessCore ${files})
 
 target_include_directories(ChessCore PUBLIC  .)
-
-add_subdirectory("Magic")
-
-target_link_libraries(ChessCore Magic)
-
