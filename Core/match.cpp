@@ -3,6 +3,11 @@
 #include <map>
 #include <algorithm>
 #include <iostream>
+#include "debug.hpp"
+
+struct MatchParsingError{
+
+};
 
 /*
 void Match::update_state_and_hash_turns()
@@ -239,7 +244,6 @@ Turn ParseTurn(std::string_view data, const BitBoard& board){
     if(data == "O-O-O")
         return Turn::GetLongCastling(board.CurrentColor());
 
-    auto pturns = board.GenerateTurns(board.CurrentColor());
 
     if(data.size()>=2 && data[data.size()-2] == '='){
         figure_transform = bindf.at(data.back());
@@ -268,6 +272,8 @@ Turn ParseTurn(std::string_view data, const BitBoard& board){
         figure = bindf.at(data.back());
         data.remove_suffix(1);
     }
+
+    auto pturns = board.GenerateTurns(board.CurrentColor(),kall,operator""_b(pos.Value()));
 
     auto predicate = [&](Turn turn)
     {
@@ -319,8 +325,9 @@ std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard
     BitBoard board(start_pos);
     for(auto turn_data : turns){
         auto turn  = ParseTurn(turn_data, board);
-        if(!board.ExecuteTurn(turn))
-            exit(-1);
+        if(!board.ExecuteTurn(turn)){
+            throw MatchParsingError();
+        }
         else
             result.push_back(turn);
     }
@@ -388,7 +395,12 @@ std::vector<Match> Match::LoadFromPGN(std::string text)
 {
     std::vector<Match> matches;
     size_t len = 0;
-    while(len != std::string_view::npos)
+    while(len != std::string_view::npos){
+        try{
         matches.push_back(ReadMatch(text,len));
+        } catch (MatchParsingError){
+        std::cout << "Error in match parsing happened" << std::endl;
+        }
+    }
     return matches;
 }

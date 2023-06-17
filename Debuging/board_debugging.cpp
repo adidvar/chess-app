@@ -43,14 +43,18 @@ int main()
 
     for( auto && dir : filesystem::recursive_directory_iterator("matches"))
         if(dir.is_regular_file() && dir.path().filename().extension() == ".pgn")
-            pathes.push_back(dir);
+            pathes.push_back(dir.path());
 
 
     for(size_t i = 0 ; i < pathes.size() ; i++)
     {
         std::cout << pathes[i]<< " ";
         auto text = LoadFile(pathes[i]);
+        auto begin = std::chrono::high_resolution_clock::now();
         auto matches = Match::LoadFromPGN(text);
+        auto end = std::chrono::high_resolution_clock::now() - begin;
+        cout << "Loaded: " << matches.size() << " matches  ";
+        cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1,1>>>(end).count() << " s" << endl;
         cout << i+1 <<  '/' <<  pathes.size() << endl;
     }
 

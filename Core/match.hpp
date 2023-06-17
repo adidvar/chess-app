@@ -7,6 +7,7 @@
 #include "bitboard.hpp"
 #include "turn.hpp"
 
+
 class Match
 {
 public:
