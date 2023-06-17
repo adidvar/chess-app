@@ -28,7 +28,7 @@ void AIWidget::setBoard(BitBoard board)
     current = board;
      ui->widget->PushBoard(board);
      ui->turns_list->clear();
-     auto turns = board.GenerateTurns();
+     auto turns = board.GenerateTurns(board.CurrentColor());
      std::vector<std::pair<ValueAppraiser,std::string>> marks;
      for(auto turn : turns)
      {

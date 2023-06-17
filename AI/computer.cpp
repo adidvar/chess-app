@@ -79,7 +79,7 @@ function alphabeta(node, depth, α, β, maximizingPlayer) is
 
 MateAppraiser minimaxab(const BitBoard& bitboard, size_t depth, Color color, MateAppraiser a, MateAppraiser b)
 {
-    auto nodes = bitboard.GenerateSubBoards();
+    auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
     bool zero_moves = (nodes.size() == 0);
     bool mate = bitboard.MateTest();

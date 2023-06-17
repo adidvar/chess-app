@@ -14,7 +14,7 @@ class MinMax
     {
         stat_.NewNodeEvent();
         stat_.GenerationTimerBegin();
-        auto nodes = bitboard.GenerateSubBoards();
+        auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
         stat_.GenerationTimerEnd();
 
         bool zero_moves = (nodes.size() == 0);

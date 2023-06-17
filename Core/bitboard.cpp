@@ -4,9 +4,6 @@
 #include <cassert>
 #include "magic.hpp"
 
-constexpr bitboard_t operator ""_b(bitboard_t num){
-    return (bitboard_t)1 << num;
-}
 
 constexpr static bitboard_t krooking_masks[2][2]{
     { 56_b+58_b+59_b+60_b , 60_b+61_b+62_b+63_b},
@@ -167,7 +164,7 @@ bool BitBoard::MateTest() const
 
 bool BitBoard::End() const
 {
-    return GenerateSubBoards().size() == 0;
+    return GenerateSubBoards(CurrentColor()).size() == 0;
 }
 
 bool BitBoard::Checkmate() const
@@ -661,13 +658,13 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , ui
         bitboard_t pawns = board_[color][Figure::kPawn];
         if (color == Color::kWhite)
         {
-            bitboard_t possible = ((((pawns&(~row_a)) >> (8+1)) & sq) ) << (8+1);
+            bitboard_t possible = ((((pawns& from &(~row_a)) >> (8+1)) & sq & to) ) << (8+1);
             if(possible){
                 boards.emplace_back(parent);
                 boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
                 boards.back().Move(sq << 8,sq,color,Figure::kPawn);
             }
-            possible = ((((pawns&(~row_h)) >> (8-1)) & sq) ) << (8-1);
+            possible = ((((pawns& from &(~row_h)) >> (8-1)) & sq & to) ) << (8-1);
             if(possible){
                 boards.emplace_back(parent);
                 boards.back().Attack(possible,sq << 8,color,Figure::kPawn);
@@ -676,13 +673,13 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , ui
         }
         else
         {
-            bitboard_t possible = ((((pawns&(~row_h)) << (8+1)) & sq)) >> (8+1);
+            bitboard_t possible = ((((pawns& from &(~row_h)) << (8+1)) & sq & to)) >> (8+1);
             if(possible){
                 boards.emplace_back(parent);
                 boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
                 boards.back().Move(sq >> 8,sq,color,Figure::kPawn);
             }
-            possible = ((((pawns&(~row_a)) << (8-1)) & sq) ) >> (8-1);
+            possible = ((((pawns& from &(~row_a)) << (8-1)) & sq & to) ) >> (8-1);
             if(possible){
                 boards.emplace_back(parent);
                 boards.back().Attack(possible,sq >> 8,color,Figure::kPawn);
@@ -700,22 +697,22 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , ui
         bitboard_t right = rooking_flags_.white_oo;
         right = (right << 63) & board_[Color::kWhite][Figure::kRook];
         right >>= 1;
-        right &= (empty & ~attack);
+        right &= (empty & ~attack) & to;
         right >>= 1;
         right &= (empty & ~attack);
         right >>= 1;
-        right &= (~attack) & board_[Color::kWhite][Figure::kKing];
+        right &= (~attack) & board_[Color::kWhite][Figure::kKing] & from;
 
         bitboard_t left = rooking_flags_.white_ooo;
         left = (left << 56) & board_[Color::kWhite][Figure::kRook];
         left <<= 1;
         left &= empty;
         left <<= 1;
-        left &= (empty & ~attack);
+        left &= (empty & ~attack) & to;
         left <<= 1;
         left &= (empty & ~attack);
         left <<= 1;
-        left &= (~attack) & board_[Color::kWhite][Figure::kKing];
+        left &= (~attack) & board_[Color::kWhite][Figure::kKing] & from;
 
         if(right != 0)
         {
@@ -737,22 +734,22 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , ui
         bitboard_t right = rooking_flags_.black_oo;
         right = (right << 7) & board_[Color::kBlack][Figure::kRook];
         right >>= 1;
-        right &= (empty & ~attack);
+        right &= (empty & ~attack) & to;
         right >>= 1;
         right &= (empty & ~attack);
         right >>= 1;
-        right &= (~attack) & board_[Color::kBlack][Figure::kKing];
+        right &= (~attack) & board_[Color::kBlack][Figure::kKing] & from;
 
         bitboard_t left = rooking_flags_.black_ooo;
         left = (left << 0) & board_[Color::kBlack][Figure::kRook];
         left <<= 1;
         left &= empty;
         left <<= 1;
-        left &= (empty & ~attack);
+        left &= (empty & ~attack) & to;
         left <<= 1;
         left &= (empty & ~attack);
         left <<= 1;
-        left &= (~attack) & board_[Color::kBlack][Figure::kKing];
+        left &= (~attack) & board_[Color::kBlack][Figure::kKing] & from;
 
         if(right != 0)
         {
@@ -774,35 +771,21 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , ui
     }
 }
 
-std::vector<BitBoard> BitBoard::GenerateSubBoards() const
+std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color, uint64_t from, uint64_t to) const
 {
     std::vector<BitBoard> boards;
     boards.reserve(120);
 
-    GenerateSubBoards(CurrentColor(),boards);
+    GenerateSubBoards(color,boards,from,to);
     return boards;
 }
 
-std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color) const
+void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards, Color color, uint64_t from, uint64_t to) const
 {
-    std::vector<BitBoard> boards;
-    boards.reserve(120);
-
-    GenerateSubBoards(color,boards);
-    return boards;
+    GenerateSubBoards(color,boards,from,to);
 }
 
-void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards) const
-{
-    GenerateSubBoards(CurrentColor(),boards);
-}
-
-void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards, Color color) const
-{
-    GenerateSubBoards(color,boards);
-}
-
-std::vector<Turn> BitBoard::GenerateTurns(Color color) const
+std::vector<Turn> BitBoard::GenerateTurns(Color color, uint64_t from, uint64_t to) const
 {
     std::vector<BitBoard> boards;
     std::vector<Turn> turns;
@@ -815,16 +798,10 @@ std::vector<Turn> BitBoard::GenerateTurns(Color color) const
     return turns;
 }
 
-
-std::vector<Turn> BitBoard::GenerateTurns() const
-{
-    return GenerateTurns(CurrentColor());
-}
-
 bool BitBoard::ExecuteTurn(Turn turn)
 {
-    auto turns = GenerateTurns();
-    auto maps = GenerateSubBoards();
+    auto turns = GenerateTurns(CurrentColor());
+    auto maps = GenerateSubBoards(CurrentColor());
     for(size_t i = 0 ; i < turns.size() ; ++i){
         if(turns[i] == turn)
         {
@@ -837,7 +814,7 @@ bool BitBoard::ExecuteTurn(Turn turn)
 
 bool BitBoard::TestTurn(Turn turn) const
 {
-    auto turns = GenerateTurns();
+    auto turns = GenerateTurns(CurrentColor());
     return std::count(turns.begin(),turns.end(),turn) == 1;
 }
 

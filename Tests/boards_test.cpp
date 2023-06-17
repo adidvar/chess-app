@@ -62,8 +62,8 @@ TEMPLATE_TEST_CASE( "Board operators test", "[bitboard][board][fen]", BitBoard){
     }
     SECTION( "Test of ExecuteTurn GenerateTurns TestTurn" ) {
         TestType board;
-        auto turns = board.GenerateTurns();
-        auto subboards = board.GenerateSubBoards();
+        auto turns = board.GenerateTurns(board.CurrentColor());
+        auto subboards = board.GenerateSubBoards(board.CurrentColor());
         REQUIRE(turns.size() == subboards.size());
 
         for(size_t i = 0 ; i < turns.size(); i++){

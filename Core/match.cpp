@@ -239,7 +239,7 @@ Turn ParseTurn(std::string_view data, const BitBoard& board){
     if(data == "O-O-O")
         return Turn::GetLongCastling(board.CurrentColor());
 
-    auto pturns = board.GenerateTurns();
+    auto pturns = board.GenerateTurns(board.CurrentColor());
 
     if(data.size()>=2 && data[data.size()-2] == '='){
         figure_transform = bindf.at(data.back());

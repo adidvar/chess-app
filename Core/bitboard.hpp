@@ -11,13 +11,16 @@
 #include "figures.hpp"
 #include "turn.hpp"
 
+constexpr bitboard_t operator ""_b(bitboard_t num){
+    return (bitboard_t)1 << num;
+}
+
+constexpr static bitboard_t kall = ~(bitboard_t(0));
+
 /**
  * @brief class is board representation using bitboards
  *
  */
-
-constexpr static bitboard_t kall = ~(bitboard_t(0));
-
 class BitBoard
 {
     static const char* kStartPosition_;
@@ -192,15 +195,12 @@ public:
     /**
      * @brief GenerateSubBoards returns all possible subboards
      */
-    std::vector<BitBoard> GenerateSubBoards() const;
-    std::vector<BitBoard> GenerateSubBoards(Color color) const;
-    void GenerateSubBoards(std::vector<BitBoard> &boards) const;
-    void GenerateSubBoards(std::vector<BitBoard> &boards, Color color) const;
+    std::vector<BitBoard> GenerateSubBoards(Color color, uint64_t from = kall, uint64_t to = kall) const;
+    void GenerateSubBoards(std::vector<BitBoard> &boards, Color color, uint64_t from = kall, uint64_t to = kall) const;
     /**
      * @brief GenerateTurns returns all possible turns
      */
-    std::vector<Turn> GenerateTurns(Color color) const;
-    std::vector<Turn> GenerateTurns() const;
+    std::vector<Turn> GenerateTurns(Color color, uint64_t from = kall, uint64_t to = kall) const;
     /**
      * @brief ExecuteTurn executes turn on these board
      * @param turn our turn
