@@ -16,6 +16,8 @@
  *
  */
 
+constexpr static bitboard_t kall = ~(bitboard_t(0));
+
 class BitBoard
 {
     static const char* kStartPosition_;
@@ -48,7 +50,7 @@ class BitBoard
     Color current_player_color_;
     Position last_pawn_move_;
 
-    void GenerateSubBoards(Color color, std::vector<BitBoard>&) const;
+    void GenerateSubBoards(Color color, std::vector<BitBoard>&, uint64_t from = kall, uint64_t to = kall) const;
 
     void Move(bitboard_t from , bitboard_t to, Color color, Figure type); // recalculates all_ and empty bitboads
     void Attack(bitboard_t from , bitboard_t to, Color color, Figure type); // recalculates all_ and empty bitboads

@@ -381,10 +381,6 @@ Match ReadMatch(std::string_view data, size_t & index){
     else
         match.SetResult(Match::Unknown);
 
-    static size_t i = 1 ;
-    std::cout << i << std::endl;
-    i++;
-
     return match;
 }
 

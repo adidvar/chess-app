@@ -12,9 +12,10 @@
 #include <string_view>
 #include <unordered_map>
 #include <algorithm>
+#include <filesystem>
 
-std::string LoadFile(std::string name){
-    std::ifstream t(name);
+std::string LoadFile(std::filesystem::path path){
+    std::ifstream t(path);
     if(!t.is_open()){
         std::cerr << "Error while oppening file" << std::endl;
         exit(1);
@@ -38,10 +39,20 @@ int main()
     std::ios_base::sync_with_stdio(false);
     using namespace std;
 
-    auto text = LoadFile("BenkoGambit.pgn");
-    auto matches = Match::LoadFromPGN(text);
+    std::vector<std::filesystem::path> pathes;
 
-    std::cout << matches.size() << std::endl;
+    for( auto && dir : filesystem::recursive_directory_iterator("matches"))
+        if(dir.is_regular_file() && dir.path().filename().extension() == ".pgn")
+            pathes.push_back(dir);
+
+
+    for(size_t i = 0 ; i < pathes.size() ; i++)
+    {
+        std::cout << pathes[i]<< " ";
+        auto text = LoadFile(pathes[i]);
+        auto matches = Match::LoadFromPGN(text);
+        cout << i+1 <<  '/' <<  pathes.size() << endl;
+    }
 
     return 0;
 }

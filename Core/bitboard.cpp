@@ -8,10 +8,11 @@ constexpr bitboard_t operator ""_b(bitboard_t num){
     return (bitboard_t)1 << num;
 }
 
-const static bitboard_t rooking_masks[2][2]{
+constexpr static bitboard_t krooking_masks[2][2]{
     { 56_b+58_b+59_b+60_b , 60_b+61_b+62_b+63_b},
     { 0_b+2_b+3_b+4_b     , 4_b+5_b+6_b+7_b    }
 };
+
 
 struct BitIterator{
     bitboard_t value_;
@@ -593,23 +594,22 @@ bitboard_t BitBoard::AttackMask(Color color) const
     bitboard_t result = 0;
 
     // pawns
-    result |= ProcessAttack<Pawn>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<Pawn>(color,kall,all,yours,opponent);
     //knight
-    result |= ProcessAttack<Knight>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<Knight>(color,kall,all,yours,opponent);
     //king
-    result |= ProcessAttack<King>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<King>(color,kall,all,yours,opponent);
     // bishop
-    result |= ProcessAttack<Bishop>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<Bishop>(color,kall,all,yours,opponent);
     // rook
-    result |= ProcessAttack<Rook>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<Rook>(color,kall,all,yours,opponent);
     // queen
-    result |= ProcessAttack<Queen>(color,~0ULL,all,yours,opponent);
+    result |= ProcessAttack<Queen>(color,kall,all,yours,opponent);
 
     return result;
-
 }
 
-void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) const
+void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards , uint64_t from , uint64_t to) const
 {
     boards.clear();
 
@@ -623,39 +623,37 @@ void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard>& boards) con
     parent.last_pawn_move_ = Position();
     parent.SkipMove();
 
-
-
     bitboard_t locked_figures = attack & yours & AttackFrom(board_[color][Figure::kKing]);
 
     // queen
-    ProcessFigure<Queen>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Queen>(parent,boards,color,~locked_figures & from, to ,all,yours,opponent);
     // rook
-    ProcessFigure<Rook>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Rook>(parent,boards,color,~locked_figures & from, to,all,yours,opponent);
     //knight
-    ProcessFigure<Knight>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Knight>(parent,boards,color,~locked_figures & from, to ,all,yours,opponent);
     // bishop
-    ProcessFigure<Bishop>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Bishop>(parent,boards,color,~locked_figures & from, to,all,yours,opponent);
     // pawns
-    ProcessFigure<Pawn>(parent,boards,color,~locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Pawn>(parent,boards,color,~locked_figures & from, to ,all,yours,opponent);
     //king
-    ProcessFigure<King>(parent,boards,color,~locked_figures,~attack,all,yours,opponent);
+    ProcessFigure<King>(parent,boards,color,~locked_figures & from,~attack & to,all,yours,opponent);
 
     auto index = boards.size();
     if((attack & board_[color][Figure::kKing]) != 0)
         index = 0;
 
     // queen
-    ProcessFigure<Queen>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Queen>(parent,boards,color,locked_figures & from, to,all,yours,opponent);
     // rook
-    ProcessFigure<Rook>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Rook>(parent,boards,color,locked_figures & from, to ,all,yours,opponent);
     //knight
-    ProcessFigure<Knight>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Knight>(parent,boards,color,locked_figures & from, to ,all,yours,opponent);
     // bishop
-    ProcessFigure<Bishop>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Bishop>(parent,boards,color,locked_figures & from, to,all,yours,opponent);
     // pawns
-    ProcessFigure<Pawn>(parent,boards,color,locked_figures,~0ULL,all,yours,opponent);
+    ProcessFigure<Pawn>(parent,boards,color,locked_figures & from, to ,all,yours,opponent);
     //king
-    ProcessFigure<King>(parent,boards,color,locked_figures,~attack,all,yours,opponent);
+    ProcessFigure<King>(parent,boards,color,locked_figures & from,~attack & to,all,yours,opponent);
 
     if(last_pawn_move_.Valid() && CurrentColor() == color)
     {
@@ -846,10 +844,10 @@ bool BitBoard::TestTurn(Turn turn) const
 Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color color)
 {
     bitboard_t delta = board.all_[color] ^ subboard.all_[color];
-    if(rooking_masks[color][0] == delta){
+    if(krooking_masks[color][0] == delta){
         return Turn::GetLongCastling(color);
     }
-    else if(rooking_masks[color][1] == delta){
+    else if(krooking_masks[color][1] == delta){
         return Turn::GetShortCastling(color);
 
     }

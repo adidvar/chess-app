@@ -15,7 +15,7 @@ public:
     FenLoader(Board &board):
         board_(board){}
     void LoadFromFen(std::string_view fen){
-          for(size_t i = 0 ; i < 64 ; i++)
+          for(size_t i = 0 ; i < Position::Max() ; i++)
         board_.Set(i,{Figure::kEmpty,Color::kWhite});
 
     size_t i = 0;
