@@ -800,8 +800,8 @@ std::vector<Turn> BitBoard::GenerateTurns(Color color, uint64_t from, uint64_t t
 
 bool BitBoard::ExecuteTurn(Turn turn)
 {
-    auto turns = GenerateTurns(CurrentColor(),operator""_b(turn.from().Value()),operator""_b(turn.to().Value()));
     auto maps = GenerateSubBoards(CurrentColor(),operator""_b(turn.from().Value()),operator""_b(turn.to().Value()));
+    auto turns = BitBoard::GenerateTurns(*this,maps,CurrentColor());
     for(size_t i = 0 ; i < turns.size() ; ++i){
         if(turns[i] == turn)
         {
@@ -843,7 +843,7 @@ Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color co
 std::vector<Turn> BitBoard::GenerateTurns(const BitBoard &main, const std::vector<BitBoard> &subboards, Color color)
 {
     std::vector<Turn> turns;
-    turns.reserve(120);
+    turns.reserve(subboards.size());
 
     for(const auto &subboard : subboards)
         turns.push_back(GetTurn(main,subboard,color));

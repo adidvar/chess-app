@@ -15,6 +15,10 @@ constexpr bitboard_t operator ""_b(bitboard_t num){
     return (bitboard_t)1 << num;
 }
 
+constexpr bitboard_t PositionToBitMask(bitboard_t num){
+    return (bitboard_t)1 << num;
+}
+
 constexpr static bitboard_t kall = ~(bitboard_t(0));
 
 /**

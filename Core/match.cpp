@@ -2,34 +2,23 @@
 
 #include <map>
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include "debug.hpp"
+#include <magic.hpp> 
 
-struct MatchParsingError{
+struct TagsParserError{
 
 };
+struct ImpossibleMoveError{
 
-/*
-void Match::update_state_and_hash_turns()
-{
-    this->current_turns = TurnGenerate(boards_history.back(),boards_history.back().CurrentColor());
-}
+};
+struct LexicalParserError{
 
-bool Match::Push(Position turn)
-{
-    if(!TurnTest(boards_history.back(),turn))
-        return false;
+};
+struct UnknownParserError{
 
-    this->turns_history.push_back(turn);
-    Board copy = boards_history.back();
-    ExecuteTurn(copy,turn);
-    this->boards_history.push_back(std::move(copy));
-
-    update_state_and_hash_turns();
-    return true;
-}
-
-*/
+};
 
 Match::Match()
 {
@@ -197,7 +186,34 @@ Tags ParseTags(std::string_view data){
     return tags;
 }
 
-Turn ParseTurn(std::string_view data, const BitBoard& board){
+std::string_view delim = "\n\n";
+
+std::string_view ReadBlock(std::string_view data, size_t & index)
+{
+    std::string_view result;
+
+    auto block_index = data.find( delim, index + delim.size());
+    if (block_index == std::string::npos) {
+	    result = data.substr(index, data.size() - index - delim.size());
+		index = block_index ;
+    }
+    else {
+        if (block_index >= data.size() || block_index <= index)
+            throw UnknownParserError();
+	    result = data.substr(index, block_index - index);
+		index = block_index;
+        while (index < data.size() && data[index] == '\n')
+            index++;
+        if (index == data.size())
+            index = std::string::npos;
+    }
+    return result;
+}
+
+Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board)
+{
+    if(data.size() < 2)
+        throw LexicalParserError();
 
     const static std::map<char,Figure> bindf{
         {'N',Figure::kKnight},
@@ -239,18 +255,29 @@ Turn ParseTurn(std::string_view data, const BitBoard& board){
         data.remove_suffix(1);
     }
 
-    if(data == "O-O")
-        return Turn::GetShortCastling(board.CurrentColor());
-    if(data == "O-O-O")
-        return Turn::GetLongCastling(board.CurrentColor());
-
+    if(data == "O-O"){
+        auto turn = Turn::GetShortCastling(board.CurrentColor());
+        board.ExecuteTurn(turn);
+        return turn;
+    }
+    if(data == "O-O-O"){
+        auto turn = Turn::GetLongCastling(board.CurrentColor());
+        board.ExecuteTurn(turn);
+        return turn;
+    }
 
     if(data.size()>=2 && data[data.size()-2] == '='){
-        figure_transform = bindf.at(data.back());
+        try{
+            figure_transform = bindf.at(data.back());
+        } catch (std::out_of_range){
+            throw LexicalParserError();
+        }
         data.remove_suffix(2);
     }
 
-    auto pos = Position::FromString(data.substr(data.size()-2));
+    auto to = Position::FromString(data.substr(data.size()-2));
+    if(!to.Valid())
+        throw LexicalParserError();
     data.remove_suffix(2);
 
 
@@ -259,105 +286,99 @@ Turn ParseTurn(std::string_view data, const BitBoard& board){
     }
 
     if(data.size()!=0 && bindpy.count(data.back()) == 1){
+        try{
         from_y = bindpy.at(data.back());
+        } catch (std::out_of_range){
+            throw LexicalParserError();
+        }
         data.remove_suffix(1);
     }
 
     if(data.size()!=0 && bindpx.count(data.back()) == 1){
+        try{
         from_x = bindpx.at(data.back());
+        } catch (std::out_of_range){
+            throw LexicalParserError();
+        }
         data.remove_suffix(1);
     }
 
     if(data.size()!=0 && bindf.count(data.back()) == 1){
+        try{
         figure = bindf.at(data.back());
+        } catch (std::out_of_range){
+            throw LexicalParserError();
+        }
         data.remove_suffix(1);
     }
 
-    auto pturns = board.GenerateTurns(board.CurrentColor(),kall,operator""_b(pos.Value()));
+    bitboard_t from_mask = kall;
+    bitboard_t to_mask = PositionToBitMask(to.Value());
 
-    auto predicate = [&](Turn turn)
-    {
-        return (turn.to() == pos) && board.Test(figure,turn.from())
-                && (from_x == -1 || turn.from().x() == from_x)
-                && (from_y == -1 || turn.from().y() == from_y)
-                && (figure_transform == turn.figure());
-    };
+    if (from_x != -1)
+        from_mask &= rows[from_x];
+    if (from_y != -1)
+        from_mask &= lines[7-from_y];
 
-    auto result = std::find_if(pturns.begin(),pturns.end(),predicate);
-    auto count = std::count_if(pturns.begin(),pturns.end(),predicate);
+    from_mask &= board.GetBitBoard(board.CurrentColor(), figure);
 
-    if(count == 1)
-        return *result;
-    else
-        return Turn();
+    auto pboards = board.GenerateSubBoards(board.CurrentColor(),from_mask, to_mask);
+    auto pturns = BitBoard::GenerateTurns(board,pboards,board.CurrentColor());
+
+    if (pturns.size() == 1){
+        board = pboards.front();
+        return pturns.front();
+    }
+    else{
+        for(size_t i = 0 ; i < pturns.size() ; ++i){
+            if(pturns[i].figure() == figure_transform){
+                board = pboards[i];
+                return pturns[i];
+            }
+        }
+
+        throw ImpossibleMoveError();
+    }
 }
 
 std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos){
-    size_t index = 0;
 
-    std::vector<size_t> split_p;
     std::vector<std::string_view> turns_pre;
+    turns_pre.reserve(100);
     std::vector<std::string_view> turns;
+    turns.reserve(100);
     std::vector<Turn> result;
+    result.reserve(100);
 
-    split_p.push_back(0);
+    std::array<char,3> seperators = { ' ', '.' , '\n'};
 
-    for(size_t pos = data.find(".", 0); pos != std::string_view::npos; pos = data.find(".",pos+1))
-        split_p.push_back(pos+1);
+    size_t index = 0;
+    size_t last = 0;
+    while (index != data.size()) {
+        for (auto sep : seperators)
+            if (data[index] == sep) {
+                if (index != last) {
+                   turns_pre.push_back(data.substr(last, index - last));
+                }
+                last = index+1;
+                break;
+            }
+		index++;
+    }
+	turns_pre.push_back(data.substr(last));
 
-    for(size_t pos = data.find("\n", 0); pos != std::string_view::npos; pos = data.find("\n",pos+1))
-        split_p.push_back(pos+1);
-
-    for(size_t pos = data.find(" ", 0); pos != std::string_view::npos; pos = data.find(" ",pos+1))
-        split_p.push_back(pos+1);
-
-    std::sort(split_p.begin(),split_p.end());
-
-    for(size_t i = 0 ; i < split_p.size() - 1 ; i++)
-        turns_pre.push_back(data.substr(split_p[i],split_p[i+1]-split_p[i]-1));
     turns_pre.pop_back();
 
-    auto match_result = data.substr(split_p.back());
     for(size_t i = 0 ; i < turns_pre.size(); i++)
         if(i%3!=0)
             turns.push_back(turns_pre[i]);
 
     BitBoard board(start_pos);
     for(auto turn_data : turns){
-        auto turn  = ParseTurn(turn_data, board);
-        if(!board.ExecuteTurn(turn)){
-            throw MatchParsingError();
-        }
-        else
-            result.push_back(turn);
+        auto turn  = ParseAndExecuteTurn(turn_data, board);
+		result.push_back(turn);
     }
     return {result,board};
-}
-
-std::string_view delim = "\n\n";
-
-std::string_view ReadBlock(std::string_view data, size_t & index)
-{
-    while(data[index] == '\n')
-        index++;
-
-
-    auto block_index = data.find( delim, index);
-    std::string_view block_text;
-    if(block_index != std::string_view::npos)
-        block_text = data.substr( index, block_index - index);
-    else
-        block_text = data.substr( index);
-
-    while(block_text.back() == '\n')
-        block_text.remove_suffix(1);
-
-    if(block_index != std::string_view::npos)
-        index = block_index + delim.size();
-    else
-        index = std::string_view::npos;
-
-    return block_text;
 }
 
 Match ReadMatch(std::string_view data, size_t & index){
@@ -395,11 +416,16 @@ std::vector<Match> Match::LoadFromPGN(std::string text)
 {
     std::vector<Match> matches;
     size_t len = 0;
-    while(len != std::string_view::npos){
-        try{
-        matches.push_back(ReadMatch(text,len));
-        } catch (MatchParsingError){
-        std::cout << "Error in match parsing happened" << std::endl;
+    while (len != std::string_view::npos) {
+        try {
+            matches.emplace_back(std::move(ReadMatch(text, len)));
+        }
+        catch (ImpossibleMoveError) {
+            std::cout << "Round skipped immposible move" << std::endl;
+        }
+        catch (LexicalParserError) {
+            std::cout << "Round skipped lexical error" << std::endl;
+            return matches;
         }
     }
     return matches;

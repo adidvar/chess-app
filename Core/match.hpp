@@ -21,6 +21,8 @@ public:
     };
 
     Match();
+    Match(const Match&) = default;
+    Match(Match &&from) = default;
     ~Match();
 
     bool Push(Turn turn);

@@ -40,6 +40,7 @@ int main()
     using namespace std;
 
     std::vector<std::filesystem::path> pathes;
+    std::vector<Match> matches;
 
     for( auto && dir : filesystem::recursive_directory_iterator("matches"))
         if(dir.is_regular_file() && dir.path().filename().extension() == ".pgn")
@@ -48,12 +49,13 @@ int main()
 
     for(size_t i = 0 ; i < pathes.size() ; i++)
     {
-        std::cout << pathes[i]<< " ";
+        //std::cout << pathes[i]<< " ";
         auto text = LoadFile(pathes[i]);
         auto begin = std::chrono::high_resolution_clock::now();
-        auto matches = Match::LoadFromPGN(text);
+        auto match = Match::LoadFromPGN(text);
+        std::copy(match.begin(), match.end(), std::back_inserter(matches));
         auto end = std::chrono::high_resolution_clock::now() - begin;
-        cout << "Loaded: " << matches.size() << " matches  ";
+        cout << "Loaded: " << match.size() << " matches  ";
         cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1,1>>>(end).count() << " s" << endl;
         cout << i+1 <<  '/' <<  pathes.size() << endl;
     }
