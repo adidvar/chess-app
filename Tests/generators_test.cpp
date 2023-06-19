@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <board.hpp>
 #include <bitboard.hpp>
@@ -53,6 +54,26 @@ TEMPLATE_TEST_CASE( "Boards subboards generation advanced test", "[bitboard][boa
    REQUIRE(MovesCounter(TestType("K1k5/8/P7/8/8/8/8/8 w - - 0 1"),6) == 2217);
    REQUIRE(MovesCounter(TestType("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"),7) == 567584);
    REQUIRE(MovesCounter(TestType("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"),4) == 23527);
+
+}
+
+TEMPLATE_TEST_CASE( "Boards benchmark", "[bitboard][benchmark][fen]", BitBoard){
+
+    BENCHMARK("Bench 1") {
+        return MovesCounter(TestType("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"),5);
+    };
+
+    BENCHMARK("Bench 2") {
+        return MovesCounter(TestType("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1"),4);
+    };
+
+    BENCHMARK("Bench 3") {
+        return MovesCounter(TestType("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1"),4);
+    };
+
+    BENCHMARK("Bench 4") {
+        return MovesCounter(TestType("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1"),3);
+    };
 }
 
 template<typename T>
