@@ -19,6 +19,30 @@ constexpr bitboard_t PositionToBitMask(bitboard_t num){
     return (bitboard_t)1 << num;
 }
 
+struct BitIterator{
+    bitboard_t value_;
+    bitboard_t bit_;
+
+    constexpr BitIterator(bitboard_t value):
+        value_(value),bit_(0)
+    {
+        operator++();
+    }
+
+    constexpr bitboard_t Value(){return value_;}
+    constexpr bitboard_t Bit(){return bit_;}
+    constexpr void operator =(bitboard_t value){value_ = value;operator++();}
+    constexpr void operator++()
+    {
+        bit_ = value_^((value_-1)&value_);
+        value_ &= ~bit_;
+    }
+    constexpr bool Valid(){
+        return bit_!=0;
+    }
+
+};
+
 constexpr static bitboard_t kall = ~(bitboard_t(0));
 
 /**
@@ -70,8 +94,8 @@ class BitBoard
     bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all, bitboard_t yours, bitboard_t opponent) const;
 
     bool OpponentMateTest() const;
-    bitboard_t AttackMask(Color color) const;
 public:
+    bitboard_t AttackMask(Color color) const;
     /**
      * @brief BitBoard construct class using fen string
      * @param fen_line string with fen
@@ -168,6 +192,7 @@ public:
     Cell GetCell(Position position) const noexcept;
 
     bitboard_t GetBitBoard(Color color , Figure figure) const noexcept;
+    bitboard_t GetColorBitBoard(Color color) const noexcept;
     /**
      * @brief MateTest tests mate on current board
      */

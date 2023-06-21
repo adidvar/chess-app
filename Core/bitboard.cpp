@@ -11,29 +11,6 @@ constexpr static bitboard_t krooking_masks[2][2]{
 };
 
 
-struct BitIterator{
-    bitboard_t value_;
-    bitboard_t bit_;
-
-    constexpr BitIterator(bitboard_t value):
-        value_(value),bit_(0)
-    {
-        operator++();
-    }
-
-    constexpr bitboard_t Value(){return value_;}
-    constexpr bitboard_t Bit(){return bit_;}
-    constexpr void operator =(bitboard_t value){value_ = value;operator++();}
-    constexpr void operator++()
-    {
-        bit_ = value_^((value_-1)&value_);
-        value_ &= ~bit_;
-    }
-    constexpr bool Valid(){
-        return bit_!=0;
-    }
-
-};
 
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -155,6 +132,11 @@ BitBoard::Cell BitBoard::GetCell(Position position) const noexcept
 bitboard_t BitBoard::GetBitBoard(Color color, Figure figure) const noexcept
 {
     return board_[color][figure];
+}
+
+bitboard_t BitBoard::GetColorBitBoard(Color color) const noexcept
+{
+    return all_[color];
 }
 
 bool BitBoard::MateTest() const

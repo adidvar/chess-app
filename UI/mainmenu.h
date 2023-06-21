@@ -18,6 +18,8 @@ public:
 private slots:
     void on_singleplayer_clicked();
 
+    void on_analysis_clicked();
+
 private:
     Ui::MainMenu *ui;
 };

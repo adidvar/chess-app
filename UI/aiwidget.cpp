@@ -29,14 +29,14 @@ void AIWidget::setBoard(BitBoard board)
      ui->widget->PushBoard(board);
      ui->turns_list->clear();
      auto turns = board.GenerateTurns(board.CurrentColor());
-     std::vector<std::pair<ValueAppraiser,std::string>> marks;
+     std::vector<std::pair<MainAppraiser,std::string>> marks;
      for(auto turn : turns)
      {
          BitBoard copy(board);
          copy.ExecuteTurn(turn);
-         marks.push_back({AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(copy,color_,5,stat),turn.ToChessFormat()});
+         marks.push_back({AlphaBeta<MainAppraiser,NoStatistics>::Evaluate(copy,color_,4,stat),turn.ToChessFormat()});
      }
-     auto current = AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(board,color_,6,stat);
+     auto current = AlphaBeta<MainAppraiser,NoStatistics>::Evaluate(board,color_,5,stat);
      qDebug() << QString::fromStdString(current.ToString(6));
      std::sort(marks.begin(),marks.end());
      for(auto &pair : marks)
