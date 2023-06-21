@@ -1,11 +1,21 @@
 #ifndef COMPUTER_HPP
 #define COMPUTER_HPP
 
-#include <turn.hpp>
-#include <bitboard.hpp>
-#include <position_rating.hpp>
-#include <mateevaluator.hpp>
+#include <match.hpp>
 
-//MateAppraiser EvaluateAB(BitBoard board, Color color , int depth);
+struct callback_t{};
+
+class Computer{
+
+
+public:
+    void SetMatch(Match & match);
+    void SetCallBack(callback_t callback);
+    void Start();
+    void Stop();
+
+    void LoadTurnsMarks();
+};
+
 
 #endif

@@ -2,8 +2,9 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 #include <mateevaluator.hpp>
+#include <position_rating.hpp>
 
-TEMPLATE_TEST_CASE( "Approximation basic rules", "[approximation][ai]", MateAppraiser ,ValueAppraiser){
+TEMPLATE_TEST_CASE( "Approximation basic rules", "[approximation][ai]", MateAppraiser){
 
     SECTION( "Test of Max Min" ) {
         REQUIRE(TestType::Max() > TestType::Min());

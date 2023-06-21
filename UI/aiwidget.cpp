@@ -1,4 +1,5 @@
 #include "aiwidget.h"
+#include "position_rating.hpp"
 #include "ui_aiwidget.h"
 #include <QDebug>
 #include <statistics.hpp>

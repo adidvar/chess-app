@@ -18,7 +18,7 @@ class MainAppraiser{
     constexpr static int movementbonus = 1;
 
     //pawns
-    constexpr static int running_out_bonus = 1;
+    constexpr static int running_out_bonus = 2;
     constexpr static int free_row_bonus = 20;
     constexpr static int doubled_pawn_punishment = 4;
     constexpr static int safe_pawn_bonus = 4;
@@ -169,7 +169,7 @@ public:
     };
     std::string ToString(size_t depth)
     {
-        return std::to_string(value_/100.0);
+        return std::to_string(value_);
     };
 };
 
