@@ -62,6 +62,11 @@ public:
         return value_ != value.value_;
     }
 
+    static MainAppraiser Invalid()
+    {
+        return MainAppraiser(-99999999);
+    };
+
     static MainAppraiser CheckMateWin(int depth)
     {
         return MainAppraiser(range-max_depth+depth);

@@ -6,18 +6,16 @@
 
 #include <iostream>
 
-template<typename T, typename S = NoStatistics>
+template<typename T>
 class AlphaBeta
 {
     Color color_;
-    S &stat_;
+    Statistics &stat_;
 
     T alphabeta(const BitBoard& bitboard, size_t depth, T a, T b)
     {
-        stat_.NewNodeEvent();
-        stat_.GenerationTimerBegin();
+        stat_.Generation();
         auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
-        stat_.GenerationTimerEnd();
 
         bool zero_moves = (nodes.size() == 0);
 
@@ -28,10 +26,8 @@ class AlphaBeta
                 return bitboard.CurrentColor() == color_ ? T::CheckMateLose(depth) : T::CheckMateWin(depth);
         } else if(depth == 0){
 
-            stat_.NewApproximationEvent();
-            stat_.ApproximationTimerBegin();
+            stat_.Approximation();
             auto approx = T::Approximate(bitboard, color_);
-            stat_.ApproximationTimerEnd();
 
             return approx;
         }
@@ -63,21 +59,18 @@ class AlphaBeta
 
 public:
 
-    AlphaBeta(Color color, S &s):
+    AlphaBeta(Color color, Statistics &s):
         color_(color),
         stat_(s)
     {}
 
     T Evaluate(BitBoard board, int depth)
     {
-        stat_.Clear();
-        stat_.AllTimerBegin();
         auto value = alphabeta(board,depth, T::Min() , T::Max());
-        stat_.AllTimerEnd();
         return value;
     }
 
-    static T Evaluate(BitBoard board, Color color, int depth, S &stat ){
+    static T Evaluate(BitBoard board, Color color, int depth, Statistics &stat ){
         AlphaBeta core(color,stat);
         return core.Evaluate(board,depth);
     }

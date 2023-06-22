@@ -25,6 +25,7 @@ void AIWidget::on_set_clicked()
 
 void AIWidget::setBoard(BitBoard board)
 {
+     /*
     NoStatistics stat;
     current = board;
      ui->widget->PushBoard(board);
@@ -45,6 +46,7 @@ void AIWidget::setBoard(BitBoard board)
         ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString(5)));
      }
      ui->score->setText(QString::fromStdString(current.ToString(6)));
+     */
 }
 
 

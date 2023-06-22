@@ -1,6 +1,8 @@
 #ifndef FIGURES_H
 #define FIGURES_H
+
 #include <inttypes.h>
+
 using bitboard_t = uint64_t;
 
 ///  Тип данних для зберігання фігур

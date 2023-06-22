@@ -1,5 +1,6 @@
 #ifndef MAGIC_HPP
 #define MAGIC_HPP
+
 #include <cinttypes>
 #include <figures.hpp>
 

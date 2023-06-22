@@ -67,6 +67,11 @@ void Match::SetTurns(const std::vector<Turn> &turns)
     turns_ = turns;
 }
 
+BitBoard Match::GetBoard() const
+{
+    return board_;
+}
+
 void Match::SetBoard(const BitBoard &board)
 {
 

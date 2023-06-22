@@ -5,44 +5,12 @@
 #include <mateevaluator.hpp>
 #include <chrono>
 #include <alphabeta.hpp>
+#include <match.hpp>
+#include <computer.hpp>
 
 template <typename T>
 std::string pt(T t){
     return  std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(t).count()) + " ms";
-}
-
-template<typename T>
-void Bench(BitBoard board , bitboard_t depth){
-    using namespace std;
-
-    cout << "-------------------BENCH------------------------------" << endl;
-    cout << depth << "<-->";
-    cout << board.Fen() << endl;
-    cout << "------------------------------------------------------" << endl;
-
-    Statistics stat;
-    T mm(Color::kWhite,stat);
-
-    auto res = mm.Evaluate(board,depth);
-
-    cout << "         :" << pt(stat.GetAllTime()) << ":" << endl;
-    cout << "G: " << pt(stat.GetGenerationTime()) << ":       A: " << pt(stat.GetApproximationTime()) << ":   O: "
-         << pt(stat.GetAllTime() - stat.GetApproximationTime() - stat.GetGenerationTime())  << endl;
-
-    float gp = (float)stat.GetGenerationTime().count()/stat.GetAllTime().count() , ap = (float)stat.GetApproximationTime().count()/stat.GetAllTime().count(), op = 1-gp-ap;
-
-
-
-    cout << "------------------------------------------------------" << endl;
-    cout << "G: " << 100*gp << ":      A: " << 100*ap << ":      O: "
-         << 100*op << endl;
-    cout << "------------------------------------------------------" << endl;
-    cout << "N: " << stat.GetNodesCount() << ":      AN: " << stat.GetApproximationCount() << endl;
-    cout << "------------------------------------------------------" << endl;
-    cout << "R: "<< res.ToString(depth) << endl;
-    cout << "------------------------------------------------------" << endl;
-
-    cout << endl;
 }
 
 Position GenPos(){
@@ -60,10 +28,38 @@ BitBoard GenBoard(){
 }
 
 int main(){
-    auto b = BitBoard();
+    //auto b = BitBoard();
     //b.SkipMove();
     //auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
-    auto d = 5;
+    //auto d = 5;
+
+   Match match;
+   Computer computer(match,Color::kWhite);
+   computer.Start();
+   computer.Wait();
+
+   std::vector<std::pair<Turn,MainAppraiser>> turns;
+   computer.LoadTurnsMarks(turns);
+
+   /*
+   std::vector<MainAppraiser> turnse;
+   for(auto turn : match.GetBoard().GenerateTurns(Color::kWhite)){
+       auto board = match.GetBoard();
+       board.ExecuteTurn(turn);
+       NoStatistics stat;
+       AlphaBeta<MainAppraiser> evaluator(Color::kWhite,stat);
+       auto value = evaluator.Evaluate(board,5);
+       turnse.push_back(value);
+   }
+   */
+
+
+   for(auto pair : turns) {
+       std::cout << pair.first.ToChessFormat() << "<--->" << pair.second.ToString(0) << "::::" << std::endl;
+
+   }
+
+
 /*
     for(;;){
        // std::string string;
