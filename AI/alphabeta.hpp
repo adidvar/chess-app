@@ -12,10 +12,12 @@ class AlphaBeta
     Color color_;
     Statistics &stat_;
 
-    T alphabeta(const BitBoard& bitboard, size_t depth, T a, T b)
+    T alphabeta(const BitBoard& bitboard, int depth, T a, T b)
     {
         stat_.Generation();
-        auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
+        std::vector<BitBoard> nodes;
+
+        nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
         bool zero_moves = (nodes.size() == 0);
 

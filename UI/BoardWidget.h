@@ -9,6 +9,7 @@
 class BoardWidget : public QWidget
 {
     Q_OBJECT
+public:
 
     enum Mode{
         kPlayerWhite = Color::kWhite,
@@ -17,10 +18,11 @@ class BoardWidget : public QWidget
         kViewer,
     };
 
-public:
     explicit BoardWidget(QWidget *parent = nullptr, Mode mode = kViewer, BitBoard board = BitBoard(), Turn last_turn = Turn());
     void PushTurn(Turn turn);
     void PushBoard(BitBoard board, Turn last_turn = Turn());
+
+    void SetMode(Mode mode);
 
 signals:
    void EnteredTurn(Turn);

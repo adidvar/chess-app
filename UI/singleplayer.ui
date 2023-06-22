@@ -18,7 +18,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="player1">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -26,12 +26,12 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string>Player</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="player2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -39,7 +39,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string>Computer</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -49,7 +49,7 @@
      </layout>
     </item>
     <item>
-     <widget class="BoardWidget" name="widget" native="true"/>
+     <widget class="BoardWidget" name="board" native="true"/>
     </item>
    </layout>
   </widget>

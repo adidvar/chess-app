@@ -25,7 +25,18 @@ QWidget(parent),
 
 void BoardWidget::PushTurn(Turn turn)
 {
+    qDebug() << turn.ToChessFormat().c_str();
+    last_turn_ = turn;
 
+    animation_enabled = true;
+    animation_progress_ = 0;
+    QPropertyAnimation *anim = new QPropertyAnimation(this, "animation_progress", this);
+    connect(anim,&QPropertyAnimation::finished,this,&BoardWidget::animation_finished);
+    anim->setDuration(500);
+    anim->setEasingCurve(QEasingCurve::InOutCubic);
+    anim->setStartValue(0);
+    anim->setEndValue(1);
+    anim->start();
 }
 
 void BoardWidget::PushBoard(BitBoard board, Turn last_turn)
@@ -39,6 +50,11 @@ void BoardWidget::PushBoard(BitBoard board, Turn last_turn)
         possible_ = board_.GenerateTurns(board.CurrentColor());
     }
     repaint();
+}
+
+void BoardWidget::SetMode(Mode mode)
+{
+    mode_ = mode;
 }
 
 void BoardWidget::paintEvent(QPaintEvent *event)
@@ -411,7 +427,15 @@ void BoardWidget::animation_finished()
     animation_enabled = false;
     board_.ExecuteTurn(last_turn_);
 
-    possible_ = board_.GenerateTurns( mode_ != kPlayerTwoSides ? board_.OpponentColor() : board_.CurrentColor());
+    Color color;
+    if(mode_ == kPlayerTwoSides || mode_ == kViewer)
+        color = board_.CurrentColor();
+    else
+        color = mode_;
+
+    possible_ = board_.GenerateTurns( color );
+    if(mode_ == board_.CurrentColor())
+        return;
     repaint();
     emit EnteredTurn(last_turn_);
     emit EnteredBoard(board_);

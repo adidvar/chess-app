@@ -22,7 +22,7 @@ void Computer::Thread(size_t id, size_t all)
                 Statistics stat;
                 AlphaBeta<MainAppraiser> evaluator(color_,stat);
                 guard.unlock();
-                auto value = evaluator.Evaluate(board,5);
+                auto value = evaluator.Evaluate(board,4);
                 guard.lock();
                 stat_ += stat;
                 marks_[i].second = value;
