@@ -30,6 +30,12 @@ public:
         extra_node_ += stat.extra_node_;
     };
 
+    void Clear(){
+        generation_count_ = 0;
+        approximation_count_ = 0;
+        extra_node_ = 0;
+    }
+
 private:
     int generation_count_ = 0;
     int approximation_count_ = 0;

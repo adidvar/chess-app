@@ -22,7 +22,7 @@ void Computer::Thread(size_t id, size_t all)
                 Statistics stat;
                 AlphaBeta<MainAppraiser> evaluator(color_,stat);
                 guard.unlock();
-                auto value = evaluator.Evaluate(board,4);
+                auto value = evaluator.Evaluate(board,5);
                 guard.lock();
                 stat_ += stat;
                 marks_[i].second = value;
@@ -58,6 +58,7 @@ Computer::~Computer()
 void Computer::Start()
 {
     std::lock_guard guard(marks_mutex_);
+    stat_.Clear();
     marks_.clear();
 
     assert(match_.GetBoard().CurrentColor() == color_);
@@ -83,5 +84,9 @@ void Computer::LoadTurnsMarks(std::vector<std::pair<Turn, MainAppraiser> > &mark
 {
     std::lock_guard guard(marks_mutex_);
     marks = marks_;
-
+}
+Statistics Computer::GetStatistics()
+{
+    std::lock_guard guard(marks_mutex_);
+    return stat_;
 }

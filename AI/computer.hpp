@@ -45,6 +45,8 @@ public:
     bool Ready();
 
     void LoadTurnsMarks(std::vector<std::pair<Turn,MainAppraiser>> &marks);
+
+    Statistics GetStatistics();
 };
 
 

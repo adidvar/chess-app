@@ -30,7 +30,8 @@ class MainAppraiser{
     constexpr static int long_rooking_bonus = 50;
 
     //map controll
-    constexpr static int centercontroll = 1;
+    constexpr static int bigcentercontroll = 3;
+    constexpr static int smallcentercontroll = 4;
 
     //rangement
     constexpr static int max_depth = 50;
