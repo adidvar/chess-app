@@ -26,6 +26,8 @@ void SinglePlayer::TurnEntered(Turn inputturn)
     computer_.LoadTurnsMarks(marks);
 
     auto max = std::max_element(marks.begin(),marks.end(),[](auto m1, auto m2){return m1.second < m2.second;});
+    if(max == marks.end())
+        return;
     auto turn = max->first;
 
     match.Push(turn);

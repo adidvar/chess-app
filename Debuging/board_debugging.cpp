@@ -14,6 +14,21 @@
 #include <algorithm>
 #include <filesystem>
 
+uint64_t read_mask()
+{
+    uint64_t result = 0;
+    for(size_t i = 0 ; i < 8 ; i++)
+    {
+        std::string line;
+        std::getline(std::cin,line);
+        for(size_t j = 0; j < 8 ; j++){
+            if(line[j] == '1')
+                result |= (1LL << (8*i+j));
+        }
+    }
+    return result;
+}
+
 std::string LoadFile(std::filesystem::path path){
     std::ifstream t(path);
     if(!t.is_open()){
@@ -36,6 +51,8 @@ std::string LoadFile(std::filesystem::path path){
 
 int main()
 {
+
+    std::cout << read_mask();
     std::ios_base::sync_with_stdio(false);
     using namespace std;
 

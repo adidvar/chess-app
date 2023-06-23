@@ -24,14 +24,14 @@ class MainAppraiser{
     constexpr static int safe_pawn_bonus = 4;
 
     //rooking and king safety
-    constexpr static int safe_king_position = 1;
+    constexpr static int safe_king_position = 70;
     constexpr static int rooking_lose_punishment = 30;
-    constexpr static int short_rooking_bonus = 60;
-    constexpr static int long_rooking_bonus = 50;
 
     //map controll
-    constexpr static int bigcentercontroll = 3;
-    constexpr static int smallcentercontroll = 4;
+    constexpr static int bigcentercontrollpawn = 5;
+    constexpr static int bigcentercontroll = 10;
+
+    constexpr static bitboard_t bigcentermask = 66229406269440;
 
     //rangement
     constexpr static int max_depth = 50;
@@ -150,6 +150,31 @@ public:
         auto bmap = board.AttackMask(Color::kBlack) & ~board.GetColorBitBoard(Color::kBlack);
         value -= movementbonus * count_1s(bmap);
 
+        value += bigcentercontrollpawn*count_1s(board.GetBitBoard(Color::kWhite,Figure::kPawn) & bigcentermask);
+        value -= bigcentercontrollpawn*count_1s(board.GetBitBoard(Color::kBlack,Figure::kPawn) & bigcentermask);
+
+        value += bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kWhite) & ~board.GetBitBoard(Color::kWhite,Figure::kPawn) & bigcentermask);
+        value -= bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kBlack) & ~board.GetBitBoard(Color::kBlack,Figure::kPawn) & bigcentermask);
+
+        if(board.Test(Figure::kKing,Position(60)) && !board.RookingFlags().white_oo)
+            value-=rooking_lose_punishment;
+        if(board.Test(Figure::kKing,Position(60)) && !board.RookingFlags().white_ooo)
+            value-=rooking_lose_punishment;
+
+        if(board.Test(Figure::kKing,Position(4)) && !board.RookingFlags().black_oo)
+            value+=rooking_lose_punishment;
+        if(board.Test(Figure::kKing,Position(4)) && !board.RookingFlags().black_ooo)
+            value+=rooking_lose_punishment;
+
+        if((board.GetBitBoard(Color::kWhite,Figure::kKing) & 13835058055282163712ull) !=0   && count_1s(board.GetColorBitBoard(Color::kWhite) & 63050394783186944) == 3)
+            value+=safe_king_position;
+        if((board.GetBitBoard(Color::kBlack,Figure::kKing) & 192ull) !=0   && count_1s(board.GetColorBitBoard(Color::kBlack) & 57344) == 3)
+            value-=safe_king_position;
+
+        if((board.GetBitBoard(Color::kWhite,Figure::kKing) & 504403158265495552) !=0   && count_1s(board.GetColorBitBoard(Color::kWhite) & 1970324836974592) == 3)
+            value+=safe_king_position;
+        if((board.GetBitBoard(Color::kBlack,Figure::kKing) & 7ull) !=0   && count_1s(board.GetColorBitBoard(Color::kBlack) & 1792) == 3)
+            value-=safe_king_position;
 
         value += knight*count_1s(board.GetBitBoard(Color::kWhite,Figure::kKnight));
         value -= knight*count_1s(board.GetBitBoard(Color::kBlack,Figure::kKnight));
