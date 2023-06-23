@@ -2,6 +2,7 @@
 #define OPENING_HPP
 
 #include <vector>
+#include <string>
 
 #include <turn.hpp>
 
@@ -17,6 +18,7 @@ public:
     std::vector<Turn> GetTurns() const {
         return turns_;
     }
+
 private:
     std::vector<Turn> turns_;
     std::string name_;

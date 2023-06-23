@@ -41,6 +41,8 @@ int main(){
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
         std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
+        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
     }
     {
@@ -50,7 +52,8 @@ int main(){
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
         std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
-        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
+        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
     }
 
 

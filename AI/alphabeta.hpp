@@ -56,6 +56,48 @@ class AlphaBeta
     Color color_;
     Statistics &stat_;
 
+    T extramove(const BitBoard& bitboard, int depth,  T a, T b){
+
+        stat_.ExtraNode();
+        std::vector<BitBoard> nodes;
+
+        nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor(),kall,bitboard.GetColorBitBoard(bitboard.OpponentColor()));
+        auto turns = BitBoard::GenerateTurns(bitboard,nodes,color_);
+
+        bool zero_moves = (nodes.size() == 0);
+
+        if(zero_moves || depth == 0){
+            auto approx = T::Approximate(bitboard, color_);
+            return approx;
+        }
+
+        ReOrder(bitboard,turns,nodes);
+        if(bitboard.CurrentColor() == color_){
+            T value = T::Min();
+            for( const auto&node : nodes)
+            {
+                auto nvalue = extramove(node,depth -1, a, b);
+                value = std::max(value, nvalue);
+                a = std::max(a,value);
+                if(b <= a)
+                    break;
+            }
+            return value;
+        } else {
+            T value = T::Max();
+            for( const auto&node : nodes)
+            {
+                auto nvalue = extramove(node,depth-1, a, b);
+                value = std::min(value, nvalue);
+                b = std::min(b,value);
+                if(b <= a)
+                    break;
+            }
+            return value;
+        }
+
+    }
+
     T alphabeta(const BitBoard& bitboard, int depth, T a, T b)
     {
         stat_.Generation();
@@ -74,9 +116,10 @@ class AlphaBeta
         } else if(depth == 0){
 
             stat_.Approximation();
-            auto approx = T::Approximate(bitboard, color_);
+            //auto approx = T::Approximate(bitboard, color_);
+            auto extra_value = extramove(bitboard,2,a,b);
 
-            return approx;
+            return extra_value;
         }
 
 

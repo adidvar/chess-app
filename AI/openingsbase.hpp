@@ -2,13 +2,14 @@
 #define OPENINGBASE_HPP
 
 #include <opening.hpp>
+#include <match.hpp>
 
-class OpeningBase{
+class OpeningsBase{
+
 public:
-    OpeningBase()
-    {}
+    OpeningsBase();
 
-    Turn GetNextTurn();
+    std::vector<Turn> FindNext(const Match& match) const;
 private:
     std::vector<Opening> openings_;
 };

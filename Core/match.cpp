@@ -62,6 +62,11 @@ bool Match::Surrender(Color color)
     return false;
 }
 
+std::vector<Turn> Match::GetTurns() const
+{
+    return turns_;
+}
+
 void Match::SetTurns(const std::vector<Turn> &turns)
 {
     turns_ = turns;
@@ -74,7 +79,7 @@ BitBoard Match::GetBoard() const
 
 void Match::SetBoard(const BitBoard &board)
 {
-
+    board_ = board;
 }
 
 bool Match::HaveOpTag(const std::string& name) const
@@ -260,6 +265,10 @@ Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board)
         data.remove_suffix(1);
     }
 
+    if(data.size()!=0 && data.back() == '#'){
+        data.remove_suffix(1);
+    }
+
     if(data == "O-O"){
         auto turn = Turn::GetShortCastling(board.CurrentColor());
         board.ExecuteTurn(turn);
@@ -346,16 +355,10 @@ Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board)
     }
 }
 
-std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos){
+std::vector<std::string_view> SplitByDelims(std::string_view data, const std::vector<char> &seperators){
 
     std::vector<std::string_view> turns_pre;
     turns_pre.reserve(100);
-    std::vector<std::string_view> turns;
-    turns.reserve(100);
-    std::vector<Turn> result;
-    result.reserve(100);
-
-    std::array<char,3> seperators = { ' ', '.' , '\n'};
 
     size_t index = 0;
     size_t last = 0;
@@ -368,11 +371,22 @@ std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard
                 last = index+1;
                 break;
             }
-		index++;
+        index++;
     }
-	turns_pre.push_back(data.substr(last));
+    turns_pre.push_back(data.substr(last));
 
-    turns_pre.pop_back();
+    return turns_pre;
+}
+
+std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos){
+
+    std::vector<std::string_view> turns;
+    turns.reserve(100);
+    std::vector<Turn> result;
+    result.reserve(100);
+
+    const static std::vector<char> seperators = { ' ', '.' , '\n'};
+    std::vector<std::string_view> turns_pre = SplitByDelims(data,seperators);
 
     for(size_t i = 0 ; i < turns_pre.size(); i++)
         if(i%3!=0)

@@ -25,28 +25,28 @@ void AIWidget::on_set_clicked()
 
 void AIWidget::setBoard(BitBoard board)
 {
-     /*
-    NoStatistics stat;
     current = board;
-     ui->widget->PushBoard(board);
-     ui->turns_list->clear();
-     auto turns = board.GenerateTurns(board.CurrentColor());
-     std::vector<std::pair<MainAppraiser,std::string>> marks;
-     for(auto turn : turns)
-     {
-         BitBoard copy(board);
-         copy.ExecuteTurn(turn);
-         marks.push_back({AlphaBeta<MainAppraiser,NoStatistics>::Evaluate(copy,color_,4,stat),turn.ToChessFormat()});
-     }
-     auto current = AlphaBeta<MainAppraiser,NoStatistics>::Evaluate(board,color_,5,stat);
-     qDebug() << QString::fromStdString(current.ToString(6));
-     std::sort(marks.begin(),marks.end());
-     for(auto &pair : marks)
-     {
-        ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString(5)));
-     }
-     ui->score->setText(QString::fromStdString(current.ToString(6)));
-     */
+    ui->widget->PushBoard(board);
+    ui->turns_list->clear();
+
+    std::vector<std::pair<MainAppraiser,std::string>> marks;
+
+    Match match;
+    match.SetBoard(board);
+    Computer computer(match,color_);
+    computer.Start();
+    computer.Wait();
+
+    std::vector<std::pair<Turn,MainAppraiser>> turns;
+    computer.LoadTurnsMarks(turns);
+
+    for(auto turn : turns)
+        marks.push_back({turn.second,turn.first.ToChessFormat()});
+
+    std::sort(marks.begin(),marks.end());
+
+    for(auto &pair : marks)
+       ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString(5)));
 }
 
 

@@ -18,19 +18,22 @@ class MainAppraiser{
     constexpr static int movementbonus = 1;
 
     //pawns
-    constexpr static int running_out_bonus = 2;
-    constexpr static int free_row_bonus = 20;
+    constexpr static int running_out_bonus = 3;
+    constexpr static int free_row_bonus = 10;
     constexpr static int doubled_pawn_punishment = 4;
     constexpr static int safe_pawn_bonus = 4;
+    constexpr static int isolated_pawn_punishment = 2;
 
     //rooking and king safety
-    constexpr static int safe_king_position = 70;
-    constexpr static int rooking_lose_punishment = 30;
+    constexpr static int safe_king_position = 30;
+    constexpr static int rooking_bonus = 12;
 
     //map controll
-    constexpr static int bigcentercontrollpawn = 5;
+    constexpr static int bigcentercontrollpawn = 7;
     constexpr static int bigcentercontroll = 10;
+    constexpr static int border_place_punishment = 8;
 
+    constexpr static bitboard_t border_mask = 18411139144890810879ull;
     constexpr static bitboard_t bigcentermask = 66229406269440;
 
     //rangement
@@ -142,6 +145,12 @@ public:
                  auto figures = bpawns & rows[i];
                  value -= free_row_bonus*count_1s(figures);
             }
+
+            if(count_1s(mask & wpawns) == 1)
+                value -= isolated_pawn_punishment;
+
+            if(count_1s(mask & bpawns) == 1)
+                value += isolated_pawn_punishment;
         }
 
         auto wmap = board.AttackMask(Color::kWhite) & ~board.GetColorBitBoard(Color::kWhite);
@@ -156,15 +165,14 @@ public:
         value += bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kWhite) & ~board.GetBitBoard(Color::kWhite,Figure::kPawn) & bigcentermask);
         value -= bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kBlack) & ~board.GetBitBoard(Color::kBlack,Figure::kPawn) & bigcentermask);
 
-        if(board.Test(Figure::kKing,Position(60)) && !board.RookingFlags().white_oo)
-            value-=rooking_lose_punishment;
-        if(board.Test(Figure::kKing,Position(60)) && !board.RookingFlags().white_ooo)
-            value-=rooking_lose_punishment;
+        value -= border_place_punishment * count_1s(board.GetColorBitBoard(Color::kWhite) & ~ board.GetBitBoard(Color::kWhite,Figure::kKing) & border_mask);
+        value += border_place_punishment * count_1s(board.GetColorBitBoard(Color::kBlack) & ~ board.GetBitBoard(Color::kBlack,Figure::kKing) & border_mask);
 
-        if(board.Test(Figure::kKing,Position(4)) && !board.RookingFlags().black_oo)
-            value+=rooking_lose_punishment;
-        if(board.Test(Figure::kKing,Position(4)) && !board.RookingFlags().black_ooo)
-            value+=rooking_lose_punishment;
+        if(board.Test(Figure::kKing,Position(60)) && ( board.RookingFlags().white_oo || !board.RookingFlags().white_ooo) )
+            value+=rooking_bonus;
+
+        if(board.Test(Figure::kKing,Position(4)) && ( board.RookingFlags().black_oo || board.RookingFlags().black_ooo) )
+            value-=rooking_bonus;
 
         if((board.GetBitBoard(Color::kWhite,Figure::kKing) & 13835058055282163712ull) !=0   && count_1s(board.GetColorBitBoard(Color::kWhite) & 63050394783186944) == 3)
             value+=safe_king_position;

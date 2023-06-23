@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <filesystem>
+#include <openingsbase.hpp>
 
 uint64_t read_mask()
 {
@@ -52,7 +53,8 @@ std::string LoadFile(std::filesystem::path path){
 int main()
 {
 
-    std::cout << read_mask();
+    //std::cout << read_mask();
+    /*
     std::ios_base::sync_with_stdio(false);
     using namespace std;
 
@@ -76,6 +78,14 @@ int main()
         cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1,1>>>(end).count() << " s" << endl;
         cout << i+1 <<  '/' <<  pathes.size() << endl;
     }
+    */
+
+    OpeningsBase base;
+    Match match;
+    match.Push(Turn::FromChessFormat("a2a4"));
+    auto nexts = base.FindNext(match);
+    for(auto turn : nexts)
+        std::cout << turn.ToChessFormat() << std::endl;
 
     return 0;
 }

@@ -8,8 +8,10 @@ void Computer::Thread(size_t id, size_t all)
         //waiting loop
         {
             std::unique_lock guard(marks_mutex_);
-            while ((threads_working_flags_ & (1ULL << id)) == 0)
+            while ((threads_working_flags_ & (1ULL << id)) == 0){
+                if(exit_flag_)return;
                 condition_.wait(guard);
+            }
         }
 
         //task
@@ -22,7 +24,7 @@ void Computer::Thread(size_t id, size_t all)
                 Statistics stat;
                 AlphaBeta<MainAppraiser> evaluator(color_,stat);
                 guard.unlock();
-                auto value = evaluator.Evaluate(board,5);
+                auto value = evaluator.Evaluate(board,4);
                 guard.lock();
                 stat_ += stat;
                 marks_[i].second = value;
@@ -47,10 +49,10 @@ Computer::Computer(Match &match, Color color):
 Computer::~Computer()
 {
     exit_flag_ = 1;
+    condition_.notify_all();
     while ( thread_pool_.size() )
     {
-        if(thread_pool_.back()->joinable())
-            thread_pool_.back()->join();
+        thread_pool_.back()->join();
         thread_pool_.pop_back();
     }
 }
@@ -61,8 +63,9 @@ void Computer::Start()
     stat_.Clear();
     marks_.clear();
 
-    assert(match_.GetBoard().CurrentColor() == color_);
-    for(auto &turn : match_.GetBoard().GenerateTurns(color_))
+    //auto base_turns = base_.FindNext(match_);
+
+    for(auto &turn : match_.GetBoard().GenerateTurns(match_.GetBoard().CurrentColor()))
         marks_.emplace_back(turn,MainAppraiser::Invalid());
 
     threads_working_flags_ = (1ULL << thread_pool_.size())-1;

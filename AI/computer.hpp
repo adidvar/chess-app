@@ -9,6 +9,7 @@
 #include <match.hpp>
 #include <position_rating.hpp>
 #include <functional>
+#include <openingsbase.hpp>
 
 /*
 struct callback_t
@@ -22,6 +23,8 @@ class Computer{
 
     const Match &match_;
     const Color color_;
+
+    const OpeningsBase base_;
 
     std::vector<std::pair<Turn,MainAppraiser>> marks_;
     Statistics stat_;

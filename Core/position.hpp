@@ -100,6 +100,10 @@ public:
         return index_ != pos.index_;
     }
 
+    bool operator <(const Position& pos) const noexcept{
+        return index_ < pos.index_;
+    }
+
     constexpr static uint8_t Max() { return kerror_pos_;};
 };
 

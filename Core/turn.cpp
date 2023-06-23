@@ -134,5 +134,10 @@ Turn Turn::GetLongCastling(Color color)
 bool Turn::operator ==(const Turn& turn) const{
     return from_ == turn.from_ &&
            to_ == turn.to_ &&
-           figure_ == turn.figure_;
+            figure_ == turn.figure_;
+}
+
+bool Turn::operator <(const Turn &turn) const
+{
+    return std::tie(from_,to_,figure_) < std::tie(turn.from_,turn.to_,turn.figure_);
 }

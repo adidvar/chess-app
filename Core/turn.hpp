@@ -45,6 +45,7 @@ public:
     Turn& operator =(const Turn& b) noexcept = default;
     Turn& operator =(Turn&& b) noexcept = default;
     bool operator ==(const Turn& turn) const;
+    bool operator <(const Turn& turn) const;
 
     Position from() const noexcept;
     Position to() const noexcept;
