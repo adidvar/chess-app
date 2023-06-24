@@ -33,29 +33,48 @@ int main(){
     //auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
     //auto d = 5;
 
-    auto board = BitBoard("8/8/2q2P1N/1P6/8/p1Q2B2/8/8 w - - 0 1");
+    //auto board = BitBoard("r3k3/pppppppp/1nb2b1r/3q2n1/2Q1P3/2BN1NB1/PPPP1PPP/R3K2R w KQq - 0 1");
+    Statistics stat;
+    TransPositionTable table;
+    AlphaBeta<MainAppraiser> ab(Color::kWhite,stat,table);
+    auto board = BitBoard();
+    /*
     {
         auto begin = std::chrono::high_resolution_clock::now();
-        Statistics stat;
-        AlphaBeta<MainAppraiser>::Evaluate(board,Color::kWhite,5,stat);
+        auto result = ab.GetValue(board,5);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
         std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
         std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
+        std::cout << "Result: " << result.ToString(7) << std::endl;
     }
+    */
     {
+        stat.Clear();
         auto begin = std::chrono::high_resolution_clock::now();
-        Statistics stat;
-        MinMax<MainAppraiser>::Evaluate(board,Color::kWhite,5,stat);
+        auto result = ab.GetValue(board,6);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
         std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
         std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
+        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
+        std::cout << "Result: " << result.ToString(7) << std::endl;
     }
+    {
+        stat.Clear();
+        auto begin = std::chrono::high_resolution_clock::now();
+        auto result = ab.GetValue(board,7);
+        auto delay = std::chrono::high_resolution_clock::now() - begin;
 
+        std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
+        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
+        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
+        std::cout << "Result: " << result.ToString(7) << std::endl;
+    }
 
     /*
     BitBoard board("8/8/2q2P1N/1P6/8/p1Q2B2/8/8 w - - 0 1");

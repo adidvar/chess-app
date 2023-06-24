@@ -3,6 +3,7 @@
 
 #include <cinttypes>
 #include <figures.hpp>
+#include <bitboard.hpp>
 
 constexpr static const bitboard_t row_a = (1) + (1<<8) + (1<<16) + (1<<24) + (1LL<<32) + (1LL<<40) + (1LL<<48) + (1LL<<56);
 constexpr static const bitboard_t row_b = row_a << 1;

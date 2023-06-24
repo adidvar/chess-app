@@ -11,6 +11,10 @@
 #include "figures.hpp"
 #include "turn.hpp"
 
+
+using bitboard_t = uint64_t;
+using bitboard_hash_t = uint64_t;
+
 constexpr bitboard_t operator ""_b(bitboard_t num){
     return (bitboard_t)1 << num;
 }
@@ -18,6 +22,8 @@ constexpr bitboard_t operator ""_b(bitboard_t num){
 constexpr bitboard_t PositionToBitMask(bitboard_t num){
     return (bitboard_t)1 << num;
 }
+
+struct BitBoardTuple;
 
 struct BitIterator{
     bitboard_t value_;
@@ -52,6 +58,7 @@ constexpr static bitboard_t kall = ~(bitboard_t(0));
 class BitBoard
 {
     static const char* kStartPosition_;
+    static const BitBoard kStartBitBoard_;
 
     friend class FenLoader<BitBoard>;
     friend class FenSaver<BitBoard>;
@@ -76,8 +83,6 @@ class BitBoard
 
     //additional state
     RookingFlags_t rooking_flags_;
-    uint16_t passive_turn_counter_;
-    uint16_t turn_counter_;
     Color current_player_color_;
     Position last_pawn_move_;
 
@@ -100,7 +105,8 @@ public:
      * @brief BitBoard construct class using fen string
      * @param fen_line string with fen
      */
-    BitBoard(std::string_view fen_line = kStartPosition_); ///< fen парсер карт
+    BitBoard(); ///< fen парсер карт
+    BitBoard(std::string_view fen_line); ///< fen парсер карт
     ~BitBoard() = default;
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
 
@@ -143,16 +149,6 @@ public:
      * @return struct with flags
      */
     RookingFlags_t RookingFlags() const noexcept;
-    /**
-     * @brief TurnCounter returns count of turns maked on board
-     * @return count of turns from first position
-     */
-    size_t TurnCounter() const noexcept;
-    /**
-     * @brief PassiveTurnCounter return count of half turns from begining
-     * @return count of half turns
-     */
-    size_t PassiveTurnCounter() const noexcept;
     /**
      * @brief LastPawnMove return last pawn move for el passant
      * @return position, that last pawn move go through
@@ -242,8 +238,22 @@ public:
      */
     bool TestTurn(Turn turn) const;
 
+    bitboard_hash_t Hash() const;
+
+    std::vector<BitBoardTuple> GenerateTuplesFast(Color color, uint64_t from = kall, uint64_t to = kall) const;
+
     static Turn GetTurn(const BitBoard &from, const BitBoard& to, Color color);
     static std::vector<Turn> GenerateTurns(const BitBoard &main, const std::vector<BitBoard>& subboards, Color color);
+    static std::vector<bitboard_hash_t> GenerateHashes(const BitBoard &main, const std::vector<BitBoard>& subboards);
+
+    bool operator ==(const BitBoard &board) const;
+    bool operator !=(const BitBoard &board) const;
+};
+
+struct BitBoardTuple{
+    BitBoard board;
+    bitboard_hash_t hash;
+    Turn turn;
 };
 
 #endif // BOARD_H

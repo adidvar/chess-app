@@ -23,12 +23,9 @@ void SinglePlayer::TurnEntered(Turn inputturn)
     computer_.Start();
     computer_.Wait();
     std::vector<std::pair<Turn,MainAppraiser>> marks;
-    computer_.LoadTurnsMarks(marks);
-
-    auto max = std::max_element(marks.begin(),marks.end(),[](auto m1, auto m2){return m1.second < m2.second;});
-    if(max == marks.end())
+    auto turn = computer_.GetBestTurn();
+    if(!turn.Valid())
         return;
-    auto turn = max->first;
 
     match.Push(turn);
     ui->board->PushTurn(turn);

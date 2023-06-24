@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cassert>
 #include "magic.hpp"
+#include "zobrist.hpp"
 
 
 constexpr static bitboard_t krooking_masks[2][2]{
@@ -13,6 +14,13 @@ constexpr static bitboard_t krooking_masks[2][2]{
 
 
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const BitBoard BitBoard::kStartBitBoard_ = BitBoard(BitBoard::kStartPosition_);
+
+BitBoard::BitBoard():
+    BitBoard(kStartBitBoard_)
+{
+
+}
 
 BitBoard::BitBoard(std::string_view fen):
 board_{{0},{0}}
@@ -52,16 +60,6 @@ Color BitBoard::OpponentColor() const noexcept
 BitBoard::RookingFlags_t BitBoard::RookingFlags() const noexcept
 {
     return rooking_flags_;
-}
-
-size_t BitBoard::TurnCounter() const noexcept
-{
-    return turn_counter_;
-}
-
-size_t BitBoard::PassiveTurnCounter() const noexcept
-{
-    return passive_turn_counter_;
 }
 
 Position BitBoard::LastPawnMove() const noexcept
@@ -800,6 +798,43 @@ bool BitBoard::TestTurn(Turn turn) const
     return std::count(turns.begin(),turns.end(),turn) == 1;
 }
 
+bitboard_hash_t BitBoard::Hash() const
+{
+   bitboard_hash_t hash = 0;
+    /*
+bitboard_t GetFigureHash(Figure figure, Color color, Position position);
+bitboard_t GetShortCastlingFlagHash(Color color);
+bitboard_t GetLongCastlingFlagHash(Color color);
+bitboard_t GetTurnCounterHash(int count);
+bitboard_t GetPassiveCountHash(int count);
+bitboard_t GetCurrentColorHash(Color color);
+bitboard_t GetElpassantHash(Position position);
+*/
+
+    for(size_t i = 0 ; i < 64 ; i++){
+         if(!TestEmp(i))
+             hash ^= GetFigureHash(GetFigure(i),GetColor(i),i);
+    }
+    return hash;
+}
+
+std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(Color color, uint64_t from, uint64_t to) const
+{
+    auto boards = GenerateSubBoards(color,from,to);
+
+    std::vector<BitBoardTuple> tuples;
+
+    for(auto board : boards){
+        BitBoardTuple tuple;
+        tuple.board = board;
+        tuple.turn = GetTurn(*this,board,color);
+        //tuple.hash = board.Hash();
+        tuples.push_back(tuple);
+    }
+
+    return tuples;
+}
+
 Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color color)
 {
     bitboard_t delta = board.all_[color] ^ subboard.all_[color];
@@ -830,4 +865,45 @@ std::vector<Turn> BitBoard::GenerateTurns(const BitBoard &main, const std::vecto
     for(const auto &subboard : subboards)
         turns.push_back(GetTurn(main,subboard,color));
     return turns;
+}
+
+bool BitBoard::operator ==(const BitBoard &board) const
+{
+    bitboard_t board_[Color::Max()][Figure::Max()];
+    bitboard_t all_[Color::Max()];
+
+    //additional state
+    RookingFlags_t rooking_flags_;
+    Color current_player_color_;
+    Position last_pawn_move_;
+
+    if(current_player_color_ != board.current_player_color_)
+        return false;
+
+    if(rooking_flags_.black_oo != board.rooking_flags_.black_oo)
+        return false;
+
+    if(rooking_flags_.black_ooo != board.rooking_flags_.black_ooo)
+        return false;
+
+    if(rooking_flags_.white_oo != board.rooking_flags_.white_oo)
+        return false;
+
+    if(rooking_flags_.white_ooo != board.rooking_flags_.white_ooo)
+        return false;
+
+    if(last_pawn_move_ != last_pawn_move_)
+        return false;
+
+    for(size_t color = 0 ; color < Color::Max() ; color++)
+    for(size_t figure = 0 ; figure < Figure::Max() ; figure++)
+        if(board_[color][figure] != board.board_[color][figure])
+            return false;
+
+    return true;
+}
+
+bool BitBoard::operator !=(const BitBoard &board) const
+{
+    return !(*this == board);
 }

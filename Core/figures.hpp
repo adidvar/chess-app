@@ -3,7 +3,6 @@
 
 #include <inttypes.h>
 
-using bitboard_t = uint64_t;
 
 ///  Тип данних для зберігання фігур
 /// \brief Типи фігур

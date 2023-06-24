@@ -125,9 +125,6 @@ public:
         board_.current_player_color_ = Color::kBlack;
     else
         throw std::runtime_error("fen invalid format [current_move]");
-    board_.passive_turn_counter_ = static_move;
-    board_.turn_counter_ = move_counter;
-
 
     board_.rooking_flags_ = {false,false,false,false};
 
@@ -231,9 +228,9 @@ public:
     else
         string += '-';
     string += ' ';
-    string += std::to_string(board_.PassiveTurnCounter());
+    string += std::to_string(0);
     string += ' ';
-    string += std::to_string(board_.TurnCounter());
+    string += std::to_string(0);
     return string;
     }
 };

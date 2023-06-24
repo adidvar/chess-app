@@ -11,6 +11,8 @@
 #include <functional>
 #include <openingsbase.hpp>
 
+#include <transpositiontable.hpp>
+
 /*
 struct callback_t
 {
@@ -24,20 +26,9 @@ class Computer{
     const Match &match_;
     const Color color_;
 
-    const OpeningsBase base_;
+    TransPositionTable table_;
 
-    std::vector<std::pair<Turn,MainAppraiser>> marks_;
     Statistics stat_;
-    std::mutex marks_mutex_;
-
-    std::condition_variable condition_;
-    std::atomic<uint64_t> threads_working_flags_;
-    std::atomic<bool> exit_flag_;
-
-    std::vector<std::unique_ptr<std::thread>> thread_pool_;
-
-    void Thread(size_t id, size_t all);
-
 public:
     Computer(Match &match, Color color);
     ~Computer();
@@ -47,7 +38,7 @@ public:
     void Wait();
     bool Ready();
 
-    void LoadTurnsMarks(std::vector<std::pair<Turn,MainAppraiser>> &marks);
+    Turn GetBestTurn();
 
     Statistics GetStatistics();
 };

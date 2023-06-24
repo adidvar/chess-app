@@ -37,11 +37,16 @@ void AIWidget::setBoard(BitBoard board)
     computer.Start();
     computer.Wait();
 
-    std::vector<std::pair<Turn,MainAppraiser>> turns;
-    computer.LoadTurnsMarks(turns);
+    Statistics stat;
+    TransPositionTable table(100);
+    AlphaBeta<MainAppraiser> appraiser(color_,stat,table);
 
-    for(auto turn : turns)
-        marks.push_back({turn.second,turn.first.ToChessFormat()});
+    for(Turn turn : board.GenerateTurns(board.CurrentColor())){
+        auto subboard = board;
+        subboard.ExecuteTurn(turn);
+        marks.push_back({appraiser.GetValue(subboard,4),turn.ToChessFormat()});
+    }
+    ui->score->setText(QString::fromStdString(appraiser.GetBestTurn(board,5).ToChessFormat()));
 
     std::sort(marks.begin(),marks.end());
 
