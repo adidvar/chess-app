@@ -8,37 +8,92 @@
 class MainAppraiser{
 
     //material
-    constexpr static int pawn = 10;
-    constexpr static int knight = 30;
-    constexpr static int bishop = 30;
-    constexpr static int rook = 50;
-    constexpr static int queen = 90;
+    constexpr static int pawn = 100;
+    constexpr static int knight = 320;
+    constexpr static int bishop = 330;
+    constexpr static int rook = 500;
+    constexpr static int queen = 900;
 
     //moves counter
-    constexpr static int movementbonus = 1;
+    constexpr static int movementbonus = 4;
 
-    //pawns
-    constexpr static int running_out_bonus = 3;
-    constexpr static int free_row_bonus = 10;
-    constexpr static int doubled_pawn_punishment = 4;
-    constexpr static int safe_pawn_bonus = 4;
-    constexpr static int isolated_pawn_punishment = 2;
+    //position bonuses
 
-    //rooking and king safety
-    constexpr static int safe_king_position = 30;
-    constexpr static int rooking_bonus = 12;
+    constexpr static int pawn_bonus[64]{
+        0,  0,  0,  0,  0,  0,  0,  0,
+        50, 50, 50, 50, 50, 50, 50, 50,
+        10, 10, 20, 30, 30, 20, 10, 10,
+        5,  5, 10, 25, 25, 10,  5,  5,
+        0,  0,  0, 20, 20,  0,  0,  0,
+        5, -5,-10,  0,  0,-10, -5,  5,
+        5, 10, 10,-20,-20, 10, 10,  5,
+        0,  0,  0,  0,  0,  0,  0,  0
+    };
+    constexpr static int knight_bonus[64]{
+        -50,-40,-30,-30,-30,-30,-40,-50,
+        -40,-20,  0,  0,  0,  0,-20,-40,
+        -30,  0, 10, 15, 15, 10,  0,-30,
+        -30,  5, 15, 20, 20, 15,  5,-30,
+        -30,  0, 15, 20, 20, 15,  0,-30,
+        -30,  5, 10, 15, 15, 10,  5,-30,
+        -40,-20,  0,  5,  5,  0,-20,-40,
+        -50,-40,-30,-30,-30,-30,-40,-50,
+    };
+    constexpr static int bishop_bonus[64]{
+        -20,-10,-10,-10,-10,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5, 10, 10,  5,  0,-10,
+        -10,  5,  5, 10, 10,  5,  5,-10,
+        -10,  0, 10, 10, 10, 10,  0,-10,
+        -10, 10, 10, 10, 10, 10, 10,-10,
+        -10,  5,  0,  0,  0,  0,  5,-10,
+        -20,-10,-10,-10,-10,-10,-10,-20,
+    };
+    constexpr static int rook_bonus[64]{
+         0,  0,  0,  0,  0,  0,  0,  0,
+        5, 10, 10, 10, 10, 10, 10,  5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        0,  0,  0,  5,  5,  0,  0,  0
+    };
+    constexpr static int queen_bonus[64]{
+        -20,-10,-10, -5, -5,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5,  5,  5,  5,  0,-10,
+         -5,  0,  5,  5,  5,  5,  0, -5,
+          0,  0,  5,  5,  5,  5,  0, -5,
+        -10,  5,  5,  5,  5,  5,  0,-10,
+        -10,  0,  5,  0,  0,  0,  0,-10,
+        -20,-10,-10, -5, -5,-10,-10,-20
+    };
+    constexpr static int king_bonus[64]{
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20,
+        -10,-20,-20,-20,-20,-20,-20,-10,
+         20, 20,  0,  0,  0,  0, 20, 20,
+         20, 30, 10,  0,  0, 10, 30, 20
+    };
 
-    //map controll
-    constexpr static int bigcentercontrollpawn = 7;
-    constexpr static int bigcentercontroll = 10;
-    constexpr static int border_place_punishment = 8;
-
-    constexpr static bitboard_t border_mask = 18411139144890810879ull;
-    constexpr static bitboard_t bigcentermask = 66229406269440;
+    static int CalculateBonus(bitboard_t map, const int bonus[], Color color)
+    {
+        int value = 0;
+        BitIterator i(map);
+        for(;i.Valid();++i){
+            Position index = log2_64(i.Bit());
+            value+=bonus[(color == Color::kWhite ? index : index.Rotate()).Value()];
+        }
+        return value;
+    }
 
     //rangement
     constexpr static int max_depth = 50;
-    constexpr static int range = 1000;
+    constexpr static int range = 100000;
 
     int value_;
 
@@ -84,74 +139,11 @@ public:
     };
     static MainAppraiser Approximate(BitBoard board, Color color)
     {
-
         int value = 0;
 
         //pawns
         value += pawn*count_1s(board.GetBitBoard(color,Figure::kPawn));
         value -= pawn*count_1s(board.GetBitBoard(!color,Figure::kPawn));
-
-        {
-            BitIterator iterator(board.GetBitBoard(Color::kWhite,Figure::kPawn));
-            for(;iterator.Valid();++iterator)
-            {
-                auto y = Position(log2_64(iterator.Bit())).y();
-                value += running_out_bonus*(6-y);
-            }
-        }
-        {
-            BitIterator iterator(board.GetBitBoard(Color::kBlack,Figure::kPawn));
-            for(;iterator.Valid();++iterator)
-            {
-                auto y = Position(log2_64(iterator.Bit())).y();
-                value -= running_out_bonus*(y-1);
-            }
-        }
-
-        for(int i = 0; i < 8; ++i)
-        {
-            auto white_pawns = board.GetBitBoard(Color::kWhite,Figure::kPawn) & rows[i];
-            auto black_pawns = board.GetBitBoard(Color::kBlack,Figure::kPawn) & rows[i];
-            if(count_1s(white_pawns) > 1)
-                value -= doubled_pawn_punishment;
-            if(count_1s(black_pawns) > 1)
-                value += doubled_pawn_punishment;
-        }
-
-        auto wpawns = board.GetBitBoard(Color::kWhite,Figure::kPawn);
-        auto wsafe_pawns = (((wpawns << 9) & wpawns) >> 9) | (((wpawns << 7) & wpawns) >> 7);
-        value += safe_pawn_bonus*count_1s(wsafe_pawns);
-
-        auto bpawns = board.GetBitBoard(Color::kBlack,Figure::kPawn);
-        auto bsafe_pawns = (((bpawns << 9) & bpawns) >> 9) | (((bpawns << 7) & bpawns) >> 7);
-        value -= safe_pawn_bonus*count_1s(bsafe_pawns);
-
-        for(size_t i = 0 ; i < 8 ; ++i){
-            auto wpawns = board.GetBitBoard(Color::kWhite,Figure::kPawn) & rows[i];
-            auto bpawns = board.GetBitBoard(Color::kBlack,Figure::kPawn) & rows[i];
-
-            auto mask = rows[i];
-            if(i != 0)
-                mask |= rows[i-1];
-            if(i != 7)
-                mask |= rows[i+1];
-
-            if( (mask & bpawns) == 0){
-                 auto figures = wpawns & rows[i];
-                 value += free_row_bonus*count_1s(figures);
-            }
-
-            if( (mask & wpawns) == 0){
-                 auto figures = bpawns & rows[i];
-                 value -= free_row_bonus*count_1s(figures);
-            }
-
-            if(count_1s(mask & wpawns) == 1)
-                value -= isolated_pawn_punishment;
-
-            if(count_1s(mask & bpawns) == 1)
-                value += isolated_pawn_punishment;
-        }
 
         auto wmap = board.AttackMask(Color::kWhite) & ~board.GetColorBitBoard(Color::kWhite);
         value += movementbonus * count_1s(wmap);
@@ -159,30 +151,23 @@ public:
         auto bmap = board.AttackMask(Color::kBlack) & ~board.GetColorBitBoard(Color::kBlack);
         value -= movementbonus * count_1s(bmap);
 
-        value += bigcentercontrollpawn*count_1s(board.GetBitBoard(Color::kWhite,Figure::kPawn) & bigcentermask);
-        value -= bigcentercontrollpawn*count_1s(board.GetBitBoard(Color::kBlack,Figure::kPawn) & bigcentermask);
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kPawn),pawn_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kPawn),pawn_bonus,Color::kBlack);
 
-        value += bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kWhite) & ~board.GetBitBoard(Color::kWhite,Figure::kPawn) & bigcentermask);
-        value -= bigcentercontroll*count_1s(board.GetColorBitBoard(Color::kBlack) & ~board.GetBitBoard(Color::kBlack,Figure::kPawn) & bigcentermask);
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kKnight),knight_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kKnight),knight_bonus,Color::kBlack);
 
-        value -= border_place_punishment * count_1s(board.GetColorBitBoard(Color::kWhite) & ~ board.GetBitBoard(Color::kWhite,Figure::kKing) & border_mask);
-        value += border_place_punishment * count_1s(board.GetColorBitBoard(Color::kBlack) & ~ board.GetBitBoard(Color::kBlack,Figure::kKing) & border_mask);
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kBishop),bishop_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kBishop),bishop_bonus,Color::kBlack);
 
-        if(board.Test(Figure::kKing,Position(60)) && ( board.RookingFlags().white_oo || !board.RookingFlags().white_ooo) )
-            value+=rooking_bonus;
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kRook),rook_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kRook),rook_bonus,Color::kBlack);
 
-        if(board.Test(Figure::kKing,Position(4)) && ( board.RookingFlags().black_oo || board.RookingFlags().black_ooo) )
-            value-=rooking_bonus;
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kQueen),queen_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kQueen),queen_bonus,Color::kBlack);
 
-        if((board.GetBitBoard(Color::kWhite,Figure::kKing) & 13835058055282163712ull) !=0   && count_1s(board.GetColorBitBoard(Color::kWhite) & 63050394783186944) == 3)
-            value+=safe_king_position;
-        if((board.GetBitBoard(Color::kBlack,Figure::kKing) & 192ull) !=0   && count_1s(board.GetColorBitBoard(Color::kBlack) & 57344) == 3)
-            value-=safe_king_position;
-
-        if((board.GetBitBoard(Color::kWhite,Figure::kKing) & 504403158265495552) !=0   && count_1s(board.GetColorBitBoard(Color::kWhite) & 1970324836974592) == 3)
-            value+=safe_king_position;
-        if((board.GetBitBoard(Color::kBlack,Figure::kKing) & 7ull) !=0   && count_1s(board.GetColorBitBoard(Color::kBlack) & 1792) == 3)
-            value-=safe_king_position;
+        value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kKing),king_bonus,Color::kWhite);
+        value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kKing),king_bonus,Color::kBlack);
 
         value += knight*count_1s(board.GetBitBoard(Color::kWhite,Figure::kKnight));
         value -= knight*count_1s(board.GetBitBoard(Color::kBlack,Figure::kKnight));

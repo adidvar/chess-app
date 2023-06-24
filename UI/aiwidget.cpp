@@ -44,7 +44,7 @@ void AIWidget::setBoard(BitBoard board)
     for(Turn turn : board.GenerateTurns(board.CurrentColor())){
         auto subboard = board;
         subboard.ExecuteTurn(turn);
-        marks.push_back({appraiser.GetValue(subboard,4),turn.ToChessFormat()});
+        marks.push_back({appraiser.GetValue(subboard,0),turn.ToChessFormat()});
     }
     ui->score->setText(QString::fromStdString(appraiser.GetBestTurn(board,5).ToChessFormat()));
 

@@ -823,13 +823,10 @@ std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(Color color, uint64_t fr
     auto boards = GenerateSubBoards(color,from,to);
 
     std::vector<BitBoardTuple> tuples;
+    tuples.reserve(boards.size());
 
-    for(auto board : boards){
-        BitBoardTuple tuple;
-        tuple.board = board;
-        tuple.turn = GetTurn(*this,board,color);
-        //tuple.hash = board.Hash();
-        tuples.push_back(tuple);
+    for(auto &board : boards){
+        tuples.push_back({ board,0,GetTurn(*this,board,color) });
     }
 
     return tuples;
@@ -838,21 +835,19 @@ std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(Color color, uint64_t fr
 Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color color)
 {
     bitboard_t delta = board.all_[color] ^ subboard.all_[color];
+    bitboard_t from = board.all_[color] & delta;
+    bitboard_t to = subboard.all_[color] & delta;
+
     if(krooking_masks[color][0] == delta){
         return Turn::GetLongCastling(color);
     }
     else if(krooking_masks[color][1] == delta){
         return Turn::GetShortCastling(color);
-
     }
-    else if(count_1s(board.board_[color][Figure::kPawn]) != count_1s(subboard.board_[color][Figure::kPawn])){
-        bitboard_t from = board.all_[color] & delta;
-        bitboard_t to = subboard.all_[color] & delta;
+    else if((to & (line_1 | line_8)) !=0 && (from & board.board_[color][Figure::kPawn]) !=0){
         return Turn(log2_64(from),log2_64(to),subboard.GetFigure(log2_64(to)));
     }
     else {
-        bitboard_t from = board.all_[color] & delta;
-        bitboard_t to = subboard.all_[color] & delta;
         return Turn(log2_64(from),log2_64(to));
     }
 }

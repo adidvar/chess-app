@@ -75,8 +75,8 @@ class AlphaBeta
         }
         else
         */
-            ReOrder(bitboard,nodes.rbegin(),nodes.rend());
 
+        ReOrder(bitboard,nodes.rbegin(),nodes.rend());
 
         T value = T::Invalid();
         Turn best_turn;
