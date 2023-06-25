@@ -37,9 +37,9 @@ int main(){
     Statistics stat;
     TransPositionTable table;
     AlphaBeta<MainAppraiser> ab(Color::kWhite,stat,table);
-    auto board = BitBoard();
-    /*
+    auto board = BitBoard("r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0 1");
     {
+        stat.Clear();
         auto begin = std::chrono::high_resolution_clock::now();
         auto result = ab.GetValue(board,5);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
@@ -48,9 +48,8 @@ int main(){
         std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result.ToString(7) << std::endl;
+        std::cout << "Result: " << result - MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
     }
-    */
     {
         stat.Clear();
         auto begin = std::chrono::high_resolution_clock::now();
@@ -61,7 +60,7 @@ int main(){
         std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result.ToString(7) << std::endl;
+        std::cout << "Result: " << result- MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
     }
     {
         stat.Clear();
@@ -73,7 +72,7 @@ int main(){
         std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result.ToString(7) << std::endl;
+        std::cout << "Result: " << result- MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
     }
 
     /*

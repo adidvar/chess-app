@@ -18,6 +18,9 @@ class AIWidget : public QWidget
     BitBoard home;
     BitBoard current;
     Color color_;
+
+    MainAppraiser a;
+    MainAppraiser b;
 public:
     explicit AIWidget(QWidget *parent = nullptr);
     ~AIWidget();
@@ -31,6 +34,10 @@ private slots:
     void on_white_radio_clicked();
 
     void on_black_radio_clicked();
+
+    void on_a_sliderMoved(int position);
+
+    void on_b_sliderMoved(int position);
 
 private:
     Ui::AIWidget *ui;

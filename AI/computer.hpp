@@ -39,6 +39,7 @@ public:
     bool Ready();
 
     Turn GetBestTurn();
+    void LoadMarks(std::vector<std::pair<MainAppraiser, Turn>> &turns);
 
     Statistics GetStatistics();
 };

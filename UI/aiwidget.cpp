@@ -7,7 +7,9 @@
 
 AIWidget::AIWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::AIWidget)
+    ui(new Ui::AIWidget),
+    a(MainAppraiser::Invalid()),
+    b(MainAppraiser::Invalid())
 {
     ui->setupUi(this);
 }
@@ -29,7 +31,7 @@ void AIWidget::setBoard(BitBoard board)
     ui->widget->PushBoard(board);
     ui->turns_list->clear();
 
-    std::vector<std::pair<MainAppraiser,std::string>> marks;
+    std::vector<std::pair<MainAppraiser,Turn>> marks;
 
     Match match;
     match.SetBoard(board);
@@ -37,21 +39,12 @@ void AIWidget::setBoard(BitBoard board)
     computer.Start();
     computer.Wait();
 
-    Statistics stat;
-    TransPositionTable table(100);
-    AlphaBeta<MainAppraiser> appraiser(color_,stat,table);
-
-    for(Turn turn : board.GenerateTurns(board.CurrentColor())){
-        auto subboard = board;
-        subboard.ExecuteTurn(turn);
-        marks.push_back({appraiser.GetValue(subboard,0),turn.ToChessFormat()});
-    }
-    ui->score->setText(QString::fromStdString(appraiser.GetBestTurn(board,5).ToChessFormat()));
+    computer.LoadMarks(marks);
 
     std::sort(marks.begin(),marks.end());
 
     for(auto &pair : marks)
-       ui->turns_list->addItem(QString::fromStdString(pair.second+' '+pair.first.ToString(5)));
+       ui->turns_list->addItem(QString::fromStdString(pair.second.ToChessFormat()+' '+pair.first.ToString()));
 }
 
 
@@ -75,5 +68,20 @@ void AIWidget::on_black_radio_clicked()
 {
      color_ = Color::kBlack;
      setBoard(current);
+}
+
+
+void AIWidget::on_a_sliderMoved(int position)
+{
+    a = MainAppraiser(position);
+    ui->a_text->setText(QString::number(position));
+}
+
+
+void AIWidget::on_b_sliderMoved(int position)
+{
+
+    b = MainAppraiser(position);
+    ui->b_text->setText(QString::number(position));
 }
 

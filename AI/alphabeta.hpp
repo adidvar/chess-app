@@ -42,6 +42,92 @@ inline void ReOrder(const BitBoard& board, T begin , T end){
 template<typename T>
 class AlphaBeta
 {
+    std::pair<T,Turn> quiescence(const BitBoard& bitboard , const bitboard_hash_t hash, T a, T b){
+
+        stat_.Approximation();
+        auto stand_pat = T::Approximate(bitboard, color_);
+        if( stand_pat >= b )
+            return {b,Turn()};
+
+        int BIG_DELTA = 900; // queen value
+
+        if ( stand_pat < a - BIG_DELTA ) {
+           return {a,Turn()};
+        }
+
+        if( a < stand_pat )
+           a = stand_pat;
+
+        stat_.ExtraNode();
+        auto nodes = bitboard.GenerateTuplesFast(bitboard.CurrentColor(), kall , bitboard.GetColorBitBoard(bitboard.OpponentColor()));
+
+        if(nodes.size() == 0)
+            return {stand_pat,Turn()};
+
+
+/*
+        if(hashed.has_value()){
+            auto best_hashed = hashed.value().best_turn;
+
+            for(size_t i = 0 ; i < nodes.size() ; ++i)
+                if(nodes[i].turn == best_hashed){
+                    std::swap(nodes[i],nodes[0]);
+                    break;
+                }
+
+            ReOrder(bitboard,nodes.rbegin(),nodes.rend()-1);
+        }
+        else
+        */
+
+        ReOrder(bitboard,nodes.rbegin(),nodes.rend());
+
+        T value = T::Invalid();
+        Turn best_turn;
+
+        if(bitboard.CurrentColor() == color_){
+            value = T::Min();
+            for( auto & node : nodes)
+            {
+                auto nvalue = quiescence(node.board, node.hash, a, b).first;
+                if(nvalue > value){
+                    value = nvalue;
+                    best_turn = node.turn;
+                }
+
+                a = std::max(a,value);
+                if(b <= a)
+                    break;
+            }
+        } else {
+            value = T::Max();
+            for( auto & node : nodes)
+            {
+                auto nvalue = quiescence(node.board, node.hash,a, b).first;
+                if(nvalue < value){
+                    value = nvalue;
+                    best_turn = node.turn;
+                }
+
+                b = std::min(b,value);
+                if(b <= a)
+                    break;
+            }
+        }
+
+        /*
+        TransPositionTable::Element element;
+        element.best_turn = best_turn;
+        element.board = bitboard;
+        element.depth = depth;
+        element.value = value;
+
+        table_.Write(element,hash);
+        */
+
+        return {value,best_turn};
+    }
+
     std::pair<T,Turn> alphabeta(const BitBoard& bitboard , const bitboard_hash_t hash, const int depth, T a, T b)
     {
         /*
@@ -59,8 +145,14 @@ class AlphaBeta
                 return {T::Tie(),Turn()};
             else
                 return {bitboard.CurrentColor() == color_ ? T::CheckMateLose(depth) : T::CheckMateWin(depth),Turn()};
-        else if(depth == 0)
-            return {T::Approximate(bitboard, color_),Turn()};
+        else if(depth == 0){
+            stat_.Approximation();
+            auto approx = T::Approximate(bitboard, color_);
+            auto static_eval = quiescence(bitboard,hash,std::max(a,approx),b);
+            return static_eval;
+
+
+        }
 /*
         if(hashed.has_value()){
             auto best_hashed = hashed.value().best_turn;
@@ -131,8 +223,8 @@ public:
     {
     }
 
-    T GetValue(const BitBoard &board, int depth){
-        return alphabeta(board,board.Hash(),depth,T::Min(),T::Max()).first;
+    T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()){
+        return alphabeta(board,board.Hash(),depth,a,b).first;
     }
 
     Turn GetBestTurn(const BitBoard &board, int depth){

@@ -33,6 +33,17 @@ Turn Computer::GetBestTurn()
     return ab.GetBestTurn(match_.GetBoard(), 6);
 }
 
+void Computer::LoadMarks(std::vector<std::pair<MainAppraiser, Turn>> &turns)
+{
+    AlphaBeta<MainAppraiser> ab(color_,stat_, table_);
+
+    for(Turn turn : match_.GetBoard().GenerateTurns(match_.GetBoard().CurrentColor())){
+        auto subboard = match_.GetBoard();
+        subboard.ExecuteTurn(turn);
+        turns.push_back({ab.GetValue(subboard,0),turn});
+    }
+}
+
 Statistics Computer::GetStatistics()
 {
     return stat_;

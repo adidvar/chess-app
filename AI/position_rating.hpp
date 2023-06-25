@@ -80,6 +80,9 @@ class MainAppraiser{
          20, 30, 10,  0,  0, 10, 30, 20
     };
 
+    constexpr static int defended_pawn_bonus = 9;
+    constexpr static int doubled_pawn_punishment = 11;
+
     static int CalculateBonus(bitboard_t map, const int bonus[], Color color)
     {
         int value = 0;
@@ -97,10 +100,10 @@ class MainAppraiser{
 
     int value_;
 
-    MainAppraiser(int value):
-        value_(value){}
 
 public:
+    MainAppraiser(int value):
+        value_(value){}
 
     bool operator < (const MainAppraiser &value) const {
         return value_ < value.value_;
@@ -151,6 +154,24 @@ public:
         auto bmap = board.AttackMask(Color::kBlack) & ~board.GetColorBitBoard(Color::kBlack);
         value -= movementbonus * count_1s(bmap);
 
+        for(int i = 0; i < 8; ++i)
+        {
+            auto white_pawns = board.GetBitBoard(Color::kWhite,Figure::kPawn) & rows[i];
+            auto black_pawns = board.GetBitBoard(Color::kBlack,Figure::kPawn) & rows[i];
+            if(count_1s(white_pawns) > 1)
+                value -= doubled_pawn_punishment;
+            if(count_1s(black_pawns) > 1)
+                value += doubled_pawn_punishment;
+        }
+
+        auto wpawns = board.GetBitBoard(Color::kWhite,Figure::kPawn);
+        auto wsafe_pawns = (((wpawns << 9) & wpawns) >> 9) | (((wpawns << 7) & wpawns) >> 7);
+        value += defended_pawn_bonus*count_1s(wsafe_pawns);
+
+        auto bpawns = board.GetBitBoard(Color::kBlack,Figure::kPawn);
+        auto bsafe_pawns = (((bpawns << 9) & bpawns) >> 9) | (((bpawns << 7) & bpawns) >> 7);
+        value -= defended_pawn_bonus*count_1s(bsafe_pawns);
+
         value += CalculateBonus(board.GetBitBoard(Color::kWhite,Figure::kPawn),pawn_bonus,Color::kWhite);
         value -= CalculateBonus(board.GetBitBoard(Color::kBlack,Figure::kPawn),pawn_bonus,Color::kBlack);
 
@@ -191,10 +212,14 @@ public:
     {
         return MainAppraiser(-range);
     };
-    std::string ToString(size_t depth)
+    std::string ToString()
     {
         return std::to_string(value_);
     };
+
+    int operator -(const MainAppraiser&m){
+       return value_ - m.value_;
+    }
 };
 
 

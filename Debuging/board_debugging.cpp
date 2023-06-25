@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <openingsbase.hpp>
+#include <position_rating.hpp>
 
 uint64_t read_mask()
 {
@@ -79,13 +80,16 @@ int main()
         cout << i+1 <<  '/' <<  pathes.size() << endl;
     }
     */
+    std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w - - 0 1"),Color::kWhite).ToString() << std::endl;
 
+    /*
     OpeningsBase base;
     Match match;
     match.Push(Turn::FromChessFormat("a2a4"));
     auto nexts = base.FindNext(match);
     for(auto turn : nexts)
         std::cout << turn.ToChessFormat() << std::endl;
+        */
 
     return 0;
 }
