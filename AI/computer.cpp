@@ -30,7 +30,7 @@ Turn Computer::GetBestTurn()
     table_.Clear();
     assert(color_ == match_.GetBoard().CurrentColor());
     AlphaBeta<MainAppraiser> ab(color_,stat_, table_);
-    return ab.GetBestTurn(match_.GetBoard(), 6);
+    return ab.GetBestTurn(match_.GetBoard(), 5);
 }
 
 void Computer::LoadMarks(std::vector<std::pair<MainAppraiser, Turn>> &turns)

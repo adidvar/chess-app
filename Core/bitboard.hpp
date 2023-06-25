@@ -240,9 +240,10 @@ public:
 
     bitboard_hash_t Hash() const;
 
-    std::vector<BitBoardTuple> GenerateTuplesFast(Color color, uint64_t from = kall, uint64_t to = kall) const;
+    static std::vector<BitBoardTuple> GenerateTuplesFast(BitBoardTuple tuple, Color color, uint64_t from = kall, uint64_t to = kall);
 
     static Turn GetTurn(const BitBoard &from, const BitBoard& to, Color color);
+    static bitboard_hash_t GetHash(const BitBoard &board, bitboard_hash_t hash, Turn turn);
     static std::vector<Turn> GenerateTurns(const BitBoard &main, const std::vector<BitBoard>& subboards, Color color);
     static std::vector<bitboard_hash_t> GenerateHashes(const BitBoard &main, const std::vector<BitBoard>& subboards);
 

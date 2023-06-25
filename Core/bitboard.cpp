@@ -818,15 +818,16 @@ bitboard_t GetElpassantHash(Position position);
     return hash;
 }
 
-std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(Color color, uint64_t from, uint64_t to) const
+std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(BitBoardTuple tuple, Color color, uint64_t from, uint64_t to)
 {
-    auto boards = GenerateSubBoards(color,from,to);
+    auto boards = tuple.board.GenerateSubBoards(color,from,to);
 
     std::vector<BitBoardTuple> tuples;
     tuples.reserve(boards.size());
 
     for(auto &board : boards){
-        tuples.push_back({ board,0,GetTurn(*this,board,color) });
+        auto turn = GetTurn(tuple.board,board,color);
+        tuples.push_back({ board,GetHash(tuple.board,tuple.hash,turn),turn});
     }
 
     return tuples;
@@ -850,6 +851,25 @@ Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard, Color co
     else {
         return Turn(log2_64(from),log2_64(to));
     }
+}
+
+bitboard_hash_t BitBoard::GetHash(const BitBoard &board, bitboard_hash_t hash, Turn turn)
+{
+    /*
+    auto from = board.GetCell(turn.from());
+    auto to = board.GetCell(turn.to());
+    hash ^= GetFigureHash(from.type,from.color,turn.from());
+    if(to.type != Figure::kEmpty)
+        hash ^= GetFigureHash(to.type,to.color,turn.to());
+    hash ^= GetFigureHash(from.type,from.color,turn.to());
+
+    if(from.type == Figure::kPawn && to.type == Figure::kEmpty && turn.from().x() != turn.to().x())
+    {
+
+    }
+
+    */
+    return hash;
 }
 
 std::vector<Turn> BitBoard::GenerateTurns(const BitBoard &main, const std::vector<BitBoard> &subboards, Color color)
