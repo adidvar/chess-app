@@ -3,67 +3,48 @@
 
 #include <inttypes.h>
 
-
 ///  Тип данних для зберігання фігур
 /// \brief Типи фігур
-class Figure
-{
-    uint8_t value_;
-public:
-    static constexpr uint8_t kEmpty = 0; ///<Пуста клітинка
-    static constexpr uint8_t kPawn = 1; ///< Пішка
-    static constexpr uint8_t kKnight = 2; ///< Кінь
-    static constexpr uint8_t kBishop = 3;///< Офіцер
-    static constexpr uint8_t kRook = 4; ///< Тура
-    static constexpr uint8_t kQueen = 5;///< Королева
-    static constexpr uint8_t kKing = 6; ///< Король
+class Figure {
+  uint8_t value_;
 
-    Figure(uint8_t value) noexcept:
-        value_(value)
-    {
-    }
+ public:
+  static constexpr uint8_t kEmpty = 0;   ///< Пуста клітинка
+  static constexpr uint8_t kPawn = 1;    ///< Пішка
+  static constexpr uint8_t kKnight = 2;  ///< Кінь
+  static constexpr uint8_t kBishop = 3;  ///< Офіцер
+  static constexpr uint8_t kRook = 4;    ///< Тура
+  static constexpr uint8_t kQueen = 5;   ///< Королева
+  static constexpr uint8_t kKing = 6;    ///< Король
 
-    Figure() noexcept:
-        value_(kEmpty)
-    {
-    }
+  Figure(uint8_t value) noexcept : value_(value) {}
 
-    operator uint8_t() const noexcept{
-        return value_;
-    }
+  Figure() noexcept : value_(kEmpty) {}
 
-    bool Valid() const noexcept{
-        return value_ >=kEmpty && value_ <=kKing;
-    }
+  operator uint8_t() const noexcept { return value_; }
 
-    constexpr static uint8_t Max() { return 7;};
+  bool Valid() const noexcept { return value_ >= kEmpty && value_ <= kKing; }
+
+  constexpr static uint8_t Max() { return 7; };
 };
 
 /// \brief Тип данних для зберігання кольору фігури
 /// Описує кольори фігур
 
-class Color
-{
-    uint8_t value_;
-public:
-    static constexpr uint8_t kWhite = 0; ///<Пуста клітинка
-    static constexpr uint8_t kBlack = 1; ///< Пішка
+class Color {
+  uint8_t value_;
 
-    Color(uint8_t value) noexcept:
-        value_(value)
-    {
-    }
+ public:
+  static constexpr uint8_t kWhite = 0;  ///< Пуста клітинка
+  static constexpr uint8_t kBlack = 1;  ///< Пішка
 
-    Color() noexcept:
-        value_(kWhite)
-    {
-    }
+  Color(uint8_t value) noexcept : value_(value) {}
 
-    operator uint8_t() const noexcept{
-        return value_;
-    }
+  Color() noexcept : value_(kWhite) {}
 
-    constexpr static uint8_t Max() { return 2;};
+  operator uint8_t() const noexcept { return value_; }
+
+  constexpr static uint8_t Max() { return 2; };
 };
 
-#endif // FIGURES_H
+#endif  // FIGURES_H

@@ -1,86 +1,77 @@
 #ifndef MATCH_H
 #define MATCH_H
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #include "bitboard.hpp"
 #include "turn.hpp"
 
+class Match {
+ public:
+  enum Result_t { WhiteWin, BlackWin, Tie, Unknown };
 
-class Match
-{
-public:
+  Match();
+  Match(const Match &) = default;
+  Match(Match &&from) = default;
+  ~Match();
 
-    enum Result_t
-    {
-        WhiteWin,
-        BlackWin,
-        Tie,
-        Unknown
-    };
+  bool Push(Turn turn);
+  bool Surrender(Color color);
 
-    Match();
-    Match(const Match&) = default;
-    Match(Match &&from) = default;
-    ~Match();
+  std::vector<Turn> GetTurns() const;
+  void SetTurns(const std::vector<Turn> &turns);
+  BitBoard GetBoard() const;
+  void SetBoard(const BitBoard &board);
+  BitBoard GetStartBoard() const;
+  void SetStartBoard(const BitBoard &board);
 
-    bool Push(Turn turn);
-    bool Surrender(Color color);
+  bool HaveOpTag(const std::string &name) const;
+  std::string GetOpTagValue(const std::string &name) const;
+  void AddOpTag(const std::string &name, const std::string &value);
 
-    std::vector<Turn> GetTurns() const;
-    void SetTurns(const std::vector<Turn> &turns);
-    BitBoard GetBoard() const;
-    void SetBoard(const BitBoard& board);
-    BitBoard GetStartBoard() const;
-    void SetStartBoard(const BitBoard& board);
+  std::string Event() const;
+  void setEvent(const std::string &newEvent);
 
-    bool HaveOpTag(const std::string &name) const;
-    std::string GetOpTagValue(const std::string &name) const;
-    void AddOpTag(const std::string& name, const std::string& value);
+  std::string Site() const;
+  void setSite(const std::string &newSite);
 
-    std::string Event() const;
-    void setEvent(const std::string &newEvent);
+  std::string Date() const;
+  void setDate(const std::string &newDate);
 
-    std::string Site() const;
-    void setSite(const std::string &newSite);
+  std::string Round() const;
+  void setRound(const std::string &newRound);
 
-    std::string Date() const;
-    void setDate(const std::string &newDate);
+  std::string White() const;
+  void setWhite(const std::string &newWhite);
 
-    std::string Round() const;
-    void setRound(const std::string &newRound);
+  std::string Black() const;
+  void setBlack(const std::string &newBlack);
 
-    std::string White() const;
-    void setWhite(const std::string &newWhite);
+  Result_t GetResult() const;
+  void SetResult(Result_t value);
 
-    std::string Black() const;
-    void setBlack(const std::string &newBlack);
+  void LoadFromUCIString(const std::string &line);
 
-    Result_t GetResult() const;
-    void SetResult(Result_t value);
+ private:
+  std::string event_;
+  std::string site_;
+  std::string date_;
+  std::string round_;
+  std::string white_;
+  std::string black_;
+  Result_t result_ = Unknown;
 
-    void LoadFromUCIString(const std::string &line);
+  std::unordered_map<std::string, std::string> optags_;
 
-private:
-
-    std::string event_;
-    std::string site_;
-    std::string date_;
-    std::string round_;
-    std::string white_;
-    std::string black_;
-    Result_t result_ = Unknown;
-
-    std::unordered_map<std::string,std::string> optags_;
-
-    std::vector<Turn> turns_;
-    BitBoard startboard_;
-    BitBoard endboard_;
+  std::vector<Turn> turns_;
+  BitBoard startboard_;
+  BitBoard endboard_;
 };
 
-Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board);
-std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos);
+Turn ParseAndExecuteTurn(std::string_view data, BitBoard &board);
+std::pair<std::vector<Turn>, BitBoard> ParseTurns(std::string_view data,
+                                                  BitBoard start_pos);
 std::vector<Match> LoadFromPGN(std::string text);
 
-#endif // MATCH_H
+#endif  // MATCH_H

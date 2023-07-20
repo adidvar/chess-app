@@ -1,9 +1,9 @@
 #ifndef ZOBRIST_HPP
 #define ZOBRIST_HPP
 
+#include <bitboard.hpp>
 #include <figures.hpp>
 #include <position.hpp>
-#include <bitboard.hpp>
 
 bitboard_t GetFigureHash(Figure figure, Color color, Position position);
 bitboard_t GetShortCastlingFlagHash(Color color);
