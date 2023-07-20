@@ -54,6 +54,15 @@ std::string LoadFile(std::filesystem::path path){
 int main()
 {
 
+    BitBoard board;
+
+    auto begin = std::chrono::high_resolution_clock::now();
+    for(int i = 0 ; i < 2000000 ; ++i)
+        board = BitBoard(board.Fen());
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::duration<float>>(end-begin).count() << std::endl;
+
+
     //std::cout << read_mask();
     /*
     std::ios_base::sync_with_stdio(false);
@@ -80,7 +89,7 @@ int main()
         cout << i+1 <<  '/' <<  pathes.size() << endl;
     }
     */
-    std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w - - 0 1"),Color::kWhite).ToString() << std::endl;
+    //std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w - - 0 1"),Color::kWhite).ToString() << std::endl;
 
     /*
     OpeningsBase base;

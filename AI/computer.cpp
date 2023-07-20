@@ -1,6 +1,7 @@
 #include "computer.hpp"
 #include "alphabeta.hpp"
 
+/*
 Computer::Computer(Match &match, Color color):
     match_(match),
     table_(),
@@ -9,10 +10,6 @@ Computer::Computer(Match &match, Color color):
 }
 
 Computer::~Computer()
-{
-}
-
-void Computer::Start()
 {
 }
 
@@ -33,18 +30,8 @@ Turn Computer::GetBestTurn()
     return ab.GetBestTurn(match_.GetBoard(), 5);
 }
 
-void Computer::LoadMarks(std::vector<std::pair<MainAppraiser, Turn>> &turns)
-{
-    AlphaBeta<MainAppraiser> ab(color_,stat_, table_);
-
-    for(Turn turn : match_.GetBoard().GenerateTurns(match_.GetBoard().CurrentColor())){
-        auto subboard = match_.GetBoard();
-        subboard.ExecuteTurn(turn);
-        turns.push_back({ab.GetValue(subboard,0),turn});
-    }
-}
-
 Statistics Computer::GetStatistics()
 {
     return stat_;
 }
+*/

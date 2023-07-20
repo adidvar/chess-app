@@ -11,8 +11,6 @@ constexpr static bitboard_t krooking_masks[2][2]{
     { 0_b+2_b+3_b+4_b     , 4_b+5_b+6_b+7_b    }
 };
 
-
-
 const char* BitBoard::kStartPosition_ = u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const BitBoard BitBoard::kStartBitBoard_ = BitBoard(BitBoard::kStartPosition_);
 
@@ -25,8 +23,7 @@ BitBoard::BitBoard():
 BitBoard::BitBoard(std::string_view fen):
 board_{{0},{0}}
 {
-    FenLoader<BitBoard> tools(*this);
-    tools.LoadFromFen(fen);
+    LoadFromFen(fen,*this);
 
     all_[Color::kWhite] = all_[Color::kBlack] = 0;
 
@@ -43,8 +40,7 @@ board_{{0},{0}}
 
 std::string BitBoard::Fen() const
 {
-    FenSaver<BitBoard> tools(*this);
-    return tools.SaveToFen();
+    return SaveToFen(*this);
 }
 
 Color BitBoard::CurrentColor() const noexcept
@@ -57,7 +53,7 @@ Color BitBoard::OpponentColor() const noexcept
     return !current_player_color_;
 }
 
-BitBoard::RookingFlags_t BitBoard::RookingFlags() const noexcept
+BitBoard::RookingFlagsT BitBoard::RookingFlags() const noexcept
 {
     return rooking_flags_;
 }
@@ -69,13 +65,17 @@ Position BitBoard::LastPawnMove() const noexcept
 
 void BitBoard::Set(Position position, Cell cell) ///< Записує фігуру
 {
-    for(size_t i = 1 ; i < Figure::Max() ; i++)
-    {
-        board_[Color::kWhite][i] &= ~((bitboard_t)1<<position.Value());
-        board_[Color::kBlack][i] &= ~((bitboard_t)1<<position.Value());
-    }
+    bitboard_t mask = PositionToBitMask(position);
 
-    board_[cell.color][cell.type] |= ((bitboard_t)1<<position.Value());
+    if(all_[Color::kWhite] & mask)
+		for (size_t i = 1; i < Figure::Max(); i++)
+			board_[Color::kWhite][i] &= ~mask;
+
+    if(all_[Color::kBlack] & mask)
+		for (size_t i = 1; i < Figure::Max(); i++)
+			board_[Color::kBlack][i] &= ~mask;
+
+    board_[cell.color][cell.type] |= mask;
 
     all_[Color::kWhite] = all_[Color::kBlack] = 0;
 
@@ -86,6 +86,20 @@ void BitBoard::Set(Position position, Cell cell) ///< Записує фігур�
     }
 
     board_[Color::kWhite][Figure::kEmpty] = board_[Color::kBlack][Figure::kEmpty] = ~(all_[Color::kWhite] | all_[Color::kBlack]);
+}
+
+void BitBoard::SetCurrentColor(Color color){
+    current_player_color_ = color;
+}
+
+void BitBoard::SetRookingFlags(RookingFlagsT flags)
+{
+    rooking_flags_ = flags;
+}
+
+void BitBoard::SetLastPawnMove(Position lp)
+{
+    last_pawn_move_ = lp;
 }
 
 void BitBoard::Swap(Position p1, Position p2)
@@ -888,7 +902,7 @@ bool BitBoard::operator ==(const BitBoard &board) const
     bitboard_t all_[Color::Max()];
 
     //additional state
-    RookingFlags_t rooking_flags_;
+    RookingFlagsT rooking_flags_;
     Color current_player_color_;
     Position last_pawn_move_;
 

@@ -86,7 +86,7 @@ std::string Turn::ToChessFormat() const
 {
     if(!Valid())
     {
-         return "NULL TURN";
+         return "0000";
     }
     else if(figure_ == Figure::kEmpty)
     {

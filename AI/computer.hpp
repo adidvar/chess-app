@@ -13,35 +13,26 @@
 
 #include <transpositiontable.hpp>
 
-/*
-struct callback_t
-{
-     std::function<void(size_t )> next_stage_done;
-     std::function<void(size_t )> finished;
-};
-*/
-
 class Computer{
-
-    const Match &match_;
-    const Color color_;
-
-    TransPositionTable table_;
+    Match match_;
 
     Statistics stat_;
 public:
-    Computer(Match &match, Color color);
+    Computer();
     ~Computer();
 
-    void Start();
+    void Position(const Match &match);
+    void NewGame();
+
+    void Go();
 
     void Wait();
     bool Ready();
 
     Turn GetBestTurn();
-    void LoadMarks(std::vector<std::pair<MainAppraiser, Turn>> &turns);
 
     Statistics GetStatistics();
+
 };
 
 

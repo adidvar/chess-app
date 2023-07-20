@@ -11,14 +11,10 @@ file(GLOB files
      "*.cpp"
 )
 
-add_library(AI ${files})
+add_executable(UCI ${files})
 
-target_include_directories(AI PUBLIC  .)
+target_include_directories(UCI PUBLIC  .)
 
-target_link_libraries(AI ChessCore)
-
-add_subdirectory("Benchmark")
-
-add_subdirectory("UCI")
+target_link_libraries(UCI ChessCore AI)
 
 

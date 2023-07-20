@@ -6,11 +6,10 @@
 #include <list>
 #include <vector>
 
-#include "boardtools.hpp"
+#include "parsingtools.hpp"
 #include "position.hpp"
 #include "figures.hpp"
 #include "turn.hpp"
-
 
 using bitboard_t = uint64_t;
 using bitboard_hash_t = uint64_t;
@@ -21,6 +20,10 @@ constexpr bitboard_t operator ""_b(bitboard_t num){
 
 constexpr bitboard_t PositionToBitMask(bitboard_t num){
     return (bitboard_t)1 << num;
+}
+
+constexpr bitboard_t PositionToBitMask(Position position){
+    return (bitboard_t)1 << position.Value();
 }
 
 struct BitBoardTuple;
@@ -57,19 +60,14 @@ constexpr static bitboard_t kall = ~(bitboard_t(0));
  */
 class BitBoard
 {
-    static const char* kStartPosition_;
-    static const BitBoard kStartBitBoard_;
-
-    friend class FenLoader<BitBoard>;
-    friend class FenSaver<BitBoard>;
-
+public:
     struct Cell
     {
         Figure type;
         Color color;
     };
 
-    struct RookingFlags_t
+    struct RookingFlagsT
     {
         bool white_ooo:1;
         bool white_oo:1;
@@ -77,12 +75,17 @@ class BitBoard
         bool black_oo:1;
     };
 
+private:
+    static const char* kStartPosition_;
+    static const BitBoard kStartBitBoard_;
+
+
     //bitboards
     bitboard_t board_[Color::Max()][Figure::Max()];
     bitboard_t all_[Color::Max()];
 
     //additional state
-    RookingFlags_t rooking_flags_;
+    RookingFlagsT rooking_flags_;
     Color current_player_color_;
     Position last_pawn_move_;
 
@@ -109,13 +112,19 @@ public:
     BitBoard(std::string_view fen_line); ///< fen парсер карт
     ~BitBoard() = default;
     BitBoard& operator =(const BitBoard& b) noexcept = default; ///<Оператор присвоєння
-
     /**
      * @brief Set set a figure on a place
      * @param position where we place
      * @param cell what we place
      */
     void Set(Position position, Cell cell); ///< Записує фігуру
+
+    void SetCurrentColor(Color color);
+
+    void SetRookingFlags(RookingFlagsT flags);
+
+    void SetLastPawnMove(Position lp);
+
     /**
      * @brief Swap swaps two figures
      */
@@ -148,7 +157,7 @@ public:
      * @brief RookingFlags return flags of possible castling
      * @return struct with flags
      */
-    RookingFlags_t RookingFlags() const noexcept;
+    RookingFlagsT RookingFlags() const noexcept;
     /**
      * @brief LastPawnMove return last pawn move for el passant
      * @return position, that last pawn move go through
