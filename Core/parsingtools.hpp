@@ -9,12 +9,10 @@
 class BitBoard;
 class Match;
 
-void LoadFromFen(std::string_view fen , BitBoard& board);
+void LoadFromFen(std::string_view fen , BitBoard& board, size_t &index);
 std::string SaveToFen(BitBoard board);
 
+std::string_view ReadUntillDelims(std::string_view data, const std::vector<char> &seperators, size_t &index);
 std::vector<std::string_view> SplitByDelims(std::string_view data, const std::vector<char> &seperators);
-std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos);
-Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board);
-std::vector<Match> LoadFromPGN(std::string text);
 
 #endif

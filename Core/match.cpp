@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include "debug.hpp"
 #include <magic.hpp> 
 
 struct TagsParserError{
@@ -34,15 +33,15 @@ bool Match::Push(Turn turn)
 {
     if(result_ != Unknown)
         return false;
-    if(board_.ExecuteTurn(turn))
+    if(endboard_.ExecuteTurn(turn))
     {
         turns_.push_back(turn);
 
-        if(board_.WhiteWin())
+        if(endboard_.WhiteWin())
             result_ = WhiteWin;
-        else if(board_.BlackWin())
+        else if(endboard_.BlackWin())
             result_ = BlackWin;
-        else if(board_.Tie())
+        else if(endboard_.Tie())
             result_ = Tie;
 
         return true;
@@ -74,12 +73,22 @@ void Match::SetTurns(const std::vector<Turn> &turns)
 
 BitBoard Match::GetBoard() const
 {
-    return board_;
+    return endboard_;
 }
 
 void Match::SetBoard(const BitBoard &board)
 {
-    board_ = board;
+    endboard_ = board;
+}
+
+BitBoard Match::GetStartBoard() const
+{
+    return startboard_;
+}
+
+void Match::SetStartBoard(const BitBoard &board)
+{
+    startboard_ = board;
 }
 
 bool Match::HaveOpTag(const std::string& name) const
@@ -166,6 +175,17 @@ Match::Result_t Match::GetResult() const
 void Match::SetResult(Result_t value)
 {
     result_ = value;
+}
+
+void Match::LoadFromUCIString(const std::string &line)
+{
+    size_t index = 0;
+    LoadFromFen(line,startboard_,index);
+    auto turns = SplitByDelims(line.substr(index),{' '});
+    endboard_ = startboard_;
+    for(auto turn : turns)
+        if(!endboard_.ExecuteTurn(Turn::FromChessFormat(turn)))
+            throw("error");
 }
 
 using Tags =  std::unordered_map<std::string,std::string>;
@@ -355,28 +375,6 @@ Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board)
     }
 }
 
-std::vector<std::string_view> SplitByDelims(std::string_view data, const std::vector<char> &seperators){
-
-    std::vector<std::string_view> turns_pre;
-    turns_pre.reserve(100);
-
-    size_t index = 0;
-    size_t last = 0;
-    while (index != data.size()) {
-        for (auto sep : seperators)
-            if (data[index] == sep) {
-                if (index != last) {
-                   turns_pre.push_back(data.substr(last, index - last));
-                }
-                last = index+1;
-                break;
-            }
-        index++;
-    }
-    turns_pre.push_back(data.substr(last));
-
-    return turns_pre;
-}
 
 std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos){
 
@@ -431,7 +429,7 @@ Match ReadMatch(std::string_view data, size_t & index){
     return match;
 }
 
-std::vector<Match> Match::LoadFromPGN(std::string text)
+std::vector<Match> LoadFromPGN(std::string text)
 {
     std::vector<Match> matches;
     size_t len = 0;

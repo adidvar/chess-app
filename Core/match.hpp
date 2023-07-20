@@ -32,6 +32,8 @@ public:
     void SetTurns(const std::vector<Turn> &turns);
     BitBoard GetBoard() const;
     void SetBoard(const BitBoard& board);
+    BitBoard GetStartBoard() const;
+    void SetStartBoard(const BitBoard& board);
 
     bool HaveOpTag(const std::string &name) const;
     std::string GetOpTagValue(const std::string &name) const;
@@ -58,7 +60,8 @@ public:
     Result_t GetResult() const;
     void SetResult(Result_t value);
 
-    static std::vector<Match> LoadFromPGN(std::string text);
+    void LoadFromUCIString(const std::string &line);
+
 private:
 
     std::string event_;
@@ -72,11 +75,12 @@ private:
     std::unordered_map<std::string,std::string> optags_;
 
     std::vector<Turn> turns_;
-    BitBoard board_;
+    BitBoard startboard_;
+    BitBoard endboard_;
 };
 
 Turn ParseAndExecuteTurn(std::string_view data, BitBoard& board);
-std::vector<std::string_view> SplitByDelims(std::string_view data, const std::vector<char> &seperators);
 std::pair<std::vector<Turn>,BitBoard> ParseTurns(std::string_view data, BitBoard start_pos);
+std::vector<Match> LoadFromPGN(std::string text);
 
 #endif // MATCH_H

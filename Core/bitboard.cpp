@@ -23,7 +23,8 @@ BitBoard::BitBoard():
 BitBoard::BitBoard(std::string_view fen):
 board_{{0},{0}}
 {
-    LoadFromFen(fen,*this);
+    size_t index = 0;
+    LoadFromFen(fen,*this,index);
 
     all_[Color::kWhite] = all_[Color::kBlack] = 0;
 
