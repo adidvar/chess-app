@@ -835,16 +835,6 @@ std::vector<Turn> BitBoard::GenerateTurns(
 }
 
 bool BitBoard::operator==(const BitBoard &board) const {
-  bitboard_t board_[Color::Max()][Figure::Max()];
-  bitboard_t all_[Color::Max()];
-
-  // additional state
-  RookingFlagsT rooking_flags_;
-  Color current_player_color_;
-  Position last_pawn_move_;
-
-  if (current_player_color_ != board.current_player_color_) return false;
-
   if (rooking_flags_.black_oo != board.rooking_flags_.black_oo) return false;
 
   if (rooking_flags_.black_ooo != board.rooking_flags_.black_ooo) return false;

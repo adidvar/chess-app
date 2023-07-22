@@ -1,10 +1,21 @@
 #include "parsingtools.hpp"
 
+#include <algorithm>
 #include <bitboard.hpp>
 #include <sstream>
 #include <stdexcept>
 
 void LoadFromFen(std::string_view fen, BitBoard &board_, size_t &index) {
+  std::string_view start = "startpos";
+  auto miss =
+      std::mismatch(fen.cbegin(), fen.cend(), start.cbegin(), start.cend());
+
+  if (miss.second == start.cend()) {
+    board_ = BitBoard();
+    index = miss.second - start.cbegin();
+    return;
+  }
+
   for (size_t i = 0; i < Position::Max(); i++)
     board_.Set(i, {Figure::kEmpty, Color::kWhite});
 
@@ -141,6 +152,7 @@ void LoadFromFen(std::string_view fen, BitBoard &board_, size_t &index) {
     }
   }
   board_.SetRookingFlags(rooking_flags_);
+  index = i;
 }
 
 std::string SaveToFen(BitBoard board_) {
@@ -235,23 +247,11 @@ std::string_view ReadUntillDelims(std::string_view data,
 
 std::vector<std::string_view> SplitByDelims(
     std::string_view data, const std::vector<char> &seperators) {
-  std::vector<std::string_view> turns_pre;
-  turns_pre.reserve(100);
+  std::vector<std::string_view> parts;
 
   size_t index = 0;
-  size_t last = 0;
-  while (index != data.size()) {
-    for (auto sep : seperators)
-      if (data[index] == sep) {
-        if (index != last) {
-          turns_pre.push_back(data.substr(last, index - last));
-        }
-        last = index + 1;
-        break;
-      }
-    index++;
-  }
-  turns_pre.push_back(data.substr(last));
+  while (index < data.size())
+    parts.push_back(ReadUntillDelims(data, seperators, index));
 
-  return turns_pre;
+  return parts;
 }

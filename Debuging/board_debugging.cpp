@@ -51,19 +51,40 @@ std::string LoadFile(std::filesystem::path path){
     return string;
 }
 
-int main()
-{
+#include "debug.hpp"
+#include "parsingtools.hpp"
 
-    BitBoard board;
+int main() {
+    std::string line;
+    std::getline(std::cin, line);
+    BitBoard startboard_;
+    BitBoard endboard_;
 
-    auto begin = std::chrono::high_resolution_clock::now();
-    for(int i = 0 ; i < 2000000 ; ++i)
-        board = BitBoard(board.Fen());
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::duration<float>>(end-begin).count() << std::endl;
+    size_t index = 0;
+    LoadFromFen(line, startboard_, index);
+    auto turnsstr = line.substr(index);
+    auto turns = SplitByDelims(turnsstr, {' ', '\t', '\n', '\r'});
+    endboard_ = startboard_;
+    for (std::string_view turnstr : turns) {
+        Turn turn = ParseAndExecuteTurn(turnstr, endboard_);
+    }
 
+    PrintBoard(startboard_);
+    PrintBoard(endboard_);
 
-    //std::cout << read_mask();
+    /*
+      BitBoard board;
+
+      auto begin = std::chrono::high_resolution_clock::now();
+      for(int i = 0 ; i < 2000000 ; ++i)
+          board = BitBoard(board.Fen());
+      auto end = std::chrono::high_resolution_clock::now();
+      std::cout <<
+      std::chrono::duration_cast<std::chrono::duration<float>>(end-begin).count()
+      << std::endl;
+  */
+
+    // std::cout << read_mask();
     /*
     std::ios_base::sync_with_stdio(false);
     using namespace std;
@@ -85,11 +106,14 @@ int main()
         std::copy(match.begin(), match.end(), std::back_inserter(matches));
         auto end = std::chrono::high_resolution_clock::now() - begin;
         cout << "Loaded: " << match.size() << " matches  ";
-        cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1,1>>>(end).count() << " s" << endl;
-        cout << i+1 <<  '/' <<  pathes.size() << endl;
+        cout << "Time: " <<
+    std::chrono::duration_cast<std::chrono::duration<float,
+    std::ratio<1,1>>>(end).count() << " s" << endl; cout << i+1 <<  '/' <<
+    pathes.size() << endl;
     }
     */
-    //std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w - - 0 1"),Color::kWhite).ToString() << std::endl;
+    // std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w -
+    // - 0 1"),Color::kWhite).ToString() << std::endl;
 
     /*
     OpeningsBase base;

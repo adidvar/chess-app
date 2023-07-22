@@ -100,10 +100,12 @@ void Match::SetResult(Result_t value) { result_ = value; }
 void Match::LoadFromUCIString(const std::string &line) {
   size_t index = 0;
   LoadFromFen(line, startboard_, index);
-  auto turns = SplitByDelims(line.substr(index), {' '});
+  auto turnsstr = line.substr(index);
+  auto turns = SplitByDelims(turnsstr, {' ', '\t', '\n', '\r'});
   endboard_ = startboard_;
-  for (auto turn : turns)
-    if (!endboard_.ExecuteTurn(Turn::FromChessFormat(turn))) throw("error");
+  for (std::string_view turnstr : turns) {
+    Turn turn = ParseAndExecuteTurn(turnstr, endboard_);
+  }
 }
 
 using Tags = std::unordered_map<std::string, std::string>;
