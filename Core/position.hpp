@@ -25,10 +25,10 @@
 +--+--+--+--+--+--+--+--+
 */
 
+/**
+ * @brief The Position class describes chess position
+ */
 class Position {
-  static constexpr uint8_t kerror_pos_ = 64;
-  uint8_t index_;
-
  public:
   Position(uint8_t x, uint8_t y) noexcept {
     if (x > 7 || y > 7)
@@ -89,6 +89,11 @@ class Position {
   }
 
   constexpr static uint8_t Max() { return kerror_pos_; };
+
+ private:
+  uint8_t index_;
+
+  static constexpr uint8_t kerror_pos_ = 64;
 };
 
 #endif  // POSITIONS_H

@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+/*
 OpeningsBase::OpeningsBase() {
   std::vector<std::filesystem::path> pathes;
   for (auto &&dir : std::filesystem::recursive_directory_iterator("."))
@@ -54,3 +55,4 @@ std::vector<Turn> OpeningsBase::FindNext(const Match &match) const {
   }
   return std::vector<Turn>(turns.begin(), turns.end());
 }
+*/

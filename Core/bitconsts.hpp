@@ -53,9 +53,6 @@ constexpr static const bitboard_t lines[8]{line_1, line_2, line_3, line_4,
                                            line_5, line_6, line_7, line_8};
 
 struct BitIterator {
-  bitboard_t value_;
-  bitboard_t bit_;
-
   constexpr BitIterator(bitboard_t value) : value_(value), bit_(0) {
     operator++();
   }
@@ -71,4 +68,7 @@ struct BitIterator {
     value_ &= ~bit_;
   }
   constexpr bool Valid() { return bit_ != 0; }
+
+  bitboard_t value_;
+  bitboard_t bit_;
 };

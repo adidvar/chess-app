@@ -14,10 +14,6 @@
  * 2) Хід пішкою з вибором фігури
  */
 class Turn {
-  Position from_;
-  Position to_;
-  Figure figure_;
-
  public:
   /**
    * @brief Пустий хід
@@ -43,6 +39,7 @@ class Turn {
 
   Turn& operator=(const Turn& b) noexcept = default;
   Turn& operator=(Turn&& b) noexcept = default;
+
   bool operator==(const Turn& turn) const;
   bool operator<(const Turn& turn) const;
 
@@ -65,6 +62,11 @@ class Turn {
   static Turn FromChessFormat(std::string_view string);
   static Turn GetShortCastling(Color color);
   static Turn GetLongCastling(Color color);
+
+ private:
+  Position from_;
+  Position to_;
+  Figure figure_;
 };
 
 #endif  // TURN_H

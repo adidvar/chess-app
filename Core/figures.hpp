@@ -7,8 +7,6 @@
  * @brief The Figure class describes a chess figure
  */
 class Figure {
-  uint8_t value_;
-
  public:
   static constexpr uint8_t kEmpty = 0;   ///< Empty figure
   static constexpr uint8_t kPawn = 1;    ///< Pawn
@@ -27,6 +25,9 @@ class Figure {
   bool Valid() const noexcept { return value_ >= kEmpty && value_ <= kKing; }
 
   constexpr static uint8_t Max() { return 7; };
+
+ private:
+  uint8_t value_;
 };
 
 /**

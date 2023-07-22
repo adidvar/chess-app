@@ -69,9 +69,6 @@ class Match {
   BitBoard endboard_;
 };
 
-Turn ParseAndExecuteTurn(std::string_view data, BitBoard &board);
-std::pair<std::vector<Turn>, BitBoard> ParseTurns(std::string_view data,
-                                                  BitBoard start_pos);
 std::vector<Match> LoadFromPGN(std::string text);
 
 #endif  // MATCH_H
