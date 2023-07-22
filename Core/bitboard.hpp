@@ -6,145 +6,84 @@
 #include <list>
 #include <vector>
 
+#include "bitconsts.hpp"
 #include "figures.hpp"
 #include "position.hpp"
 #include "turn.hpp"
 
-using bitboard_t = uint64_t;
-using bitboard_hash_t = uint64_t;
-
-constexpr bitboard_t operator""_b(bitboard_t num) {
-  return (bitboard_t)1 << num;
-}
-
-constexpr bitboard_t PositionToBitMask(bitboard_t num) {
-  return (bitboard_t)1 << num;
-}
-
-constexpr bitboard_t PositionToBitMask(Position position) {
-  return (bitboard_t)1 << position.Value();
-}
-
 struct BitBoardTuple;
-
-struct BitIterator {
-  bitboard_t value_;
-  bitboard_t bit_;
-
-  constexpr BitIterator(bitboard_t value) : value_(value), bit_(0) {
-    operator++();
-  }
-
-  constexpr bitboard_t Value() const { return value_; }
-  constexpr bitboard_t Bit() const { return bit_; }
-  constexpr void operator=(bitboard_t value) {
-    value_ = value;
-    operator++();
-  }
-  constexpr void operator++() {
-    bit_ = value_ ^ ((value_ - 1) & value_);
-    value_ &= ~bit_;
-  }
-  constexpr bool Valid() { return bit_ != 0; }
-};
-
-constexpr static bitboard_t kall = ~(bitboard_t(0));
-
 /**
- * @brief class is board representation using bitboards
- *
+ * @brief class of a board implemented with magic bitboards
  */
 class BitBoard {
  public:
+  /**
+   * @brief The Cell class contains info about bitboard cell
+   */
   struct Cell {
     Figure type;
     Color color;
   };
-
+  /**
+   * @brief The RookingFlagsT class contains info about rooking state of
+   * bitboard
+   */
   struct RookingFlagsT {
     bool white_ooo : 1;
     bool white_oo : 1;
     bool black_ooo : 1;
     bool black_oo : 1;
   };
-
- private:
-  static const char *kStartPosition_;
-  static const BitBoard kStartBitBoard_;
-
-  // bitboards
-  bitboard_t board_[Color::Max()][Figure::Max()];
-  bitboard_t all_[Color::Max()];
-
-  // additional state
-  RookingFlagsT rooking_flags_;
-  Color current_player_color_;
-  Position last_pawn_move_;
-
-  void GenerateSubBoards(Color color, std::vector<BitBoard> &,
-                         uint64_t from = kall, uint64_t to = kall) const;
-
-  void Move(bitboard_t from, bitboard_t to, Color color,
-            Figure type);  // recalculates all_ and empty bitboads
-  void Attack(bitboard_t from, bitboard_t to, Color color,
-              Figure type);  // recalculates all_ and empty bitboads
-  void Transform(bitboard_t sq, Color color, Figure from,
-                 Figure to);  // recalculates all_ and empty bitboads
-
-  template <typename Type>
-  void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards,
-                     Color color, bitboard_t from_mask, bitboard_t to_mask,
-                     bitboard_t all, bitboard_t yours,
-                     bitboard_t opponent) const;
-
-  template <typename Type>
-  bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all,
-                           bitboard_t yours, bitboard_t opponent) const;
-
-  bool OpponentMateTest() const;
-
- public:
+  /**
+   * @brief AttackMask return mask of positions we can move or attack
+   * @param color color of figures we use
+   * @return mask
+   */
   bitboard_t AttackMask(Color color) const;
   /**
-   * @brief BitBoard construct class using fen string
-   * @param fen_line string with fen
+   * @brief BitBoard construct class with startpos
    */
-  BitBoard();                           ///< fen парсер карт
-  BitBoard(std::string_view fen_line);  ///< fen парсер карт
-  ~BitBoard() = default;
-  BitBoard &operator=(const BitBoard &b) noexcept =
-      default;  ///< Оператор присвоєння
+  BitBoard();
+  /**
+   * @brief BitBoard construct class with fen line
+   * @param fen_line fen line
+   */
+  BitBoard(std::string_view fen_line);
+  /**
+   * @brief operator = default operator =
+   */
+  BitBoard &operator=(const BitBoard &b) noexcept = default;
   /**
    * @brief Set set a figure on a place
    * @param position where we place
    * @param cell what we place
    */
-  void Set(Position position, Cell cell);  ///< Записує фігуру
-
+  void Set(Position position, Cell cell);
+  /**
+   * @brief SetCurrentColor set current color variable
+   */
   void SetCurrentColor(Color color);
-
+  /**
+   * @brief SetRookingFlags set rooking flags state
+   */
   void SetRookingFlags(RookingFlagsT flags);
-
-  void SetLastPawnMove(Position lp);
-
+  /**
+   * @brief SetLastPawnMove set el passant state
+   */
+  void SetLastPawnMove(Position last_pawn_move);
   /**
    * @brief Swap swaps two figures
    */
-  void Swap(Position p1, Position p2);  ///< Змінює фігури місцями
+  void Swap(Position p1, Position p2);
   /**
    * @brief SkipMove skips current move
    */
-  void SkipMove();  //< Пропускає хід
-
+  void SkipMove();
   /**
    * @brief Fen return fen line of a board
    * @return fen line
    */
   std::string Fen() const;
-
-  BitBoard(const BitBoard &) noexcept = default;
-  BitBoard(BitBoard &&) noexcept = default;
-
   /**
    * @brief CurrentColor return current color
    * @return current color
@@ -234,14 +173,29 @@ class BitBoard {
    */
   bool Tie() const;
   /**
-   * @brief GenerateSubBoards returns all possible subboards
+   * @brief GenerateSubBoards returns all valid subboards
+   * @param color color
+   * @param from from mask
+   * @param to to mask
+   * @return vector of bitboards
    */
   std::vector<BitBoard> GenerateSubBoards(Color color, uint64_t from = kall,
                                           uint64_t to = kall) const;
+  /**
+   * @brief GenerateSubBoards returns all valid subboards
+   * @param boards vector for boards placement
+   * @param color color
+   * @param from from mask
+   * @param to to mask
+   */
   void GenerateSubBoards(std::vector<BitBoard> &boards, Color color,
                          uint64_t from = kall, uint64_t to = kall) const;
   /**
    * @brief GenerateTurns returns all possible turns
+   * @param color color
+   * @param from from mask
+   * @param to to mask
+   * @return vector of turns
    */
   std::vector<Turn> GenerateTurns(Color color, uint64_t from = kall,
                                   uint64_t to = kall) const;
@@ -256,15 +210,43 @@ class BitBoard {
    * @return true if ok, otherwise false
    */
   bool TestTurn(Turn turn) const;
-
+  /**
+   * @brief Hash returns zobrist hash of bitboard
+   * @return hash
+   *
+   * to see a realization go zobrist.hpp
+   */
   bitboard_hash_t Hash() const;
 
+  /**
+   * @brief GenerateTuplesFast generates subboards subturns and subhashes
+   * @param tuple input tuple
+   * @param color color
+   * @param from from mask
+   * @param to to mask
+   * @return array of tuples
+   * @attention function is much faster than split generation
+   */
   static std::vector<BitBoardTuple> GenerateTuplesFast(BitBoardTuple tuple,
                                                        Color color,
                                                        uint64_t from = kall,
                                                        uint64_t to = kall);
 
+  /**
+   * @brief GetTurn generates a turn from two boards
+   * @param from board before turn
+   * @param to board after turn
+   * @param color color of current player
+   * @return turn
+   */
   static Turn GetTurn(const BitBoard &from, const BitBoard &to, Color color);
+  /**
+   * @brief GetHash generates hash from a board its hash and a turn
+   * @param board a board
+   * @param the hash hash of board
+   * @param turn the turn
+   * @return the hash of sub board
+   */
   static bitboard_hash_t GetHash(const BitBoard &board, bitboard_hash_t hash,
                                  Turn turn);
   static std::vector<Turn> GenerateTurns(const BitBoard &main,
@@ -275,6 +257,41 @@ class BitBoard {
 
   bool operator==(const BitBoard &board) const;
   bool operator!=(const BitBoard &board) const;
+
+ private:
+  static const char *kStartPosition_;
+  static const BitBoard kStartBitBoard_;
+
+  // bitboards
+  bitboard_t board_[Color::Max()][Figure::Max()];
+  bitboard_t all_[Color::Max()];
+
+  // additional state
+  RookingFlagsT rooking_flags_;
+  Color current_player_color_;
+  Position last_pawn_move_;
+
+  void GenerateSubBoards(Color color, std::vector<BitBoard> &,
+                         uint64_t from = kall, uint64_t to = kall) const;
+
+  void Move(bitboard_t from, bitboard_t to, Color color,
+            Figure type);  // recalculates all_ and empty bitboads
+  void Attack(bitboard_t from, bitboard_t to, Color color,
+              Figure type);  // recalculates all_ and empty bitboads
+  void Transform(bitboard_t sq, Color color, Figure from,
+                 Figure to);  // recalculates all_ and empty bitboads
+
+  template <typename Type>
+  void ProcessFigure(const BitBoard &parrent, std::vector<BitBoard> &boards,
+                     Color color, bitboard_t from_mask, bitboard_t to_mask,
+                     bitboard_t all, bitboard_t yours,
+                     bitboard_t opponent) const;
+
+  template <typename Type>
+  bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all,
+                           bitboard_t yours, bitboard_t opponent) const;
+
+  bool OpponentMateTest() const;
 };
 
 struct BitBoardTuple {

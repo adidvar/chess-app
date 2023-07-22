@@ -8,10 +8,6 @@
 #include "parsingtools.hpp"
 #include "zobrist.hpp"
 
-constexpr static bitboard_t krooking_masks[2][2]{
-    {56_b + 58_b + 59_b + 60_b, 60_b + 61_b + 62_b + 63_b},
-    {0_b + 2_b + 3_b + 4_b, 4_b + 5_b + 6_b + 7_b}};
-
 const char *BitBoard::kStartPosition_ =
     u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const BitBoard BitBoard::kStartBitBoard_ = BitBoard(BitBoard::kStartPosition_);
