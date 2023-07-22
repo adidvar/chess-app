@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#include <position.hpp>
+#include "position.hpp"
 
 using bitboard_t = uint64_t;
 using bitboard_hash_t = uint64_t;

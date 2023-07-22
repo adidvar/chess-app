@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <magic.hpp>
 #include <map>
 
+#include "magic.hpp"
 #include "parsingtools.hpp"
 
 struct TagsParserError {};

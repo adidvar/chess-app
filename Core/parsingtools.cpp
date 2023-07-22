@@ -1,9 +1,10 @@
 #include "parsingtools.hpp"
 
 #include <algorithm>
-#include <bitboard.hpp>
 #include <sstream>
 #include <stdexcept>
+
+#include "bitboard.hpp"
 
 void LoadFromFen(std::string_view fen, BitBoard &board_, size_t &index) {
   std::string_view start = "startpos";

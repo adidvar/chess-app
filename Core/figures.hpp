@@ -3,19 +3,20 @@
 
 #include <inttypes.h>
 
-///  Тип данних для зберігання фігур
-/// \brief Типи фігур
+/**
+ * @brief The Figure class describes a chess figure
+ */
 class Figure {
   uint8_t value_;
 
  public:
-  static constexpr uint8_t kEmpty = 0;   ///< Пуста клітинка
-  static constexpr uint8_t kPawn = 1;    ///< Пішка
-  static constexpr uint8_t kKnight = 2;  ///< Кінь
-  static constexpr uint8_t kBishop = 3;  ///< Офіцер
-  static constexpr uint8_t kRook = 4;    ///< Тура
-  static constexpr uint8_t kQueen = 5;   ///< Королева
-  static constexpr uint8_t kKing = 6;    ///< Король
+  static constexpr uint8_t kEmpty = 0;   ///< Empty figure
+  static constexpr uint8_t kPawn = 1;    ///< Pawn
+  static constexpr uint8_t kKnight = 2;  ///< Knight
+  static constexpr uint8_t kBishop = 3;  ///< Bishop
+  static constexpr uint8_t kRook = 4;    ///< Rook
+  static constexpr uint8_t kQueen = 5;   ///< Queen
+  static constexpr uint8_t kKing = 6;    ///< King
 
   Figure(uint8_t value) noexcept : value_(value) {}
 
@@ -28,15 +29,15 @@ class Figure {
   constexpr static uint8_t Max() { return 7; };
 };
 
-/// \brief Тип данних для зберігання кольору фігури
-/// Описує кольори фігур
-
+/**
+ * @brief The Color class describes a chess figure color
+ */
 class Color {
   uint8_t value_;
 
  public:
-  static constexpr uint8_t kWhite = 0;  ///< Пуста клітинка
-  static constexpr uint8_t kBlack = 1;  ///< Пішка
+  static constexpr uint8_t kWhite = 0;  ///< White
+  static constexpr uint8_t kBlack = 1;  ///< Black
 
   Color(uint8_t value) noexcept : value_(value) {}
 

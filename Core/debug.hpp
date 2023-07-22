@@ -2,7 +2,8 @@
 #define DEBUG_HPP
 
 #include <iostream>
-#include <position.hpp>
+
+#include "position.hpp"
 
 template <class T>
 void PrintBoard(const T& board) {

@@ -1,5 +1,6 @@
 ﻿#ifndef TURN_H
 #define TURN_H
+
 #include <string>
 
 #include "figures.hpp"
@@ -12,8 +13,7 @@
  * 1) Звичайних хід
  * 2) Хід пішкою з вибором фігури
  */
-
-class alignas(4) Turn {
+class Turn {
   Position from_;
   Position to_;
   Figure figure_;

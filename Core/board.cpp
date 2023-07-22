@@ -1,7 +1,8 @@
 #include "board.hpp"
-#include <stdexcept>
-#include <sstream>
+
 #include <cassert>
+#include <sstream>
+#include <stdexcept>
 
 /*
 
