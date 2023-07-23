@@ -1,41 +1,49 @@
 #ifndef ASYNCIO_HPP
 #define ASYNCIO_HPP
 
+#include <atomic>
+#include <fstream>
 #include <functional>
 #include <iostream>
-
-#include <string>
-#include <queue>
-#include <optional>
-#include <sstream>
-#include <functional>
-
 #include <mutex>
+#include <optional>
+#include <queue>
+#include <sstream>
+#include <string>
 #include <thread>
+
+#include "parsingtools.hpp"
 
 struct Command{
     std::string name;
     std::vector<std::string> parameters;
+    std::string parameters_line;
 };
 
 class Asyncio
 {
-    Command ReadCommand(){
+    Command ReadCommand() {
+      const static std::vector<char> del = {' ', '\t'};
 
-        Command command;
+      Command command;
 
-        std::string line;
-        std::getline(std::cin,line);
+      std::string line;
+      std::getline(std::cin, line);
 
-        std::stringstream ss(line);
-        ss >> command.name;
+      size_t index = 0;
+      command.name = ReadUntillDelims(line, del, index);
 
-        while(ss.good()){
-            command.parameters.push_back({});
-            ss >> command.parameters.back();
-        }
+      command.parameters_line = line.substr(index);
 
-        return command;
+      while (index != line.size()) {
+        command.parameters.push_back({});
+        command.parameters.back() = ReadUntillDelims(line, del, index);
+      }
+
+      log_ << line;
+      log_.flush();
+
+      return command;
     }
 
     void CinThread(){
@@ -49,11 +57,10 @@ class Asyncio
         }
     }
 
-public:
-    Asyncio():
-        exit_flag_{0},
-        cin_thread_(std::bind(&Asyncio::CinThread,this))
-    {
+   public:
+    Asyncio()
+        : exit_flag_{0}, cin_thread_(std::bind(&Asyncio::CinThread, this)) {
+        log_.open("log.txt", std::ios_base::app);
     };
     ~Asyncio(){
         exit(0);
@@ -73,7 +80,7 @@ private:
     std::mutex mutex_;
     std::queue<Command> commands_;
     std::thread cin_thread_;
-
+    std::ofstream log_;
 };
 
 #endif

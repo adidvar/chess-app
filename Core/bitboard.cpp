@@ -1,5 +1,6 @@
 #include "bitboard.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <stdexcept>
@@ -776,7 +777,8 @@ std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(BitBoardTuple tuple,
 
   for (auto &board : boards) {
     auto turn = GetTurn(tuple.board, board, color);
-    tuples.push_back({board, GetHash(tuple.board, tuple.hash, turn), turn});
+    tuples.push_back(
+        {board, GetHash(tuple.board, tuple.hash, turn, board), turn});
   }
 
   return tuples;
@@ -801,8 +803,7 @@ Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard,
 }
 
 bitboard_hash_t BitBoard::GetHash(const BitBoard &board, bitboard_hash_t hash,
-                                  Turn turn) {
-  /*
+                                  Turn turn, const BitBoard &sub) {
   auto from = board.GetCell(turn.from());
   auto to = board.GetCell(turn.to());
   hash ^= GetFigureHash(from.type,from.color,turn.from());
@@ -810,13 +811,17 @@ bitboard_hash_t BitBoard::GetHash(const BitBoard &board, bitboard_hash_t hash,
       hash ^= GetFigureHash(to.type,to.color,turn.to());
   hash ^= GetFigureHash(from.type,from.color,turn.to());
 
-  if(from.type == Figure::kPawn && to.type == Figure::kEmpty && turn.from().x()
-  != turn.to().x())
-  {
-
+  if (from.type == Figure::kPawn && to.type == Figure::kEmpty &&
+      turn.from().x() != turn.to().x()) {
+      return sub.Hash();
+  }
+  if (turn.IsCastling()) {
+      return sub.Hash();
+  }
+  if (turn.IsTrasformation()) {
+      return sub.Hash();
   }
 
-  */
   return hash;
 }
 

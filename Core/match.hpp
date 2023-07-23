@@ -16,6 +16,8 @@ class Match {
   Match(Match &&from) = default;
   ~Match();
 
+  Match &operator=(const Match &match) = default;
+
   bool Push(Turn turn);
   bool Surrender(Color color);
 

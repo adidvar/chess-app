@@ -1,39 +1,41 @@
 #ifndef COMPUTER_HPP
 #define COMPUTER_HPP
 
-#include "statistics.hpp"
-#include <thread>
-#include <mutex>
 #include <condition_variable>
-
-#include <match.hpp>
-#include <position_rating.hpp>
 #include <functional>
-#include <openingsbase.hpp>
+#include <future>
+#include <mutex>
+#include <thread>
 
-#include <transpositiontable.hpp>
+#include "match.hpp"
+#include "openingsbase.hpp"
+#include "position_rating.hpp"
+#include "statistics.hpp"
+#include "transpositiontable.hpp"
 
 class Computer{
-    Match match_;
+ public:
+  Computer();
+  ~Computer();
 
-    Statistics stat_;
-public:
-    Computer();
-    ~Computer();
+  void NewGame();
+  void Position(const Match &match);
 
-    void Position(const Match &match);
-    void NewGame();
+  void Go();
 
-    void Go();
+  void Wait();
+  bool Ready();
 
-    void Wait();
-    bool Ready();
+  Turn GetBestTurn();
 
-    Turn GetBestTurn();
+  Statistics GetStatistics();
 
-    Statistics GetStatistics();
+ private:
+  Match match_;
 
+  Statistics stat_;
+
+  std::future<Turn> turn_future_;
 };
-
 
 #endif

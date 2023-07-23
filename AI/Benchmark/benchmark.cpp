@@ -1,12 +1,12 @@
+#include <alphabeta.hpp>
+#include <chrono>
+#include <computer.hpp>
 #include <iostream>
+#include <match.hpp>
+#include <mateevaluator.hpp>
 #include <minmax.hpp>
 #include <position_rating.hpp>
 #include <statistics.hpp>
-#include <mateevaluator.hpp>
-#include <chrono>
-#include <alphabeta.hpp>
-#include <match.hpp>
-#include <computer.hpp>
 
 template <typename T>
 std::string pt(T t){
@@ -44,11 +44,14 @@ int main(){
         auto result = ab.GetValue(board,5);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
-        std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
-        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
+        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result - MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
+        std::cout << "Depth: " << 5 << std::endl;
+        std::cout << "Result: "
+                  << result - MainAppraiser::Approximate(board, Color::kWhite)
+                  << std::endl;
     }
     {
         stat.Clear();
@@ -56,11 +59,14 @@ int main(){
         auto result = ab.GetValue(board,6);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
-        std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
-        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
+        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result- MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
+        std::cout << "Depth: " << 6 << std::endl;
+        std::cout << "Result: "
+                  << result - MainAppraiser::Approximate(board, Color::kWhite)
+                  << std::endl;
     }
     {
         stat.Clear();
@@ -68,11 +74,14 @@ int main(){
         auto result = ab.GetValue(board,7);
         auto delay = std::chrono::high_resolution_clock::now() - begin;
 
-        std::cout << "Nodes: " << stat.GetGeneration() << std::endl;
-        std::cout << "Approximation: " << stat.GetApproximation() << std::endl;
+        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
+        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
         std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
         std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Result: " << result- MainAppraiser::Approximate(board,Color::kWhite) << std::endl;
+        std::cout << "Depth: " << 7 << std::endl;
+        std::cout << "Result: "
+                  << result - MainAppraiser::Approximate(board, Color::kWhite)
+                  << std::endl;
     }
 
     /*

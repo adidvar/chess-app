@@ -1,6 +1,8 @@
 #include "turn.hpp"
 
+#include <algorithm>
 #include <sstream>
+#include <tuple>
 
 const static Turn white_long_castling(60, 58), black_long_castling(4, 2),
     white_short_castling(60, 62), black_short_castling(4, 6);

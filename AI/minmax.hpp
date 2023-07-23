@@ -12,7 +12,6 @@ class MinMax
 
     T minimax(const BitBoard& bitboard, size_t depth)
     {
-        stat_.Generation();
         auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
         bool zero_moves = (nodes.size() == 0);
@@ -24,7 +23,6 @@ class MinMax
             return bitboard.CurrentColor() == color_ ? T::CheckMateLose(depth) : T::CheckMateWin(depth);
         } else if(depth == 0){
 
-            stat_.Approximation();
             auto approx = T::Approximate(bitboard, color_);
 
             return approx;

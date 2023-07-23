@@ -97,8 +97,12 @@ void Match::LoadFromUCIString(const std::string &line) {
   auto turnsstr = line.substr(index);
   auto turns = SplitByDelims(turnsstr, {' ', '\t', '\n', '\r'});
   endboard_ = startboard_;
-  for (std::string_view turnstr : turns) {
-    turns_.push_back(ParseAndExecuteTurn(turnstr, endboard_));
+  if (turns.size() != 0 && turns.front() == "moves") {
+    turns.erase(turns.cbegin());
+    for (std::string_view turnstr : turns) {
+      auto turn = Turn::FromChessFormat(turnstr);
+      if (!endboard_.ExecuteTurn(turn)) throw LexicalParserError{};
+    }
   }
 }
 

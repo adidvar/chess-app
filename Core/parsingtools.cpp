@@ -307,7 +307,7 @@ std::string_view ReadBlock(std::string_view data, size_t &index) {
   return result;
 }
 */
-
+// TO DO nf3 is detected like a pawn move
 Turn ParseAndExecuteTurn(std::string_view data, BitBoard &board) {
   if (data.size() < 2) throw LexicalParserError();
 

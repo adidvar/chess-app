@@ -52,7 +52,7 @@ class BitBoard {
   /**
    * @brief operator = default operator =
    */
-  BitBoard &operator=(const BitBoard &b) noexcept = default;
+  // BitBoard &operator=(const BitBoard &b) noexcept = default;
   /**
    * @brief Set set a figure on a place
    * @param position where we place
@@ -248,7 +248,7 @@ class BitBoard {
    * @return the hash of sub board
    */
   static bitboard_hash_t GetHash(const BitBoard &board, bitboard_hash_t hash,
-                                 Turn turn);
+                                 Turn turn, const BitBoard &sub);
   static std::vector<Turn> GenerateTurns(const BitBoard &main,
                                          const std::vector<BitBoard> &subboards,
                                          Color color);

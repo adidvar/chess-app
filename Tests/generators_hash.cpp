@@ -27,7 +27,6 @@ static size_t MovesCounter(BitBoard board,size_t depth){
 
 using TestType = BitBoard;
 
-/*
 TEST_CASE( "Boards hash generation test", "[bitboard][board][fen]"){
    REQUIRE(TestType("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 1").GenerateTurns(0).size() == 5);
    REQUIRE(TestType("8/8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8 w - - 0 1").GenerateTurns(0).size() == 8);
@@ -67,5 +66,3 @@ TEST_CASE( "Boards hash generation advanced test", "[bitboard][board][fen]"){
    REQUIRE(MovesCounter(TestType("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"),7) == 567584);
    REQUIRE(MovesCounter(TestType("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"),4) == 23527);
 }
-
-*/
