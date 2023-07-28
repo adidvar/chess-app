@@ -754,8 +754,6 @@ bitboard_hash_t BitBoard::Hash() const {
 bitboard_t GetFigureHash(Figure figure, Color color, Position position);
 bitboard_t GetShortCastlingFlagHash(Color color);
 bitboard_t GetLongCastlingFlagHash(Color color);
-bitboard_t GetTurnCounterHash(int count);
-bitboard_t GetPassiveCountHash(int count);
 bitboard_t GetCurrentColorHash(Color color);
 bitboard_t GetElpassantHash(Position position);
 */
@@ -763,6 +761,7 @@ bitboard_t GetElpassantHash(Position position);
   for (size_t i = 0; i < 64; i++) {
     if (!TestEmp(i)) hash ^= GetFigureHash(GetFigure(i), GetColor(i), i);
   }
+
   return hash;
 }
 

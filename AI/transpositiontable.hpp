@@ -11,6 +11,8 @@
 struct SearchElement {
   bitboard_hash_t hash;
   std::pair<MainAppraiser, Turn> value = {MainAppraiser::Invalid(), Turn()};
+  MainAppraiser a = MainAppraiser::Invalid();
+  MainAppraiser b = MainAppraiser::Invalid();
   int depth;
 };
 
@@ -22,33 +24,44 @@ struct QSearchElement {
 template <class T>
 class BitBoardMap {
  public:
-  BitBoardMap(size_t size) : ksize_(size), table_(size), used_(size) {
-    Clear();
+  BitBoardMap() {
+    size_t mb = 64;
+    size_t bytes = mb * 1024 * 1024;
+    size_t size = bytes / sizeof(T);
+    table_.resize(size);
+    used_.resize(size);
   }
 
   std::optional<T> Find(bitboard_hash_t hash) {
-    if (used_[hash % ksize_] == false)
+    if (used_[hash % used_.size()] == false)
       return {};
     else
-      return table_[hash % ksize_];
+      return table_[hash % used_.size()];
   }
   void Write(bitboard_hash_t hash, const T &element) {
-    table_[hash % ksize_] = element;
-    used_[hash % ksize_] = true;
+    table_[hash % used_.size()] = element;
+    used_[hash % used_.size()] = true;
   }
 
   void Clear() {
-    for (size_t i = 0; i < ksize_; i++) used_[i] = false;
+    for (size_t i = 0; i < used_.size(); i++) used_[i] = false;
   }
 
-  int Count() {
+  int FillP() {
     int count = 0;
-    for (auto i : used_) count += i;
+    for (auto i : used_)
+      if (i == true) count++;
+    return (float)count / used_.size() * 100;
+  }
+
+  int FillC() {
+    int count = 0;
+    for (auto i : used_)
+      if (i == true) count++;
     return count;
   }
 
  private:
-  const size_t ksize_;
   std::vector<T> table_;
   std::vector<bool> used_;
 };
@@ -56,39 +69,19 @@ class BitBoardMap {
 //template<typename T>
 class TransPositionTable {
  public:
-  TransPositionTable(size_t size = 64000)
-      : search_table_(size), qsearch_table_(size) {}
+  TransPositionTable() {}
 
-  std::optional<QSearchElement> QSearch(bitboard_hash_t hash) {
-    auto elem = qsearch_table_.Find(hash);
-    if (elem.has_value()) {
-      if (elem.value().hash == hash)
-        return elem;
-      else
-        return {};
-    }
-    return {};
-  };
-  void QWrite(bitboard_hash_t hash, const QSearchElement &elem) {
-    qsearch_table_.Write(hash, elem);
-  };
-  std::optional<SearchElement> Search(bitboard_hash_t hash, int depth) {
-    auto elem = search_table_.Find(hash);
-    if (elem.has_value()) {
-      if (elem.value().hash == hash && elem->depth >= depth)
-        return elem;
-      else
-        return {};
-    }
-    return {};
+  std::optional<SearchElement> Search(bitboard_hash_t hash) {
+    return search_table_.Find(hash);
   };
   void Write(bitboard_hash_t hash, const SearchElement &elem) {
     search_table_.Write(hash, elem);
   };
+  int Fill() { return search_table_.FillP(); }
 
  private:
   BitBoardMap<SearchElement> search_table_;
-  BitBoardMap<QSearchElement> qsearch_table_;
+  // BitBoardMap<QSearchElement> qsearch_table_;
 };
 
 #endif

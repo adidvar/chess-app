@@ -33,56 +33,45 @@ int main(){
     //auto b = BitBoard("8/3K4/6q1/8/q7/4k3/8/8 w - - 0 1");
     //auto d = 5;
 
-    //auto board = BitBoard("r3k3/pppppppp/1nb2b1r/3q2n1/2Q1P3/2BN1NB1/PPPP1PPP/R3K2R w KQq - 0 1");
+    // auto board =
+    // BitBoard("r3k3/pppppppp/1nb2b1r/3q2n1/2Q1P3/2BN1NB1/PPPP1PPP/R3K2R w KQq
+    // - 0 1");
+    auto tbegin = std::chrono::high_resolution_clock::now();
     Statistics stat;
     TransPositionTable table;
-    AlphaBeta<MainAppraiser> ab(Color::kWhite,stat,table);
-    auto board = BitBoard("r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0 1");
-    {
-        stat.Clear();
-        auto begin = std::chrono::high_resolution_clock::now();
-        auto result = ab.GetValue(board,5);
-        auto delay = std::chrono::high_resolution_clock::now() - begin;
+    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
+    // auto board = BitBoard(
+    //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0
+    //     " "1");
+    //  auto board =
+    BitBoard board(
+        "3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30");
+    // auto board = BitBoard();
+    for (size_t d = 1; d <= 7; d++) {
+      stat.Clear();
+      auto begin = std::chrono::high_resolution_clock::now();
+      auto result = ab.GetValue(board, d);
+      auto delay = std::chrono::high_resolution_clock::now() - begin;
 
-        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
-        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
-        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
-        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Depth: " << 5 << std::endl;
-        std::cout << "Result: "
-                  << result - MainAppraiser::Approximate(board, Color::kWhite)
-                  << std::endl;
+      std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
+      std::cout << "Fill: " << table.Fill() << std::endl;
+      std::cout << "Time: "
+                << std::chrono::duration_cast<
+                       std::chrono::duration<float, std::ratio<1, 1>>>(delay)
+                       .count()
+                << std::endl;
+      std::cout << "Depth: " << d << std::endl;
+      std::cout << "Result: "
+                << result - MainAppraiser::Approximate(board, Color::kWhite)
+                << std::endl;
+      std::cout << "------------------------------------" << std::endl;
     }
-    {
-        stat.Clear();
-        auto begin = std::chrono::high_resolution_clock::now();
-        auto result = ab.GetValue(board,6);
-        auto delay = std::chrono::high_resolution_clock::now() - begin;
-
-        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
-        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
-        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
-        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Depth: " << 6 << std::endl;
-        std::cout << "Result: "
-                  << result - MainAppraiser::Approximate(board, Color::kWhite)
-                  << std::endl;
-    }
-    {
-        stat.Clear();
-        auto begin = std::chrono::high_resolution_clock::now();
-        auto result = ab.GetValue(board,7);
-        auto delay = std::chrono::high_resolution_clock::now() - begin;
-
-        std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
-        std::cout << "Approximation: " << stat.GetEndNode() << std::endl;
-        std::cout << "Extra: " << stat.GetExtraNode() << std::endl;
-        std::cout << "Time: " << std::chrono::duration_cast<std::chrono::duration<float,std::ratio<1,1>>>(delay).count() << std::endl;
-        std::cout << "Depth: " << 7 << std::endl;
-        std::cout << "Result: "
-                  << result - MainAppraiser::Approximate(board, Color::kWhite)
-                  << std::endl;
-    }
+    auto delay = std::chrono::high_resolution_clock::now() - tbegin;
+    std::cout << "Time: "
+              << std::chrono::duration_cast<
+                     std::chrono::duration<float, std::ratio<1, 1>>>(delay)
+                     .count()
+              << std::endl;
 
     /*
     BitBoard board("8/8/2q2P1N/1P6/8/p1Q2B2/8/8 w - - 0 1");

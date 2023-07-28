@@ -46,8 +46,6 @@ class AlphaBeta
 {
     std::pair<T, Turn> quiescence(const BitBoardTuple &tuple, T a, T b) {
       stat_.ExtraNode();
-      // auto hashed = table_.QSearch(tuple.hash);
-      // if (hashed.has_value()) return hashed.value().value;
 
       auto stand_pat = T::Approximate(tuple.board, color_);
       if (stand_pat >= b) return {b, Turn()};
@@ -66,21 +64,6 @@ class AlphaBeta
 
       if (nodes.size() == 0) return {stand_pat, Turn()};
 
-      /*
-              if(hashed.has_value()){
-                  auto best_hashed = hashed.value().best_turn;
-
-                  for(size_t i = 0 ; i < nodes.size() ; ++i)
-                      if(nodes[i].turn == best_hashed){
-                          std::swap(nodes[i],nodes[0]);
-                          break;
-                      }
-
-                  ReOrder(bitboard,nodes.rbegin(),nodes.rend()-1);
-              }
-              else
-              */
-
       ReOrder(tuple.board, nodes.rbegin(), nodes.rend());
 
       T value = T::Invalid();
@@ -112,29 +95,23 @@ class AlphaBeta
         }
       }
 
-      /*
-      TransPositionTable::Element element;
-      element.best_turn = best_turn;
-      element.board = bitboard;
-      element.depth = depth;
-      element.value = value;
-
-      table_.Write(element,hash);
-      */
-      // QSearchElement elem;
-      // elem.hash = tuple.hash;
-      // elem.value = {value, best_turn};
-      // table_.QWrite(tuple.hash, elem);
-
       return {value, best_turn};
     }
 
     std::pair<T, Turn> alphabeta(const BitBoardTuple &tuple, const int depth,
                                  T a, T b) {
-      // auto hashed = table_.Search(tuple.hash, depth);
-      // if (hashed.has_value()) return hashed.value().value;
+      auto hashed = table_.Search(tuple.hash);
+      if (hashed.has_value() && hashed->hash == tuple.hash) {
+        /*
+        if (hashed->value.first <= hashed->a) b = std::min(b, hashed->a);
+        if (hashed->value.first >= hashed->b) a = std::max(a, hashed->b);
+*/
+        if (hashed->value.first > hashed->a &&
+            hashed->value.first < hashed->b && hashed->depth >= depth)
+          return hashed->value;
+      }
 
-      stat_.MainNode();
+      /*
       if (depth == 1) {
         auto stand_pat = T::Approximate(tuple.board, color_);
         if (stand_pat >= b) return {b, Turn()};
@@ -145,13 +122,7 @@ class AlphaBeta
           return {a, Turn()};
         }
       }
-
-      /*
-      auto hashed = table_.Find(hash,bitboard);
-      if(hashed.has_value() && hashed.value().depth >= depth){
-          return {hashed.value().value,hashed.value().best_turn};
-      }
-      */
+*/
 
       auto nodes =
           tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
@@ -166,11 +137,11 @@ class AlphaBeta
       else if (depth == 0) {
         auto approx = T::Approximate(tuple.board, color_);
         auto static_eval = quiescence(tuple, std::max(a, approx), b);
+        // return {approx, Turn()};
         return static_eval;
       }
-
-      /*
-      if (hashed.has_value()) {
+      stat_.MainNode();
+      if (hashed.has_value() && tuple.board.OpponentColor() == color_) {
         auto best_hashed = hashed.value().value.second;
 
         for (size_t i = 0; i < nodes.size(); ++i)
@@ -181,8 +152,7 @@ class AlphaBeta
 
         ReOrder(tuple.board, nodes.rbegin(), nodes.rend() - 1);
       } else
-*/
-      ReOrder(tuple.board, nodes.rbegin(), nodes.rend());
+        ReOrder(tuple.board, nodes.rbegin(), nodes.rend());
 
       T value = T::Invalid();
       Turn best_turn;
@@ -213,20 +183,17 @@ class AlphaBeta
         }
       }
 
-      /*
-      TransPositionTable::Element element;
-      element.best_turn = best_turn;
-      element.board = bitboard;
-      element.depth = depth;
-      element.value = value;
-
-      table_.Write(element,hash);
-      */
-      // SearchElement elem;
-      // elem.hash = tuple.hash;
-      // elem.value = {value, best_turn};
-      // elem.depth = depth;
-      // table_.Write(tuple.hash, elem);
+      if (!hashed.has_value() ||
+          (hashed->depth < depth && hashed->hash == tuple.hash) ||
+          (hashed->hash != tuple.hash)) {
+        SearchElement elem;
+        elem.hash = tuple.hash;
+        elem.value = {value, best_turn};
+        elem.depth = depth;
+        elem.a = a;
+        elem.b = b;
+        table_.Write(tuple.hash, elem);
+      }
 
       return {value, best_turn};
     }

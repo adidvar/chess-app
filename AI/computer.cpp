@@ -48,11 +48,22 @@ void Computer::Go() {
   turn_future_ = std::async(
       std::launch::async,
       [](Match match) {
-        Statistics stat_;
-        TransPositionTable table_;
-        AlphaBeta<MainAppraiser> ab(match.GetBoard().CurrentColor(), stat_,
-                                    table_);
-        return ab.GetBestTurn(match.GetBoard(), 3);
+        auto tbegin = std::chrono::high_resolution_clock::now();
+        Turn result;
+        Statistics stat;
+        TransPositionTable table;
+        AlphaBeta<MainAppraiser> ab(match.GetBoard().CurrentColor(), stat,
+                                    table);
+        auto board = match.GetBoard();
+        for (size_t d = 1; d <= 10; d++) {
+          stat.Clear();
+          result = ab.GetBestTurn(board, d);
+          auto dur = std::chrono::high_resolution_clock::now() - tbegin;
+          if (std::chrono::duration_cast<std::chrono::seconds>(dur) >
+              std::chrono::milliseconds{500})
+            break;
+        }
+        return result;
       },
       match_);
 }
