@@ -3,10 +3,11 @@
 #include <computer.hpp>
 #include <iostream>
 #include <match.hpp>
-#include <mateevaluator.hpp>
 #include <minmax.hpp>
 #include <position_rating.hpp>
 #include <statistics.hpp>
+
+#include "qsearch.hpp"
 
 template <typename T>
 std::string pt(T t){
@@ -39,21 +40,22 @@ int main(){
     auto tbegin = std::chrono::high_resolution_clock::now();
     Statistics stat;
     TransPositionTable table;
-    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
+    QSearch<MainAppraiser> ab(Color::kWhite, stat, table);
     // auto board = BitBoard(
     //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0
     //     " "1");
     //  auto board =
     BitBoard board(
-        "3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30");
+        "4k3/pppppppp/1bq4r/4n3/rNBN1Qn1/4B2R/PPPPPPPP/4K3 w - - 0 1");
     // auto board = BitBoard();
     for (size_t d = 1; d <= 7; d++) {
       stat.Clear();
       auto begin = std::chrono::high_resolution_clock::now();
-      auto result = ab.GetValue(board, d);
+      auto result = ab.GetValue(board);
       auto delay = std::chrono::high_resolution_clock::now() - begin;
 
       std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
+      std::cout << "ENodes: " << stat.GetExtraNode() << std::endl;
       std::cout << "Fill: " << table.Fill() << std::endl;
       std::cout << "Time: "
                 << std::chrono::duration_cast<

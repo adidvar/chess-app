@@ -51,10 +51,25 @@ std::string LoadFile(std::filesystem::path path){
     return string;
 }
 
+#include "alphabeta.hpp"
 #include "debug.hpp"
+#include "minmax.hpp"
 #include "parsingtools.hpp"
+#include "statistics.hpp"
+
+bool TestMateFind(const char* fen, int depth) {
+    Statistics stat;
+    auto result = MinMax<MainAppraiser>::Evaluate(BitBoard(fen), Color::kWhite,
+                                                  depth, stat);
+    std::cout << result.ToString() << std::endl;
+    std::cout << MainAppraiser::CheckMateLose(depth).ToString() << std::endl;
+    std::cout << MainAppraiser::CheckMateWin(depth).ToString() << std::endl;
+    return result == MainAppraiser::CheckMateLose(depth) ||
+           result == MainAppraiser::CheckMateWin(depth);
+}
 
 int main() {
+    /*
     std::string line;
     std::getline(std::cin, line);
     BitBoard startboard_;
@@ -71,6 +86,30 @@ int main() {
 
     PrintBoard(startboard_);
     PrintBoard(endboard_);
+*/
+
+    /*
+    TestMateFind(
+        "rn3r1k/p2q1p2/1p2p2p/3pP3/PbbNRQ2/5NP1/1P3PBP/R5K1 w - - 1 19", 2);
+*/
+
+    BitBoard board;
+    Statistics stat;
+    TransPositionTable table;
+    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
+    size_t av, bv;
+    std::cin >> av >> bv;
+    MainAppraiser a(av), b(bv);
+
+    auto begin = std::chrono::high_resolution_clock::now();
+    auto value = ab.GetValue(board, 8, a, b);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::duration<float>>(end -
+                                                                          begin)
+                     .count()
+              << std::endl;
+
+    std::cout << value.ToString() << std::endl;
 
     /*
       BitBoard board;
@@ -93,8 +132,8 @@ int main() {
     std::vector<Match> matches;
 
     for( auto && dir : filesystem::recursive_directory_iterator("matches"))
-        if(dir.is_regular_file() && dir.path().filename().extension() == ".pgn")
-            pathes.push_back(dir.path());
+        if(dir.is_regular_file() && dir.path().filename().extension() ==
+    ".pgn") pathes.push_back(dir.path());
 
 
     for(size_t i = 0 ; i < pathes.size() ; i++)
@@ -112,7 +151,8 @@ int main() {
     pathes.size() << endl;
     }
     */
-    // std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8 w -
+    // std::cout << MainAppraiser::Approximate(BitBoard("8/3P4/8/8/8/1p6/8/8
+    // w -
     // - 0 1"),Color::kWhite).ToString() << std::endl;
 
     /*

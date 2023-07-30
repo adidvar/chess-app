@@ -96,8 +96,8 @@ class MainAppraiser
     }
 
     //rangement
-    constexpr static int max_depth = 50;
-    constexpr static int range = 100000;
+    constexpr static int prange = 100000;
+    constexpr static int nrange = -prange;
 
     int value_;
 
@@ -138,11 +138,11 @@ public:
 
     static MainAppraiser CheckMateWin(int depth)
     {
-        return MainAppraiser(range - max_depth + depth);
+        return MainAppraiser(prange - depth - 1);
     };
     static MainAppraiser CheckMateLose(int depth)
     {
-        return MainAppraiser(-range + max_depth - depth);
+        return MainAppraiser(nrange + depth + 1);
     };
     static MainAppraiser Tie()
     {
@@ -211,14 +211,8 @@ public:
 
         return MainAppraiser{value};
     };
-    static MainAppraiser Max()
-    {
-        return MainAppraiser(range);
-    };
-    static MainAppraiser Min()
-    {
-        return MainAppraiser(-range);
-    };
+    static MainAppraiser Max() { return MainAppraiser(prange); };
+    static MainAppraiser Min() { return MainAppraiser(nrange); };
     std::string ToString()
     {
         return std::to_string(value_);

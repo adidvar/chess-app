@@ -99,7 +99,7 @@ class AlphaBeta
     }
 
     std::pair<T, Turn> alphabeta(const BitBoardTuple &tuple, const int depth,
-                                 T a, T b) {
+                                 const int max_depth, T a, T b) {
       auto hashed = table_.Search(tuple.hash);
       if (hashed.has_value() && hashed->hash == tuple.hash) {
         /*
@@ -131,8 +131,9 @@ class AlphaBeta
         if (!tuple.board.MateTest())
           return {T::Tie(), Turn()};
         else
-          return {tuple.board.CurrentColor() == color_ ? T::CheckMateLose(depth)
-                                                       : T::CheckMateWin(depth),
+          return {tuple.board.CurrentColor() == color_
+                      ? T::CheckMateLose(max_depth - depth)
+                      : T::CheckMateWin(max_depth - depth),
                   Turn()};
       else if (depth == 0) {
         auto approx = T::Approximate(tuple.board, color_);
@@ -160,7 +161,7 @@ class AlphaBeta
       if (tuple.board.CurrentColor() == color_) {
         value = T::Min();
         for (auto &node : nodes) {
-          auto nvalue = alphabeta(node, depth - 1, a, b).first;
+          auto nvalue = alphabeta(node, depth - 1, max_depth, a, b).first;
           if (nvalue > value) {
             value = nvalue;
             best_turn = node.turn;
@@ -172,7 +173,7 @@ class AlphaBeta
       } else {
         value = T::Max();
         for (auto &node : nodes) {
-          auto nvalue = alphabeta(node, depth - 1, a, b).first;
+          auto nvalue = alphabeta(node, depth - 1, max_depth, a, b).first;
           if (nvalue < value) {
             value = nvalue;
             best_turn = node.turn;
@@ -209,12 +210,13 @@ class AlphaBeta
     T GetValue(const BitBoard &board, int depth, T a = T::Min(),
                T b = T::Max()) {
       stat_.Clear();
-      return alphabeta({board, board.Hash(), Turn()}, depth, a, b).first;
+      return alphabeta({board, board.Hash(), Turn()}, depth, depth, a, b).first;
     }
 
     Turn GetBestTurn(const BitBoard &board, int depth) {
       stat_.Clear();
-      return alphabeta({board, board.Hash(), Turn()}, depth, T::Min(), T::Max())
+      return alphabeta({board, board.Hash(), Turn()}, depth, depth, T::Min(),
+                       T::Max())
           .second;
     }
 
