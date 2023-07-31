@@ -4,22 +4,8 @@
 #include <algorithm>
 #include <bitboard.hpp>
 #include <iostream>
+#include <ordering.hpp>
 #include <statistics.hpp>
-
-template <typename T>
-inline void ReOrderQ(const BitBoard &board, T begin, T end) {
-  std::sort(begin, end, [&](const BitBoardTuple &t1, const BitBoardTuple &t2) {
-    const static uint8_t order[] = {0, 10, 30, 30, 50, 90, 0};
-
-    if (order[board.GetFigure(t1.turn.to())] !=
-        order[board.GetFigure(t2.turn.to())])
-      return order[board.GetFigure(t1.turn.to())] <
-             order[board.GetFigure(t2.turn.to())];
-    else
-      return order[board.GetFigure(t1.turn.from())] <
-             order[board.GetFigure(t2.turn.from())];
-  });
-}
 
 template <typename T>
 class QSearch {
@@ -27,7 +13,7 @@ class QSearch {
   QSearch(Color color, Statistics &stat) : color_(color), stat_(stat) {}
 
   T GetValue(const BitBoard &board, T a = T::Min(), T b = T::Max()) {
-    auto approx = T::Approximate(board, color_);
+    auto approx = T::Value(board, color_);
     auto qvalue = qsearch({board, board.Hash(), Turn()}, a, b);
     return qvalue;
   }
@@ -41,10 +27,10 @@ class QSearch {
   T qsearch(const BitBoardTuple &tuple, T a, T b) {
     stat_.ExtraNode();
 
-    auto stand_pat = T::Approximate(tuple.board, color_);
+    auto stand_pat = T::Value(tuple.board, color_);
     if (stand_pat >= b) return b;
 
-    int big_delta = 1100;  // queen value
+    T big_delta = 1100;  // queen value
 
     if (stand_pat < a - big_delta) return a;
 
@@ -58,7 +44,7 @@ class QSearch {
 
     ReOrderQ(tuple.board, nodes.rbegin(), nodes.rend());
 
-    T value = T::Invalid();
+    T value;
 
     if (tuple.board.CurrentColor() == color_) {
       value = T::Min();

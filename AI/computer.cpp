@@ -51,9 +51,7 @@ void Computer::Go() {
         auto tbegin = std::chrono::high_resolution_clock::now();
         Turn result;
         Statistics stat;
-        TransPositionTable table;
-        AlphaBeta<MainAppraiser> ab(match.GetBoard().CurrentColor(), stat,
-                                    table);
+        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor(), stat);
         auto board = match.GetBoard();
         for (size_t d = 1; d <= 10; d++) {
           stat.Clear();

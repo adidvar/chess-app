@@ -4,10 +4,9 @@
 #include <iostream>
 #include <match.hpp>
 #include <minmax.hpp>
-#include <position_rating.hpp>
 #include <statistics.hpp>
 
-#include "pvs.hpp"
+#include "evaluate.hpp"
 #include "qsearch.hpp"
 
 template <typename T>
@@ -40,8 +39,7 @@ int main(){
     // - 0 1");
     auto tbegin = std::chrono::high_resolution_clock::now();
     Statistics stat;
-    TransPositionTable table;
-    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
+    AlphaBeta<Evaluate> ab(Color::kWhite, stat);
     // auto board = BitBoard(
     //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0
     //     " "1");
@@ -59,16 +57,14 @@ int main(){
 
       std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
       std::cout << "ENodes: " << stat.GetExtraNode() << std::endl;
-      std::cout << "Fill: " << table.Fill() << std::endl;
+      //  std::cout << "Fill: " << table.Fill() << std::endl;
       std::cout << "Time: "
                 << std::chrono::duration_cast<
                        std::chrono::duration<float, std::ratio<1, 1>>>(delay)
                        .count()
                 << std::endl;
       std::cout << "Depth: " << d << std::endl;
-      std::cout << "Result: "
-                << result - MainAppraiser::Approximate(board, Color::kWhite)
-                << std::endl;
+      std::cout << "Result: " << result.ToString() << std::endl;
       std::cout << "------------------------------------" << std::endl;
     }
     auto delay = std::chrono::high_resolution_clock::now() - tbegin;

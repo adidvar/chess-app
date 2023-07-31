@@ -19,11 +19,10 @@ class MinMax
       if (zero_moves && !mate) {
         return T::Tie();
       } else if (zero_moves && mate) {
-        return bitboard.CurrentColor() == color_
-                   ? T::CheckMateLose(max_depth - depth)
-                   : T::CheckMateWin(max_depth - depth);
+        return bitboard.CurrentColor() == color_ ? T::Lose(max_depth - depth)
+                                                 : T::Win(max_depth - depth);
       } else if (depth == 0) {
-        auto approx = T::Approximate(bitboard, color_);
+        auto approx = T::Value(bitboard, color_);
 
         return approx;
       }

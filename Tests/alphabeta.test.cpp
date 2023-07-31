@@ -1,21 +1,18 @@
 #include <alphabeta.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <position_rating.hpp>
 
-#include "minmax.hpp"
+#include "evaluate.hpp"
 
-bool TestMateFind(const char* fen, int depth) {
+static bool TestMateFind(const char* fen, int depth) {
   Statistics stat;
-  auto result = AlphaBeta<MainAppraiser>::Evaluate(BitBoard(fen), Color::kWhite,
-                                                   depth, stat);
-  return result == MainAppraiser::CheckMateLose(depth) ||
-         result == MainAppraiser::CheckMateWin(depth);
+  auto result =
+      AlphaBeta<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite, depth, stat);
+  return result == Evaluate::Lose(depth) || result == Evaluate::Win(depth);
 }
 
 TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
   SECTION("Depth 1") {
-    Statistics stat;
     REQUIRE(TestMateFind(
         "4r2k/1p3rbp/2p1N1p1/p3n3/P2NB1nq/1P6/4R1P1/B1Q2RK1 b - - 4 32", 1));
     REQUIRE(TestMateFind(
@@ -27,7 +24,6 @@ TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
         "r2q1rk1/1bppb1pp/n3p3/5P2/2BP1P2/4P3/1PPnQK1P/R1B3NR b - - 1 12", 1));
   }
   SECTION("Depth 3") {
-    Statistics stat;
     REQUIRE(TestMateFind(
         "4r3/1pp2rbk/6pn/4n3/P3BN1q/1PB2bPP/8/2Q1RRK1 b - - 0 31", 3));
     REQUIRE(TestMateFind(
@@ -39,7 +35,6 @@ TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
         "rn3r1k/p2q1p2/1p2p2p/3pP3/PbbNRQ2/5NP1/1P3PBP/R5K1 w - - 1 19", 3));
   }
   SECTION("Depth 5") {
-    Statistics stat;
     REQUIRE(
         TestMateFind("4r1k1/4r1p1/8/p2R1P1K/5P1P/1QP3q1/1P6/3R4 b - - 0 1", 5));
     REQUIRE(TestMateFind(

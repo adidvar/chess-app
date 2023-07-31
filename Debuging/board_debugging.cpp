@@ -1,20 +1,19 @@
-#include <iostream>
-#include <string>
-#include <chrono>
-#include <map>
-#include <board.hpp>
+#include <algorithm>
 #include <bitboard.hpp>
-#include <magic.hpp>
-#include <match.hpp>
+#include <board.hpp>
+#include <chrono>
+#include <filesystem>
 #include <fstream>
-#include <vector>
+#include <iostream>
+#include <magic.hpp>
+#include <map>
+#include <match.hpp>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <algorithm>
-#include <filesystem>
-#include <openingsbase.hpp>
-#include <position_rating.hpp>
+#include <vector>
+
+#include "evaluate.hpp"
 
 uint64_t read_mask()
 {
@@ -59,13 +58,12 @@ std::string LoadFile(std::filesystem::path path){
 
 bool TestMateFind(const char* fen, int depth) {
     Statistics stat;
-    auto result = MinMax<MainAppraiser>::Evaluate(BitBoard(fen), Color::kWhite,
+    auto result = MinMax<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite,
                                                   depth, stat);
     std::cout << result.ToString() << std::endl;
-    std::cout << MainAppraiser::CheckMateLose(depth).ToString() << std::endl;
-    std::cout << MainAppraiser::CheckMateWin(depth).ToString() << std::endl;
-    return result == MainAppraiser::CheckMateLose(depth) ||
-           result == MainAppraiser::CheckMateWin(depth);
+    std::cout << Evaluate::Lose(depth).ToString() << std::endl;
+    std::cout << Evaluate::Win(depth).ToString() << std::endl;
+    return result == Evaluate::Lose(depth) || result == Evaluate::Win(depth);
 }
 
 int main() {
@@ -95,11 +93,10 @@ int main() {
 
     BitBoard board;
     Statistics stat;
-    TransPositionTable table;
-    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
+    AlphaBeta<Evaluate> ab(Color::kWhite, stat);
     size_t av, bv;
     std::cin >> av >> bv;
-    MainAppraiser a(av), b(bv);
+    Evaluate a(av), b(bv);
 
     auto begin = std::chrono::high_resolution_clock::now();
     auto value = ab.GetValue(board, 8, a, b);

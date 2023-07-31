@@ -1,24 +1,24 @@
-#ifndef TRANSPOSITIONTABLE_HPP
-#define TRANSPOSITIONTABLE_HPP
+#ifndef TTABLE_HPP
+#define TTABLE_HPP
 
 #include <algorithm>
 #include <numeric>
 #include <optional>
-#include <position_rating.hpp>
 
 #include "bitboard.hpp"
+#include "evaluate.hpp"
 
 struct SearchElement {
   bitboard_hash_t hash;
-  std::pair<MainAppraiser, Turn> value = {MainAppraiser::Invalid(), Turn()};
-  MainAppraiser a = MainAppraiser::Invalid();
-  MainAppraiser b = MainAppraiser::Invalid();
+  std::pair<Evaluate, Turn> value = {Evaluate::Invalid(), Turn()};
+  Evaluate a = Evaluate::Invalid();
+  Evaluate b = Evaluate::Invalid();
   int depth;
 };
 
 struct QSearchElement {
   bitboard_hash_t hash;
-  std::pair<MainAppraiser, Turn> value = {MainAppraiser::Invalid(), Turn()};
+  std::pair<Evaluate, Turn> value = {Evaluate::Invalid(), Turn()};
 };
 
 template <class T>

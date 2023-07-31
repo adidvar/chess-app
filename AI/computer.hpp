@@ -7,11 +7,9 @@
 #include <mutex>
 #include <thread>
 
+#include "evaluate.hpp"
 #include "match.hpp"
-#include "openingsbase.hpp"
-#include "position_rating.hpp"
 #include "statistics.hpp"
-#include "transpositiontable.hpp"
 
 class Computer{
  public:
