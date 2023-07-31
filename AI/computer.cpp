@@ -71,7 +71,7 @@ void Computer::Go() {
 void Computer::Wait() { turn_future_.wait(); }
 
 bool Computer::Ready() {
-  auto result = turn_future_.wait_for(chrono::seconds{0});
+  auto result = turn_future_.wait_for(std::chrono::seconds{0});
 
   return result == std::future_status::ready;
 }

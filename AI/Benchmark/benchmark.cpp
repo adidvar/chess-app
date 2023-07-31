@@ -7,6 +7,7 @@
 #include <position_rating.hpp>
 #include <statistics.hpp>
 
+#include "pvs.hpp"
 #include "qsearch.hpp"
 
 template <typename T>
@@ -40,18 +41,20 @@ int main(){
     auto tbegin = std::chrono::high_resolution_clock::now();
     Statistics stat;
     TransPositionTable table;
-    QSearch<MainAppraiser> ab(Color::kWhite, stat, table);
+    AlphaBeta<MainAppraiser> ab(Color::kWhite, stat, table);
     // auto board = BitBoard(
     //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0
     //     " "1");
     //  auto board =
+    /*
     BitBoard board(
         "4k3/pppppppp/1bq4r/4n3/rNBN1Qn1/4B2R/PPPPPPPP/4K3 w - - 0 1");
-    // auto board = BitBoard();
+*/
+    auto board = BitBoard();
     for (size_t d = 1; d <= 7; d++) {
       stat.Clear();
       auto begin = std::chrono::high_resolution_clock::now();
-      auto result = ab.GetValue(board);
+      auto result = ab.GetValue(board, d);
       auto delay = std::chrono::high_resolution_clock::now() - begin;
 
       std::cout << "Nodes: " << stat.GetMainNode() << std::endl;

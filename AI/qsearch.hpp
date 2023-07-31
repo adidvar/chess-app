@@ -6,9 +6,6 @@
 #include <iostream>
 #include <statistics.hpp>
 
-#include "transpositiontable.hpp"
-using namespace std;
-
 template <typename T>
 inline void ReOrderQ(const BitBoard &board, T begin, T end) {
   std::sort(begin, end, [&](const BitBoardTuple &t1, const BitBoardTuple &t2) {
@@ -27,20 +24,17 @@ inline void ReOrderQ(const BitBoard &board, T begin, T end) {
 template <typename T>
 class QSearch {
  public:
-  QSearch(Color color, Statistics &stat, TransPositionTable &table)
-      : color_(color), stat_(stat), table_(table) {}
+  QSearch(Color color, Statistics &stat) : color_(color), stat_(stat) {}
 
   T GetValue(const BitBoard &board, T a = T::Min(), T b = T::Max()) {
-    stat_.Clear();
     auto approx = T::Approximate(board, color_);
     auto qvalue = qsearch({board, board.Hash(), Turn()}, a, b);
     return qvalue;
   }
 
-  static T Evaluate(BitBoard board, Color color, int depth, Statistics &stat) {
-    TransPositionTable table;
-    QSearch<T> core(color, stat, table);
-    return core.GetValue(board, depth);
+  static T Evaluate(BitBoard board, Color color, Statistics &stat) {
+    QSearch<T> core(color, stat);
+    return core.GetValue(board);
   }
 
  private:
@@ -50,7 +44,7 @@ class QSearch {
     auto stand_pat = T::Approximate(tuple.board, color_);
     if (stand_pat >= b) return b;
 
-    int big_delta = 1000;  // queen value
+    int big_delta = 1100;  // queen value
 
     if (stand_pat < a - big_delta) return a;
 
@@ -90,7 +84,6 @@ class QSearch {
  private:
   Color color_;
   Statistics &stat_;
-  TransPositionTable &table_;
 };
 
 #endif

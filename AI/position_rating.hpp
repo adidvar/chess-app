@@ -130,6 +130,7 @@ public:
     {
         return value_ != value.value_;
     }
+    MainAppraiser operator-() const { return MainAppraiser(-value_); }
 
     static MainAppraiser Invalid()
     {
