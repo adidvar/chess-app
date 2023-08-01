@@ -91,15 +91,17 @@ int main() {
         "rn3r1k/p2q1p2/1p2p2p/3pP3/PbbNRQ2/5NP1/1P3PBP/R5K1 w - - 1 19", 2);
 */
 
-    BitBoard board;
+    BitBoard board("4r3/1pp2rbk/6pn/4n3/P3BN1q/1PB2bPP/8/2Q1RRK1 b - - 0 31");
     Statistics stat;
-    AlphaBeta<Evaluate> ab(Color::kWhite, stat);
+    AlphaBeta<Evaluate> ab(Color::kBlack, stat);
+    MinMax<Evaluate> mn(Color::kBlack, stat);
     size_t av, bv;
-    std::cin >> av >> bv;
-    Evaluate a(av), b(bv);
+    // std::cin >> av >> bv;
+    // Evaluate a(av), b(bv);
 
     auto begin = std::chrono::high_resolution_clock::now();
-    auto value = ab.GetValue(board, 8, a, b);
+    auto value = ab.GetValue(board, 2);
+    auto value1 = mn.Evaluate(board, 2);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::duration<float>>(end -
                                                                           begin)
@@ -107,6 +109,7 @@ int main() {
               << std::endl;
 
     std::cout << value.ToString() << std::endl;
+    std::cout << value1.ToString() << std::endl;
 
     /*
       BitBoard board;

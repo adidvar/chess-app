@@ -41,19 +41,25 @@ int main(){
     Statistics stat;
     AlphaBeta<Evaluate> ab(Color::kWhite, stat);
     // auto board = BitBoard(
-    //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0
-    //     " "1");
+    //     "r3kb1r/ppqpp1pp/2n2pn1/2p1P2Q/3b4/2BN1NB1/PPPP1PPP/R3K2R w KQkq - 0"
+    //     "1");
+    BitBoard board(
+        "3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30");
     //  auto board =
     /*
     BitBoard board(
         "4k3/pppppppp/1bq4r/4n3/rNBN1Qn1/4B2R/PPPPPPPP/4K3 w - - 0 1");
 */
-    auto board = BitBoard();
-    for (size_t d = 1; d <= 7; d++) {
+    // auto board = BitBoard();
+    for (size_t d = 1; d <= 8; d++) {
       stat.Clear();
       auto begin = std::chrono::high_resolution_clock::now();
       auto result = ab.GetValue(board, d);
       auto delay = std::chrono::high_resolution_clock::now() - begin;
+
+      auto pvbegin = std::chrono::high_resolution_clock::now();
+      auto pv = ab.FindPV(board, d);
+      auto pvdelay = std::chrono::high_resolution_clock::now() - pvbegin;
 
       std::cout << "Nodes: " << stat.GetMainNode() << std::endl;
       std::cout << "ENodes: " << stat.GetExtraNode() << std::endl;
@@ -65,6 +71,15 @@ int main(){
                 << std::endl;
       std::cout << "Depth: " << d << std::endl;
       std::cout << "Result: " << result.ToString() << std::endl;
+      std::cout << "PV: ";
+      for (auto turn : pv) std::cout << turn.ToChessFormat() << " ";
+      std::cout << std::endl;
+
+      std::cout << "PVTime: "
+                << std::chrono::duration_cast<
+                       std::chrono::duration<float, std::ratio<1, 1>>>(pvdelay)
+                       .count()
+                << std::endl;
       std::cout << "------------------------------------" << std::endl;
     }
     auto delay = std::chrono::high_resolution_clock::now() - tbegin;
@@ -73,6 +88,8 @@ int main(){
                      std::chrono::duration<float, std::ratio<1, 1>>>(delay)
                      .count()
               << std::endl;
+
+    // 125 seconds
 
     /*
     BitBoard board("8/8/2q2P1N/1P6/8/p1Q2B2/8/8 w - - 0 1");
@@ -84,24 +101,26 @@ int main(){
         std::cout << turn.ToChessFormat() << std::endl;
 
    */
-/*
-    for(;;){
-       // std::string string;
-        //std::getline(std::cin, string);
-
-        auto board = GenBoard();
-
+    /*
         for(;;){
-            NoStatistics stat;
-            auto stat1 = MinMax<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite, 6, stat);
-            auto stat2 =  AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite, 6, stat);
-            if(stat1 != stat2){
-                std::cout << board.Fen() << " " << stat1.ToString() << "  " << stat2.ToString() << std::endl;
+           // std::string string;
+            //std::getline(std::cin, string);
+
+            auto board = GenBoard();
+
+            for(;;){
+                NoStatistics stat;
+                auto stat1 =
+       MinMax<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite, 6,
+       stat); auto stat2 =
+       AlphaBeta<ValueAppraiser,NoStatistics>::Evaluate(board,Color::kWhite,
+       6, stat); if(stat1 != stat2){ std::cout << board.Fen() << " " <<
+       stat1.ToString() << "  " << stat2.ToString() << std::endl;
+                }
+                auto turns = board.GenerateSubBoards();
+                board = GenBoard();
+                std::cout << "L" << std::endl;
             }
-            auto turns = board.GenerateSubBoards();
-            board = GenBoard();
-            std::cout << "L" << std::endl;
         }
-    }
-    */
+        */
 }

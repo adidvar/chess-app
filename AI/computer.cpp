@@ -55,7 +55,7 @@ void Computer::Go() {
         auto board = match.GetBoard();
         for (size_t d = 1; d <= 10; d++) {
           stat.Clear();
-          result = ab.GetBestTurn(board, d);
+          //  result = ab.GetBestTurn(board, d);
           auto dur = std::chrono::high_resolution_clock::now() - tbegin;
           if (std::chrono::duration_cast<std::chrono::seconds>(dur) >
               std::chrono::milliseconds{500})

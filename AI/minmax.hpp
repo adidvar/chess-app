@@ -11,6 +11,12 @@ class MinMax
     Statistics &stat_;
 
     T minimax(const BitBoard &bitboard, size_t depth, size_t max_depth) {
+      if (depth == 0) {
+        auto approx = T::Value(bitboard, color_);
+
+        return approx;
+      }
+
       auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
       bool zero_moves = (nodes.size() == 0);
@@ -21,10 +27,6 @@ class MinMax
       } else if (zero_moves && mate) {
         return bitboard.CurrentColor() == color_ ? T::Lose(max_depth - depth)
                                                  : T::Win(max_depth - depth);
-      } else if (depth == 0) {
-        auto approx = T::Value(bitboard, color_);
-
-        return approx;
       }
 
       if (bitboard.CurrentColor() == color_) {

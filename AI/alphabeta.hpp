@@ -5,88 +5,22 @@
 #include <iostream>
 
 #include "bitboard.hpp"
-#include "ordering.hpp"
 #include "qsearch.hpp"
 #include "statistics.hpp"
+#include "ttable.hpp"
 
 template <typename T>
 class AlphaBeta {
-  std::pair<T, Turn> alphabeta(const BitBoardTuple &tuple, const int depth,
-                               const int max_depth, T a, T b) {
-    auto nodes =
-        tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
-
-    if (nodes.size() == 0)
-      if (!tuple.board.MateTest())
-        return {T::Tie(), Turn()};
-      else
-        return {tuple.board.CurrentColor() == color_
-                    ? T::Lose(max_depth - depth)
-                    : T::Win(max_depth - depth),
-                Turn()};
-    else if (depth == 0) {
-      return {qsearch_.GetValue(tuple.board, a, b), Turn()};
-    }
-    stat_.MainNode();
-
-    /*
-    if (hashed.has_value() && tuple.board.OpponentColor() == color_) {
-      auto best_hashed = hashed.value().value.second;
-
-      for (size_t i = 0; i < nodes.size(); ++i)
-        if (nodes[i].turn == best_hashed) {
-          std::swap(nodes[i], nodes[0]);
-          break;
-        }
-
-      ReOrder(tuple.board, nodes.rbegin(), nodes.rend() - 1);
-    } else
-*/
-    ReOrder(tuple.board, nodes.rbegin(), nodes.rend());
-
-    T value;
-    Turn best_turn;
-
-    if (tuple.board.CurrentColor() == color_) {
-      value = T::Min();
-      for (auto &node : nodes) {
-        auto nvalue = alphabeta(node, depth - 1, max_depth, a, b).first;
-        if (nvalue > value) {
-          value = nvalue;
-          best_turn = node.turn;
-        }
-
-        a = std::max(a, value);
-        if (b <= a) break;
-      }
-    } else {
-      value = T::Max();
-      for (auto &node : nodes) {
-        auto nvalue = alphabeta(node, depth - 1, max_depth, a, b).first;
-        if (nvalue < value) {
-          value = nvalue;
-          best_turn = node.turn;
-        }
-
-        b = std::min(b, value);
-        if (b <= a) break;
-      }
-    }
-    return {value, best_turn};
-  }
-
  public:
   AlphaBeta(Color color, Statistics &stat)
       : qsearch_(color, stat), color_(color), stat_(stat) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
-    return alphabeta({board, board.Hash(), Turn()}, depth, depth, a, b).first;
+    BitBoardTuple tuple{board, board.Hash(), Turn()};
+    return alphabeta(tuple, a, b, depth, depth);
   }
-
-  Turn GetBestTurn(const BitBoard &board, int depth) {
-    return alphabeta({board, board.Hash(), Turn()}, depth, depth, T::Min(),
-                     T::Max())
-        .second;
+  std::vector<Turn> FindPV(BitBoard board, int depth) {
+    return findpv(board, depth);
   }
 
   static T Evaluate(BitBoard board, Color color, int depth, Statistics &stat) {
@@ -95,8 +29,102 @@ class AlphaBeta {
   }
 
  private:
+  T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
+              int depthmax) {
+    if (depthleft == 0) {
+      auto value = qsearch_.GetValue(tuple.board, alpha, beta);
+      return tuple.board.CurrentColor() == color_ ? value : -value;
+    }
+
+    bool founded = false;
+    auto hashed = table_.Search(tuple.hash, founded);
+
+    if (founded && hashed->depth >= depthleft) {
+      return hashed->value;
+    }
+
+    stat_.MainNode();
+
+    auto moves =
+        tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+
+    if (moves.empty()) {
+      if (tuple.board.Checkmate()) return T::Lose(depthmax - depthleft);
+      return T::Tie();
+    }
+
+    ReOrder(tuple.board, moves.rbegin(), moves.rend());
+    T bestscore = T::Min();
+    for (auto &sub : moves) {
+      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
+      if (score >= beta) {
+        bestscore = score;
+        break;
+      }
+      if (score > bestscore) {
+        bestscore = score;
+        if (score > alpha) alpha = score;
+      }
+    }
+
+    hashed->hasvalue = true;
+    hashed->hash = tuple.hash;
+    hashed->value = bestscore;
+    hashed->depth = depthleft;
+    if (bestscore <= alpha)
+      hashed->type = SearchElement::FailLow;
+    else if (bestscore >= beta)
+      hashed->type = SearchElement::FailHigh;
+    else
+      hashed->type = SearchElement::PV;
+
+    return bestscore;
+  }
+
+  std::pair<T, Turn> alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta,
+                                   int depthleft, int depthmax) {
+    stat_.MainNode();
+
+    auto moves =
+        tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+
+    if (moves.empty()) {
+      return {T(), Turn()};
+    }
+
+    ReOrder(tuple.board, moves.rbegin(), moves.rend());
+    T bestscore = T::Min();
+    Turn turn = Turn();
+    for (auto &sub : moves) {
+      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
+      if (score >= beta) return {score, Turn()};
+      if (score > bestscore) {
+        bestscore = score;
+        turn = sub.turn;
+        if (score > alpha) alpha = score;
+      }
+    }
+    return {bestscore, turn};
+  }
+
+  std::vector<Turn> findpv(BitBoard board, int depth) {
+    std::vector<Turn> turns_;
+
+    for (size_t i = 0; i < depth; i++) {
+      auto turn = alphabetaturn({board, board.Hash(), Turn()}, T::Min(),
+                                T::Max(), depth - i, depth);
+      if (turn.second == Turn()) break;
+      turns_.push_back(turn.second);
+      board.ExecuteTurn(turn.second);
+    }
+
+    return turns_;
+  }
+
   Color color_;
+
   Statistics &stat_;
+  TTable table_;
   QSearch<T> qsearch_;
 };
 
