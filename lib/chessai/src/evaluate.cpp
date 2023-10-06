@@ -197,3 +197,5 @@ Evaluate::ScoreType Evaluate::FigurePrice(Figure figure) {
 Evaluate::ScoreType Evaluate::Value() const { return value_; }
 
 std::string Evaluate::ToString() const { return std::to_string(value_); }
+
+float Evaluate::ToCentiPawns() const { return (float)value_ / pawn; }

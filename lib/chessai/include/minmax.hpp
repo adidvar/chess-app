@@ -13,33 +13,22 @@ class MinMax
     T minimax(const BitBoard &bitboard, size_t depth, size_t max_depth) {
       if (depth == 0) {
         auto approx = T::Value(bitboard, color_);
-
-        return approx;
+        return bitboard.CurrentColor() == color_ ? approx : -approx;
       }
 
       auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
-      bool zero_moves = (nodes.size() == 0);
-      bool mate = bitboard.MateTest();
-
-      if (zero_moves && !mate) {
+      if (nodes.empty()) {
+        if (bitboard.Checkmate()) return T::Lose(max_depth - depth);
         return T::Tie();
-      } else if (zero_moves && mate) {
-        return bitboard.CurrentColor() == color_ ? T::Lose(max_depth - depth)
-                                                 : T::Win(max_depth - depth);
       }
 
-      if (bitboard.CurrentColor() == color_) {
-        T value = T::Min();
-        for (const auto &node : nodes)
-          value = std::max(value, minimax(node, depth - 1, max_depth));
-        return value;
-      } else {
-        T value = T::Max();
-        for (const auto &node : nodes)
-          value = std::min(value, minimax(node, depth - 1, max_depth));
-        return value;
+      T bestscore = T::Min();
+      for (auto &sub : nodes) {
+        auto score = -minimax(sub, depth - 1, max_depth);
+        bestscore = std::max(score, bestscore);
       }
+      return bestscore;
     }
 
 public:

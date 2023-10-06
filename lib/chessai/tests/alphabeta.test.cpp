@@ -7,9 +7,8 @@
 #include "minmax.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
-  Statistics stat;
-  auto result = AlphaBeta<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite,
-                                              depth + 1, stat);
+  auto result =
+      AlphaBeta<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite, depth + 1);
   return result == Evaluate::Lose(depth) || result == Evaluate::Win(depth);
 }
 
@@ -36,7 +35,6 @@ TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
     REQUIRE(TestMateFind(
         "rn3r1k/p2q1p2/1p2p2p/3pP3/PbbNRQ2/5NP1/1P3PBP/R5K1 w - - 1 19", 3));
   }
-  /*
 SECTION("Depth 5") {
   REQUIRE(
       TestMateFind("4r1k1/4r1p1/8/p2R1P1K/5P1P/1QP3q1/1P6/3R4 b - - 0 1", 5));
@@ -47,6 +45,7 @@ SECTION("Depth 5") {
   REQUIRE(TestMateFind(
       "rn5r/p2q1p1k/bp2N2p/3pP3/Pb3Q2/1P3NP1/5PB1/R3R1K1 w - - 1 23", 5));
 }
+/*
 SECTION("Depth 7") {
   Statistics stat;
   REQUIRE(TestMateFind(
@@ -63,12 +62,12 @@ SECTION("Depth 7") {
 }
 
 static bool CompareValue(const char* fen, int depth) {
-  Statistics stat;
-  auto result1 = AlphaBeta<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite,
-                                               depth + 1, stat);
-  auto result2 =
-      MinMax<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite, depth, stat);
-  return result1 == result2;
+Statistics stat;
+auto result1 =
+    AlphaBeta<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite, depth);
+auto result2 =
+    MinMax<Evaluate>::Evaluate(BitBoard(fen), Color::kWhite, depth, stat);
+return result1 == result2;
 }
 
 TEST_CASE("Testing of minmax and alphabeta", "[alphabeta][minmax][ai]") {
@@ -118,4 +117,17 @@ SECTION("Depth 7") {
       "1rbq1rk1/R5pp/2p2P2/2np4/2P1pPB1/4P1b1/1P2Q2P/1NB2KNR w - - 1 19", 7));
 }
 */
+}
+
+TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
+  {
+    AlphaBeta<Evaluate> ab(Color::kWhite);
+    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), 4) ==
+            Turn::FromChessFormat("f1f8"));
+  }
+  {
+    AlphaBeta<Evaluate> ab(Color::kWhite);
+    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), 4) ==
+            Turn::FromChessFormat("f8f1"));
+  }
 }

@@ -1,46 +1,20 @@
 #ifndef ALPHABETA_HPP
 #define ALPHABETA_HPP
 
-#include <algorithm>
-#include <iostream>
-
 #include "bftable.hpp"
 #include "bitboard.hpp"
-#include "qsearch.hpp"
+#include "ordering.hpp"
 #include "statistics.hpp"
+#include "timer.hpp"
 #include "ttable.hpp"
 
 template <typename T>
 class AlphaBeta {
  public:
-  AlphaBeta(Color color, Statistics &stat)
-      : qsearch_(color, stat), color_(color), stat_(stat) {}
+  AlphaBeta(Color color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     BitBoardTuple tuple{board, board.Hash(), Turn()};
-
-    /*
-    int primary_value = T::Value(board, color_).Value();
-
-    int delta = 4, startdelta = 50;
-
-    int a_delta = -startdelta, b_delta = startdelta;
-
-    while (true) {
-      auto value = alphabeta(tuple, primary_value + a_delta,
-                             primary_value + b_delta, depth, depth);
-
-      std::cout << primary_value + a_delta << ":::" << primary_value + b_delta
-                << std::endl;
-
-      if (value <= primary_value + a_delta) {
-        a_delta *= delta;
-      } else if (value >= primary_value + b_delta) {
-        b_delta *= delta;
-      } else
-        return value;
-    }
-    */
     return alphabeta(tuple, a, b, depth, depth);
   }
   Turn GetTurn(const BitBoard &board, int depth) {
@@ -51,8 +25,8 @@ class AlphaBeta {
     return findpv(board, depth);
   }
 
-  static T Evaluate(BitBoard board, Color color, int depth, Statistics &stat) {
-    AlphaBeta<T> core(color, stat);
+  static T Evaluate(BitBoard board, Color color, int depth) {
+    AlphaBeta<T> core(color);
     return core.GetValue(board, depth);
   }
 
@@ -63,13 +37,13 @@ class AlphaBeta {
 
     if (depthleft == 0) {
       // auto value = qsearch_.GetValue(tuple.board, alpha, beta);
-      auto value = T::Value(tuple.board, color_);
-      return tuple.board.CurrentColor() == color_ ? value : -value;
+      auto value = T::Value(tuple.board, m_color);
+      return tuple.board.CurrentColor() == m_color ? value : -value;
       // return value;
     }
 
     bool founded = false;
-    auto hashed = table_.Search(tuple.hash, founded);
+    auto hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
       if (hashed->depth == depthleft && hashed->type == SearchElement::PV)
@@ -87,7 +61,7 @@ class AlphaBeta {
         return hashed->value;
     }
 
-    stat_.MainNode();
+    m_stat.MainNode();
 
     auto moves =
         tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
@@ -97,20 +71,20 @@ class AlphaBeta {
       return T::Tie();
     }
 
-    ReOrder(tuple.board, moves, btable_, table_);
+    // ReOrder(tuple.board, moves, m_btable, m_ttable);
     T bestscore = T::Min();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
-        btable_.Push(sub.turn);
+        m_btable.Push(sub.turn);
         break;
       }
       if (score > bestscore) {
         bestscore = score;
         if (score > alpha) {
           alpha = score;
-          btable_.Push(sub.turn);
+          m_btable.Push(sub.turn);
         };
       }
     }
@@ -132,7 +106,7 @@ class AlphaBeta {
 
   std::pair<T, Turn> alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta,
                                    int depthleft, int depthmax) {
-    stat_.MainNode();
+    m_stat.MainNode();
 
     auto moves =
         tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
@@ -141,7 +115,7 @@ class AlphaBeta {
       return {T(), Turn()};
     }
 
-    ReOrder(tuple.board, moves, btable_, table_);
+    ReOrder(tuple.board, moves, m_btable, *m_ttable);
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {
@@ -152,7 +126,7 @@ class AlphaBeta {
         turn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          btable_.Push(sub.turn);
+          m_btable.Push(sub.turn);
         };
       }
     }
@@ -173,12 +147,14 @@ class AlphaBeta {
     return turns_;
   }
 
-  Color color_;
+ private:
+  Color m_color;
+  Statistics m_stat;
 
-  Statistics &stat_;
-  TTable table_;
-  BFTable btable_;
-  QSearch<T> qsearch_;
+  BFTable m_btable;
+
+  Timer *m_timer;
+  TTable *m_ttable;
 };
 
 #endif

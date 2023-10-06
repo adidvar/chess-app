@@ -32,6 +32,7 @@ class Evaluate {
   ScoreType Value() const;
 
   std::string ToString() const;
+  float ToCentiPawns() const;
 
  private:
   ScoreType value_;

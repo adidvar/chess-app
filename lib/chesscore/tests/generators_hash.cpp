@@ -1,27 +1,33 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <board.hpp>
 #include <bitboard.hpp>
 
-template<typename Board>
-static size_t MovesCounter(Board board,size_t depth, uint64_t maskfrom = 1){
+static size_t MovesCounter(BitBoardTuple board, size_t depth){
     if(!depth)
-        return 1;
+        return (board.board.Hash() == board.hash);
     size_t counter = 0;
-    auto boards1 = board.GenerateSubBoards(board.CurrentColor(),maskfrom);
-    auto boards2 = board.GenerateSubBoards(board.CurrentColor(),~maskfrom);
-    maskfrom = maskfrom*3334343+1341324;
-    for(auto board : boards1){
-        counter += MovesCounter(board,depth-1,maskfrom);
-    }
-    for(auto board : boards2){
-        counter += MovesCounter(board,depth-1,maskfrom);
+    for(auto tuple : board.board.GenerateTuplesFast(board, board.board.CurrentColor())){
+        counter += MovesCounter(tuple,depth-1);
     }
     return counter;
 }
 
-TEMPLATE_TEST_CASE( "Particular subboards generation test from", "[particular][bitboard][board][fen]", BitBoard){
+static size_t MovesCounter(BitBoard board,size_t depth){
+    if(!depth)
+        return 1;
+    size_t counter = 0;
+    for(auto tuple : board.GenerateTuplesFast({board,board.Hash(),Turn()},board.CurrentColor())){
+        counter += MovesCounter(tuple,depth-1);
+    }
+    return counter;
+}
+
+using TestType = BitBoard;
+
+TEST_CASE( "Boards hash generation test", "[bitboard][board][fen]"){
    REQUIRE(TestType("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 1").GenerateTurns(0).size() == 5);
    REQUIRE(TestType("8/8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8 w - - 0 1").GenerateTurns(0).size() == 8);
    REQUIRE(TestType("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 1").GenerateTurns(0).size() == 8);
@@ -34,7 +40,7 @@ TEMPLATE_TEST_CASE( "Particular subboards generation test from", "[particular][b
    REQUIRE(MovesCounter(TestType(),3) == 8902);
 }
 
-TEMPLATE_TEST_CASE( "Particular subboards generation advanced test from", "[particular][bitboard][board][fen]", BitBoard){
+TEST_CASE( "Boards hash generation advanced test", "[bitboard][board][fen]"){
    REQUIRE(MovesCounter(TestType(),4) == 197281);
    REQUIRE(MovesCounter(TestType("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2"),1) == 8);
    REQUIRE(MovesCounter(TestType("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3"),1) == 8);

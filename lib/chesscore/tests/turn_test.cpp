@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "turn.hpp"
+#include <turn.hpp>
 
 TEST_CASE( "Turn testing", "[turn]" )
 {

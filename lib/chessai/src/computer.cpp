@@ -35,7 +35,6 @@ Statistics Computer::GetStatistics()
     return stat_;
 }
 */
-/*
 
 Computer::Computer() {}
 
@@ -51,11 +50,9 @@ void Computer::Go() {
       [](Match match) {
         auto tbegin = std::chrono::high_resolution_clock::now();
         Turn result;
-        Statistics stat;
-        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor(), stat);
+        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor());
         auto board = match.GetBoard();
         for (size_t d = 1; d <= 10; d++) {
-          stat.Clear();
           result = ab.GetTurn(board, d);
           auto dur = std::chrono::high_resolution_clock::now() - tbegin;
           if (std::chrono::duration_cast<std::chrono::seconds>(dur) >
@@ -78,5 +75,3 @@ bool Computer::Ready() {
 Turn Computer::GetBestTurn() { return turn_future_.get(); }
 
 Statistics Computer::GetStatistics() { return stat_; }
-
-*/

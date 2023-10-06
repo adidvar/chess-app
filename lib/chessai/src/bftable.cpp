@@ -7,9 +7,8 @@ BFTable::BFTable() {
 
 void BFTable::Push(Turn turn) {
   table_[turn.from().Value()][turn.to().Value()]++;
-  counter_++;
 }
 
-int BFTable::Get(Turn turn) const {
+size_t BFTable::Get(Turn turn) const {
   return table_[turn.from().Value()][turn.to().Value()];
 }

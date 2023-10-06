@@ -16,24 +16,24 @@ class Computer{
   Computer();
   ~Computer();
 
-  // void NewGame();
-  // void Position(const Match &match);
+  void NewGame();
+  void Position(const Match &match);
 
-  // void Go();
+  void Go();
 
-  // void Wait();
-  // bool Ready();
+  void Wait();
+  bool Ready();
 
-  // Turn GetBestTurn();
+  Turn GetBestTurn();
 
-  // Statistics GetStatistics();
+  Statistics GetStatistics();
 
  private:
-  // Match match_;
+  Match match_;
 
-  // Statistics stat_;
+  Statistics stat_;
 
-  // std::future<Turn> turn_future_;
+  std::future<Turn> turn_future_;
 };
 
 #endif

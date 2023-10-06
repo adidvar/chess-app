@@ -1,864 +1,596 @@
-#include "bitboard.hpp"
-
-#include <cassert>
-#include <sstream>
-#include <stdexcept>
-
-#include "magic.hpp"
-#include "parsingtools.hpp"
-#include "zobrist.hpp"
-
-constexpr static bitboard_t krooking_masks[2][2]{
-    {56_b + 58_b + 59_b + 60_b, 60_b + 61_b + 62_b + 63_b},
-    {0_b + 2_b + 3_b + 4_b, 4_b + 5_b + 6_b + 7_b}};
-
-const std::string_view BitBoard::kStartPosition_ =
-    u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const BitBoard BitBoard::kStartBitBoard_ = BitBoard(BitBoard::kStartPosition_);
-
-BitBoard::BitBoard() : BitBoard(kStartBitBoard_) {}
-
-BitBoard::BitBoard(std::string_view fen) : board_{{0}, {0}} {
-  size_t index = 0;
-  LoadFromFen(fen, *this, index);
-
-  all_[Color::kWhite] = all_[Color::kBlack] = 0;
-
-  for (size_t i = 1; i < Figure::Max(); i++) {
-    all_[Color::kWhite] |= board_[Color::kWhite][i];
-    all_[Color::kBlack] |= board_[Color::kBlack][i];
-  }
-
-  board_[Color::kWhite][Figure::kEmpty] =
-      board_[Color::kBlack][Figure::kEmpty] =
-          ~(all_[Color::kWhite] | all_[Color::kBlack]);
-}
-
-std::string BitBoard::Fen() const { return SaveToFen(*this); }
-
-Color BitBoard::CurrentColor() const noexcept { return current_player_color_; }
-
-Color BitBoard::OpponentColor() const noexcept {
-  return !current_player_color_;
-}
-
-BitBoard::RookingFlagsT BitBoard::RookingFlags() const noexcept {
-  return rooking_flags_;
-}
-
-Position BitBoard::LastPawnMove() const noexcept { return last_pawn_move_; }
-
-void BitBoard::Set(Position position, Cell cell)  ///< Записує фігуру
-{
-  bitboard_t mask = PositionToBitMask(position);
-
-  if (all_[Color::kWhite] & mask)
-    for (size_t i = 1; i < Figure::Max(); i++)
-      board_[Color::kWhite][i] &= ~mask;
-
-  if (all_[Color::kBlack] & mask)
-    for (size_t i = 1; i < Figure::Max(); i++)
-      board_[Color::kBlack][i] &= ~mask;
-
-  board_[cell.color][cell.type] |= mask;
-
-  all_[Color::kWhite] = all_[Color::kBlack] = 0;
-
-  for (size_t i = 1; i < Figure::Max(); i++) {
-    all_[Color::kWhite] |= board_[Color::kWhite][i];
-    all_[Color::kBlack] |= board_[Color::kBlack][i];
-  }
-
-  board_[Color::kWhite][Figure::kEmpty] =
-      board_[Color::kBlack][Figure::kEmpty] =
-          ~(all_[Color::kWhite] | all_[Color::kBlack]);
-}
-
-void BitBoard::SetCurrentColor(Color color) { current_player_color_ = color; }
-
-void BitBoard::SetRookingFlags(RookingFlagsT flags) { rooking_flags_ = flags; }
-
-void BitBoard::SetLastPawnMove(Position lp) { last_pawn_move_ = lp; }
-
-void BitBoard::Swap(Position p1, Position p2) {
-  assert(p1.Valid());
-  assert(p2.Valid());
-
-  auto cell = GetCell(p1);
-  Set(p1, GetCell(p2));
-  Set(p2, cell);
-}
-
-void BitBoard::SkipMove() { current_player_color_ = OpponentColor(); }
-
-bool BitBoard::Test(Figure figure, Position position) const noexcept {
-  assert(position.Valid());
-  return ((board_[Color::kWhite][figure] | (board_[Color::kBlack][figure])) >>
-          position.Value()) &
-         1;
-}
-
-bool BitBoard::TestColor(Color color, Position position) const noexcept {
-  assert(position.Valid());
-  return (all_[color] >> position.Value()) & 1;
-}
-
-bool BitBoard::TestEmp(Position position) const noexcept {
-  assert(position.Valid());
-  return (board_[Color::kWhite][Figure::kEmpty] >> position.Value()) & 1;
-}
-
-BitBoard::Cell BitBoard::GetCell(Position position) const noexcept {
-  assert(position.Valid());
-  return {GetFigure(position), GetColor(position)};
-}
-
-bitboard_t BitBoard::GetBitBoard(Color color, Figure figure) const noexcept {
-  return board_[color][figure];
-}
-
-bitboard_t BitBoard::GetColorBitBoard(Color color) const noexcept {
-  return all_[color];
-}
-
-bool BitBoard::MateTest() const {
-  return (AttackMask(OpponentColor()) &
-          board_[CurrentColor()][Figure::kKing]) != 0;
-}
-
-bool BitBoard::End() const {
-  return GenerateSubBoards(CurrentColor()).size() == 0;
-}
-
-bool BitBoard::Checkmate() const { return End() && MateTest(); }
-
-bool BitBoard::WhiteWin() const {
-  return (CurrentColor() == Color::kBlack) && End();
-}
-
-bool BitBoard::BlackWin() const {
-  return (CurrentColor() == Color::kWhite) && End();
-}
-
-bool BitBoard::Tie() const { return End() && !MateTest(); }
-
-bool BitBoard::OpponentMateTest() const {
-  return (AttackMask(CurrentColor()) &
-          board_[OpponentColor()][Figure::kKing]) != 0;
-}
-
-Figure BitBoard::GetFigure(Position position) const noexcept {
-  assert(position.Valid());
-
-  for (size_t i = 0; i < Figure::Max(); i++) {
-    if (Test(i, position)) return (i);
-  }
-
-  return Figure::kEmpty;
-}
-
-Color BitBoard::GetColor(Position position) const noexcept {
-  assert(position.Valid());
-  return TestColor(Color::kBlack, position);
-}
-
-void BitBoard::Move(bitboard_t from, bitboard_t to, Color color, Figure type) {
-  board_[color][type] &= ~from;
-  board_[color][type] |= to;
-
-  all_[color] &= ~from;
-  all_[color] |= to;
-
-  board_[Color::kWhite][Figure::kEmpty] =
-      board_[Color::kBlack][Figure::kEmpty] =
-          ~(all_[Color::kWhite] | all_[Color::kBlack]);
-
-  if (from & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b)) {
-    if (from & 0_b)
-      rooking_flags_.black_ooo = false;
-    else if (from & 4_b) {
-      rooking_flags_.black_ooo = false;
-      rooking_flags_.black_oo = false;
-    } else if (from & 7_b)
-      rooking_flags_.black_oo = false;
-    else if (from & 56_b)
-      rooking_flags_.white_ooo = false;
-    else if (from & 60_b) {
-      rooking_flags_.white_ooo = false;
-      rooking_flags_.white_oo = false;
-    } else if (from & 63_b)
-      rooking_flags_.white_oo = false;
-  }
-}
-
-void BitBoard::Attack(bitboard_t from, bitboard_t to, Color color,
-                      Figure type) {
-  board_[color][type] &= ~from;
-  board_[color][type] |= to;
-
-  all_[color] &= ~from;
-  all_[color] |= to;
-
-  for (size_t i = 1; i < 7; i++) board_[!color][i] &= ~to;
-  all_[!color] &= ~to;
-
-  board_[Color::kWhite][Figure::kEmpty] =
-      board_[Color::kBlack][Figure::kEmpty] =
-          ~(all_[Color::kWhite] | all_[Color::kBlack]);
-
-  if (to & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b)) {
-    if (to & 0_b)
-      rooking_flags_.black_ooo = false;
-    else if (to & 4_b) {
-      rooking_flags_.black_ooo = false;
-      rooking_flags_.black_oo = false;
-    } else if (to & 7_b)
-      rooking_flags_.black_oo = false;
-    else if (to & 56_b)
-      rooking_flags_.white_ooo = false;
-    else if (to & 60_b) {
-      rooking_flags_.white_ooo = false;
-      rooking_flags_.white_oo = false;
-    } else if (to & 63_b)
-      rooking_flags_.white_oo = false;
-  }
-  if (from & (0_b | 4_b | 7_b | 56_b | 60_b | 63_b)) {
-    if (from & 0_b)
-      rooking_flags_.black_ooo = false;
-    else if (from & 4_b) {
-      rooking_flags_.black_ooo = false;
-      rooking_flags_.black_oo = false;
-    } else if (from & 7_b)
-      rooking_flags_.black_oo = false;
-    else if (from & 56_b)
-      rooking_flags_.white_ooo = false;
-    else if (from & 60_b) {
-      rooking_flags_.white_ooo = false;
-      rooking_flags_.white_oo = false;
-    } else if (from & 63_b)
-      rooking_flags_.white_oo = false;
-  }
-}
-
-void BitBoard::Transform(bitboard_t sq, Color color, Figure from, Figure to) {
-  board_[color][from] &= ~sq;
-  board_[color][to] |= sq;
-}
-
-struct Pawn {};
-
-struct Knight {
-  static bitboard_t Generate(bitboard_t figure, bitboard_t all,
-                             bitboard_t allies) {
-    return GenerateAttack(figure, all, allies) & ~allies;
-  }
-  static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
-                                   bitboard_t allies) {
-    return (((figure << 10) & ~(row_a | row_b)) | ((figure << 17) & (~row_a)) |
-            ((figure >> 6)) & ~(row_a | row_b) | ((figure >> 15) & ~(row_a)) |
-            ((figure << 6) & ~(row_g | row_h)) | ((figure << 15) & ~(row_h)) |
-            ((figure >> 10) & ~(row_g | row_h)) | ((figure >> 17) & ~(row_h)));
-    ;
-  }
-  constexpr static auto type = Figure::kKnight;
-};
-struct King {
-  static bitboard_t Generate(bitboard_t figure, bitboard_t all,
-                             bitboard_t allies) {
-    return GenerateAttack(figure, all, allies) & ~allies;
-  }
-  static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
-                                   bitboard_t allies) {
-    return (((figure << 1) & ~row_a) | ((figure << 9) & ~row_a) |
-            ((figure >> 7) & ~row_a) | (figure >> 8) |
-            ((figure >> 1) & ~row_h) | ((figure >> 9) & ~row_h) |
-            ((figure << 7) & ~row_h) | (figure << 8));
-  }
-  constexpr static auto type = Figure::kKing;
-};
-struct Bishop {
-  static bitboard_t Generate(bitboard_t figure, bitboard_t all,
-                             bitboard_t allies) {
-    return ProcessBishop(figure, all) & ~allies;
-  }
-  static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
-                                   bitboard_t allies) {
-    bitboard_t mask = 0;
-    BitIterator iterator(figure);
-    while (iterator.Valid()) {
-      mask |= ProcessBishop(iterator.Bit(), all);
-      ++iterator;
-    }
-    return mask;
-  }
-  constexpr static auto type = Figure::kBishop;
-};
-struct Rook {
-  static bitboard_t Generate(bitboard_t figure, bitboard_t all,
-                             bitboard_t allies) {
-    return ProcessRook(figure, all) & ~allies;
-  }
-  static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
-                                   bitboard_t allies) {
-    bitboard_t mask = 0;
-    BitIterator iterator(figure);
-    while (iterator.Valid()) {
-      mask |= ProcessRook(iterator.Bit(), all);
-      ++iterator;
-    }
-    return mask;
-  }
-  constexpr static auto type = Figure::kRook;
-};
-struct Queen {
-  static bitboard_t Generate(bitboard_t figure, bitboard_t all,
-                             bitboard_t allies) {
-    return (ProcessBishop(figure, all) | ProcessRook(figure, all)) & ~allies;
-  }
-  static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
-                                   bitboard_t allies) {
-    bitboard_t mask = 0;
-    BitIterator iterator(figure);
-    while (iterator.Valid()) {
-      mask |= (ProcessBishop(iterator.Bit(), all) |
-               ProcessRook(iterator.Bit(), all));
-      ++iterator;
-    }
-    return mask;
-  }
-  constexpr static auto type = Figure::kQueen;
-};
-
-template <typename Type>
-void BitBoard::ProcessFigure(const BitBoard &parrent,
-                             std::vector<BitBoard> &boards, Color color,
-                             bitboard_t from_mask, bitboard_t to_mask,
-                             bitboard_t all, bitboard_t yours,
-                             bitboard_t opponent) const {
-  bitboard_t map = board_[color][Type::type] & from_mask;
-  BitIterator iterator(map);
-  while (iterator.Valid()) {
-    bitboard_t after = Type::Generate(iterator.Bit(), all, yours) & to_mask;
-    after &= ~yours;
-    bitboard_t attack = after & opponent;
-    after &= ~attack;
-
-    BitIterator to(after);
-    bitboard_t reverse = ~iterator.Bit();
-    while (to.Valid()) {
-      boards.emplace_back(parrent);
-      boards.back().Move(iterator.bit_, to.bit_, color, Type::type);
-
-      ++to;
-    }
-
-    to = BitIterator(attack);
-    while (to.Valid()) {
-      boards.emplace_back(parrent);
-      boards.back().Attack(iterator.bit_, to.bit_, color, Type::type);
-
-      ++to;
-    }
-    ++iterator;
-  }
-}
-
-template <>
-void BitBoard::ProcessFigure<Pawn>(const BitBoard &parrent,
-                                   std::vector<BitBoard> &boards, Color color,
-                                   bitboard_t from_mask, bitboard_t to_mask,
-                                   bitboard_t all, bitboard_t yours,
-                                   bitboard_t opponent) const {
-  bitboard_t map = board_[color][Figure::kPawn] & from_mask;
-
-  bitboard_t possible;
-  if (color == Color::kWhite)
-    possible = (((map >> 8) & ~all) & to_mask) << 8;
-  else
-    possible = (((map << 8) & ~all) & to_mask) >> 8;
-
-  BitIterator iterator(possible);
-  while (iterator.Valid()) {
-    bitboard_t after;
-    if (color == Color::kWhite)
-      after = iterator.Bit() >> 8;
-    else
-      after = iterator.Bit() << 8;
-
-    BitBoard copy(parrent);
-    copy.Move(iterator.Bit(), after, color, Figure::kPawn);
-    boards.emplace_back(copy);
-    if (after & (line_1 | line_8)) {
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kQueen);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kRook);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kBishop);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kKnight);
-    }
-
-    ++iterator;
-  }
-
-  if (color == Color::kWhite)
-    possible = (((map & (~row_a)) >> (8 + 1)) & opponent & to_mask) << (8 + 1);
-  else
-    possible = (((map & (~row_h)) << (8 + 1)) & opponent & to_mask) >> (8 + 1);
-  iterator = possible;
-
-  while (iterator.Valid()) {
-    bitboard_t after;
-    if (color == Color::kWhite)
-      after = iterator.Bit() >> (8 + 1);
-    else
-      after = iterator.Bit() << (8 + 1);
-
-    BitBoard copy(parrent);
-    copy.Attack(iterator.Bit(), after, color, Figure::kPawn);
-    boards.emplace_back(copy);
-    if (after & (line_1 | line_8)) {
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kQueen);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kRook);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kBishop);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kKnight);
-    }
-
-    ++iterator;
-  }
-
-  if (color == Color::kWhite)
-    possible = (((map & (~row_h)) >> (8 - 1)) & opponent & to_mask) << (8 - 1);
-  else
-    possible = (((map & (~row_a)) << (8 - 1)) & opponent & to_mask) >> (8 - 1);
-
-  iterator = possible;
-
-  while (iterator.Valid()) {
-    bitboard_t after;
-    if (color == Color::kWhite)
-      after = iterator.Bit() >> (8 - 1);
-    else
-      after = iterator.Bit() << (8 - 1);
-
-    BitBoard copy(parrent);
-    copy.Attack(iterator.Bit(), after, color, Figure::kPawn);
-    boards.emplace_back(copy);
-    if (after & (line_1 | line_8)) {
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kQueen);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kRook);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kBishop);
-      boards.emplace_back(copy);
-      boards.back().Transform(after, color, Figure::kPawn, Figure::kKnight);
-    }
-
-    ++iterator;
-  }
-
-  if (color == Color::kWhite)
-    possible = (((((map & line_2) >> 8) & ~all) >> 8) & ~all & to_mask)
-               << 2 * 8;
-  else
-    possible =
-        (((((map & line_7) << 8) & ~all) << 8) & ~all & to_mask) >> 2 * 8;
-  iterator = possible;
-
-  while (iterator.Valid()) {
-    bitboard_t after;
-    bitboard_t el_passant;
-    if (color == Color::kWhite) {
-      after = iterator.Bit() >> 2 * 8;
-      el_passant = iterator.Bit() >> 8;
-    } else {
-      after = iterator.Bit() << 2 * 8;
-      el_passant = iterator.Bit() << 8;
-    }
-
-    boards.emplace_back(parrent);
-    boards.back().last_pawn_move_ = log2_64(el_passant);
-    boards.back().Move(iterator.Bit(), after, color, Figure::kPawn);
-
-    ++iterator;
-  }
-}
-
-template <typename Type>
-bitboard_t BitBoard::ProcessAttack(Color color, bitboard_t from_mask,
-                                   bitboard_t all, bitboard_t yours,
-                                   bitboard_t opponent) const {
-  bitboard_t map = board_[color][Type::type] & from_mask;
-  return Type::GenerateAttack(map, all, yours);
-}
-
-template <>
-bitboard_t BitBoard::ProcessAttack<Pawn>(Color color, bitboard_t from_mask,
-                                         bitboard_t all, bitboard_t yours,
-                                         bitboard_t opponent) const {
-  bitboard_t map = board_[color][Figure::kPawn] & from_mask;
-
-  if (color == Color::kWhite) {
-    return (((map & (~row_a)) >> (8 + 1))) | (((map & (~row_h)) >> (8 - 1)));
-  } else {
-    return (((map & (~row_h)) << (8 + 1))) | (((map & (~row_a)) << (8 - 1)));
-  }
-}
-
-bitboard_t BitBoard::AttackMask(Color color) const {
-  bitboard_t empty = board_[color][Figure::kEmpty];
-  bitboard_t opponent = all_[!color];
-  bitboard_t yours = all_[color];
-  bitboard_t all = ~empty;
-
-  bitboard_t result = 0;
-
-  // pawns
-  result |= ProcessAttack<Pawn>(color, kall, all, yours, opponent);
-  // knight
-  result |= ProcessAttack<Knight>(color, kall, all, yours, opponent);
-  // king
-  result |= ProcessAttack<King>(color, kall, all, yours, opponent);
-  // bishop
-  result |= ProcessAttack<Bishop>(color, kall, all, yours, opponent);
-  // rook
-  result |= ProcessAttack<Rook>(color, kall, all, yours, opponent);
-  // queen
-  result |= ProcessAttack<Queen>(color, kall, all, yours, opponent);
-
-  return result;
-}
-
-void BitBoard::GenerateSubBoards(Color color, std::vector<BitBoard> &boards,
-                                 uint64_t from, uint64_t to) const {
-  boards.clear();
-
-  bitboard_t empty = board_[color][Figure::kEmpty];
-  bitboard_t opponent = all_[!color];
-  bitboard_t yours = all_[color];
-  bitboard_t all = ~empty;
-  bitboard_t attack = AttackMask(!color);
-
-  BitBoard parent(*this);
-  parent.last_pawn_move_ = Position();
-  parent.SkipMove();
-
-  bitboard_t locked_figures =
-      attack & yours & AttackFrom(board_[color][Figure::kKing]);
-
-  // queen
-  ProcessFigure<Queen>(parent, boards, color, ~locked_figures & from, to, all,
-                       yours, opponent);
-  // rook
-  ProcessFigure<Rook>(parent, boards, color, ~locked_figures & from, to, all,
-                      yours, opponent);
-  // knight
-  ProcessFigure<Knight>(parent, boards, color, ~locked_figures & from, to, all,
-                        yours, opponent);
-  // bishop
-  ProcessFigure<Bishop>(parent, boards, color, ~locked_figures & from, to, all,
-                        yours, opponent);
-  // pawns
-  ProcessFigure<Pawn>(parent, boards, color, ~locked_figures & from, to, all,
-                      yours, opponent);
-  // king
-  ProcessFigure<King>(parent, boards, color, ~locked_figures & from,
-                      ~attack & to, all, yours, opponent);
-
-  auto index = boards.size();
-  if ((attack & board_[color][Figure::kKing]) != 0) index = 0;
-
-  // queen
-  ProcessFigure<Queen>(parent, boards, color, locked_figures & from, to, all,
-                       yours, opponent);
-  // rook
-  ProcessFigure<Rook>(parent, boards, color, locked_figures & from, to, all,
-                      yours, opponent);
-  // knight
-  ProcessFigure<Knight>(parent, boards, color, locked_figures & from, to, all,
-                        yours, opponent);
-  // bishop
-  ProcessFigure<Bishop>(parent, boards, color, locked_figures & from, to, all,
-                        yours, opponent);
-  // pawns
-  ProcessFigure<Pawn>(parent, boards, color, locked_figures & from, to, all,
-                      yours, opponent);
-  // king
-  ProcessFigure<King>(parent, boards, color, locked_figures & from,
-                      ~attack & to, all, yours, opponent);
-
-  if (last_pawn_move_.Valid() && CurrentColor() == color) {
-    bitboard_t sq = 1ULL << last_pawn_move_.Value();
-    bitboard_t pawns = board_[color][Figure::kPawn];
-    if (color == Color::kWhite) {
-      bitboard_t possible = ((((pawns & from & (~row_a)) >> (8 + 1)) & sq & to))
-                            << (8 + 1);
-      if (possible) {
-        boards.emplace_back(parent);
-        boards.back().Attack(possible, sq << 8, color, Figure::kPawn);
-        boards.back().Move(sq << 8, sq, color, Figure::kPawn);
-      }
-      possible = ((((pawns & from & (~row_h)) >> (8 - 1)) & sq & to))
-                 << (8 - 1);
-      if (possible) {
-        boards.emplace_back(parent);
-        boards.back().Attack(possible, sq << 8, color, Figure::kPawn);
-        boards.back().Move(sq << 8, sq, color, Figure::kPawn);
-      }
-    } else {
-      bitboard_t possible =
-          ((((pawns & from & (~row_h)) << (8 + 1)) & sq & to)) >> (8 + 1);
-      if (possible) {
-        boards.emplace_back(parent);
-        boards.back().Attack(possible, sq >> 8, color, Figure::kPawn);
-        boards.back().Move(sq >> 8, sq, color, Figure::kPawn);
-      }
-      possible =
-          ((((pawns & from & (~row_a)) << (8 - 1)) & sq & to)) >> (8 - 1);
-      if (possible) {
-        boards.emplace_back(parent);
-        boards.back().Attack(possible, sq >> 8, color, Figure::kPawn);
-        boards.back().Move(sq >> 8, sq, color, Figure::kPawn);
+#include <bitboard.hpp>
+#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("BitBoard test", "[bitboard]") {
+  SECTION("Test of TestColor GetFigure GetColor") {
+    BitBoard board;
+    for (uint8_t i = 0; i < 64; i++) {
+      for (uint8_t figure = 1; figure < 7; figure++) {
+        for (uint8_t color = 0; color < 2; color++) {
+          board.Set(i, {figure, color});
+
+          REQUIRE(board.Test(figure, i));
+          REQUIRE(board.TestColor(color, i));
+          REQUIRE(board.GetFigure(i) == figure);
+          REQUIRE(board.GetColor(i) == color);
+          REQUIRE(board.GetCell(i).color == color);
+          REQUIRE(board.GetCell(i).type == figure);
+        }
       }
     }
   }
 
-  auto it =
-      std::remove_if(boards.begin() + index, boards.end(),
-                     [](const BitBoard &b) { return b.OpponentMateTest(); });
-  boards.erase(it, boards.end());
-
-  // rooking
-  if (color == Color::kWhite) {
-    bitboard_t right = rooking_flags_.white_oo;
-    right = (right << 63) & board_[Color::kWhite][Figure::kRook];
-    right >>= 1;
-    right &= (empty & ~attack) & to;
-    right >>= 1;
-    right &= (empty & ~attack);
-    right >>= 1;
-    right &= (~attack) & board_[Color::kWhite][Figure::kKing] & from;
-
-    bitboard_t left = rooking_flags_.white_ooo;
-    left = (left << 56) & board_[Color::kWhite][Figure::kRook];
-    left <<= 1;
-    left &= empty;
-    left <<= 1;
-    left &= (empty & ~attack) & to;
-    left <<= 1;
-    left &= (empty & ~attack);
-    left <<= 1;
-    left &= (~attack) & board_[Color::kWhite][Figure::kKing] & from;
-
-    if (right != 0) {
-      boards.emplace_back(parent);
-      boards.back().Move(1ULL << 60, 1ULL << 62, Color::kWhite, Figure::kKing);
-      boards.back().Move(1ULL << 63, 1ULL << 61, Color::kWhite, Figure::kRook);
-      boards.back().rooking_flags_.white_oo = false;
-      boards.back().rooking_flags_.white_ooo = false;
-    }
-    if (left != 0) {
-      boards.emplace_back(parent);
-      boards.back().Move(1ULL << 60, 1ULL << 58, Color::kWhite, Figure::kKing);
-      boards.back().Move(1ULL << 56, 1ULL << 59, Color::kWhite, Figure::kRook);
-      boards.back().rooking_flags_.white_oo = false;
-      boards.back().rooking_flags_.white_ooo = false;
-    }
-  } else {
-    bitboard_t right = rooking_flags_.black_oo;
-    right = (right << 7) & board_[Color::kBlack][Figure::kRook];
-    right >>= 1;
-    right &= (empty & ~attack) & to;
-    right >>= 1;
-    right &= (empty & ~attack);
-    right >>= 1;
-    right &= (~attack) & board_[Color::kBlack][Figure::kKing] & from;
-
-    bitboard_t left = rooking_flags_.black_ooo;
-    left = (left << 0) & board_[Color::kBlack][Figure::kRook];
-    left <<= 1;
-    left &= empty;
-    left <<= 1;
-    left &= (empty & ~attack) & to;
-    left <<= 1;
-    left &= (empty & ~attack);
-    left <<= 1;
-    left &= (~attack) & board_[Color::kBlack][Figure::kKing] & from;
-
-    if (right != 0) {
-      boards.emplace_back(parent);
-      boards.back().Move(1ULL << 4, 1ULL << 6, Color::kBlack, Figure::kKing);
-      boards.back().Move(1ULL << 7, 1ULL << 5, Color::kBlack, Figure::kRook);
-      boards.back().rooking_flags_.black_oo = false;
-      boards.back().rooking_flags_.black_ooo = false;
-    }
-    if (left != 0) {
-      boards.emplace_back(parent);
-      boards.back().Move(1ULL << 4, 1ULL << 2, Color::kBlack, Figure::kKing);
-      boards.back().Move(1ULL << 0, 1ULL << 3, Color::kBlack, Figure::kRook);
-      boards.back().rooking_flags_.black_oo = false;
-      boards.back().rooking_flags_.black_ooo = false;
+  SECTION("Test of TestEmp") {
+    BitBoard board;
+    for (int i = 0; i < 64; i++) {
+      board.Set(i, {Figure::kEmpty, Color::kWhite});
+      REQUIRE(board.TestEmp(i));
+      REQUIRE(board.GetFigure(i) == (Figure)0);
     }
   }
-}
 
-std::vector<BitBoard> BitBoard::GenerateSubBoards(Color color, uint64_t from,
-                                                  uint64_t to) const {
-  std::vector<BitBoard> boards;
-  boards.reserve(120);
+  SECTION("Test of Swap") {
+    BitBoard board;
+    for (size_t i = 0; i < 64; i++) {
+      for (size_t j = 0; j < 64; j++) {
+        if (i == j) continue;
 
-  GenerateSubBoards(color, boards, from, to);
-  return boards;
-}
-
-void BitBoard::GenerateSubBoards(std::vector<BitBoard> &boards, Color color,
-                                 uint64_t from, uint64_t to) const {
-  GenerateSubBoards(color, boards, from, to);
-}
-
-std::vector<Turn> BitBoard::GenerateTurns(Color color, uint64_t from,
-                                          uint64_t to) const {
-  std::vector<BitBoard> boards;
-  std::vector<Turn> turns;
-  turns.reserve(120);
-  boards.reserve(120);
-  GenerateSubBoards(boards, color, from, to);
-
-  for (const auto &subboard : boards)
-    turns.push_back(GetTurn(*this, subboard, color));
-  return turns;
-}
-
-bool BitBoard::ExecuteTurn(Turn turn) {
-  auto maps =
-      GenerateSubBoards(CurrentColor(), operator""_b(turn.from().Value()),
-                                        operator""_b(turn.to().Value()));
-  auto turns = BitBoard::GenerateTurns(*this, maps, CurrentColor());
-  for (size_t i = 0; i < turns.size(); ++i) {
-    if (turns[i] == turn) {
-      *this = maps[i];
-      return true;
+        board.Set(i, {Figure::kPawn, Color::kWhite});
+        board.Set(j, {Figure::kKnight, Color::kBlack});
+        board.Swap(i, j);
+        REQUIRE(board.Test(Figure::kPawn, j));
+        REQUIRE(board.Test(Figure::kKnight, i));
+        REQUIRE(board.TestColor(Color::kBlack, i));
+        REQUIRE(board.TestColor(Color::kWhite, j));
+      }
     }
   }
-  return false;
-}
-
-bool BitBoard::TestTurn(Turn turn) const {
-  auto turns = GenerateTurns(CurrentColor());
-  return std::count(turns.begin(), turns.end(), turn) == 1;
-}
-
-bitboard_hash_t BitBoard::Hash() const {
-  bitboard_hash_t hash = 0;
-  /*
-bitboard_t GetFigureHash(Figure figure, Color color, Position position);
-bitboard_t GetShortCastlingFlagHash(Color color);
-bitboard_t GetLongCastlingFlagHash(Color color);
-bitboard_t GetTurnCounterHash(int count);
-bitboard_t GetPassiveCountHash(int count);
-bitboard_t GetCurrentColorHash(Color color);
-bitboard_t GetElpassantHash(Position position);
-*/
-
-  for (size_t i = 0; i < 64; i++) {
-    if (!TestEmp(i)) hash ^= GetFigureHash(GetFigure(i), GetColor(i), i);
+  SECTION("Test of SkipMove CurrentColor OpponentColor") {
+    BitBoard board;
+    auto copy = board;
+    copy.SkipMove();
+    REQUIRE(board.CurrentColor() == copy.OpponentColor());
+    REQUIRE(copy.CurrentColor() == board.OpponentColor());
   }
-  return hash;
-}
+  SECTION("Test of ExecuteTurn GenerateTurns TestTurn") {
+    BitBoard board;
+    auto turns = board.GenerateTurns(board.CurrentColor());
+    auto subboards = board.GenerateSubBoards(board.CurrentColor());
+    REQUIRE(turns.size() == subboards.size());
 
-std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(BitBoardTuple tuple,
-                                                        Color color,
-                                                        uint64_t from,
-                                                        uint64_t to) {
-  auto boards = tuple.board.GenerateSubBoards(color, from, to);
-
-  std::vector<BitBoardTuple> tuples;
-  tuples.reserve(boards.size());
-
-  for (auto &board : boards) {
-    auto turn = GetTurn(tuple.board, board, color);
-    tuples.push_back({board, GetHash(tuple.board, tuple.hash, turn), turn});
+    for (size_t i = 0; i < turns.size(); i++) {
+      BitBoard sub = board;
+      sub.ExecuteTurn(turns[i]);
+      REQUIRE(sub.Fen() == subboards[i].Fen());
+    }
   }
-
-  return tuples;
-}
-
-Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard,
-                       Color color) {
-  bitboard_t delta = board.all_[color] ^ subboard.all_[color];
-  bitboard_t from = board.all_[color] & delta;
-  bitboard_t to = subboard.all_[color] & delta;
-
-  if (krooking_masks[color][0] == delta) {
-    return Turn::GetLongCastling(color);
-  } else if (krooking_masks[color][1] == delta) {
-    return Turn::GetShortCastling(color);
-  } else if ((to & (line_1 | line_8)) != 0 &&
-             (from & board.board_[color][Figure::kPawn]) != 0) {
-    return Turn(log2_64(from), log2_64(to), subboard.GetFigure(log2_64(to)));
-  } else {
-    return Turn(log2_64(from), log2_64(to));
+  SECTION("Test of el passant") {
+    BitBoard board;
+    REQUIRE(board.ExecuteTurn(Turn(Position(51), Position(35))));
+    REQUIRE(board.LastPawnMove() == Position(43));
+    REQUIRE(board.ExecuteTurn(Turn(Position(9), Position(17))));
+    REQUIRE(board.LastPawnMove() == Position());
+    board = BitBoard();
+    board.SkipMove();
+    REQUIRE(board.ExecuteTurn(Turn(Position(9), Position(25))));
+    REQUIRE(board.LastPawnMove() == Position(17));
+    REQUIRE(board.ExecuteTurn(Turn(Position(57), Position(42))));
+    REQUIRE(board.LastPawnMove() == Position());
+  }
+  SECTION("Test of castling") {
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(60), Position(62))));
+      REQUIRE(!board.RookingFlags().white_ooo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(60), Position(58))));
+      REQUIRE(!board.RookingFlags().white_ooo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(60), Position(52))));
+      REQUIRE(!board.RookingFlags().white_ooo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(56), Position(48))));
+      REQUIRE(!board.RookingFlags().white_ooo);
+      REQUIRE(board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(63), Position(55))));
+      REQUIRE(board.RookingFlags().white_ooo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(56), Position(0))));
+      REQUIRE(!board.RookingFlags().white_ooo);
+      REQUIRE(!board.RookingFlags().black_ooo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R w KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(63), Position(7))));
+      REQUIRE(!board.RookingFlags().black_oo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(4), Position(6))));
+      REQUIRE(!board.RookingFlags().black_ooo);
+      REQUIRE(!board.RookingFlags().black_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(4), Position(2))));
+      REQUIRE(!board.RookingFlags().black_ooo);
+      REQUIRE(!board.RookingFlags().black_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(4), Position(12))));
+      REQUIRE(!board.RookingFlags().black_ooo);
+      REQUIRE(!board.RookingFlags().black_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(0), Position(8))));
+      REQUIRE(!board.RookingFlags().black_ooo);
+      REQUIRE(board.RookingFlags().black_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(7), Position(15))));
+      REQUIRE(board.RookingFlags().black_ooo);
+      REQUIRE(!board.RookingFlags().black_oo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(0), Position(56))));
+      REQUIRE(!board.RookingFlags().black_ooo);
+      REQUIRE(!board.RookingFlags().white_ooo);
+    }
+    {
+      BitBoard board("r3k2r/1ppp1pp1/8/8/8/8/1PPP1PP1/R3K2R b KQkq a6 0 1");
+      REQUIRE(board.ExecuteTurn(Turn(Position(7), Position(63))));
+      REQUIRE(!board.RookingFlags().black_oo);
+      REQUIRE(!board.RookingFlags().white_oo);
+    }
+  }
+  SECTION("Test of MateTest End Checkmate WhiteWin BlackWin Tie") {
+    {
+      BitBoard board;
+      REQUIRE(!board.MateTest());
+      REQUIRE(!board.End());
+      REQUIRE(!board.Checkmate());
+      REQUIRE(!board.WhiteWin());
+      REQUIRE(!board.BlackWin());
+      REQUIRE(!board.Tie());
+    }
+    {
+      BitBoard board(
+          "rnb1kbnr/pppppppp/8/4q3/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+      REQUIRE(board.MateTest());
+      REQUIRE(!board.End());
+      REQUIRE(!board.Checkmate());
+      REQUIRE(!board.WhiteWin());
+      REQUIRE(!board.BlackWin());
+      REQUIRE(!board.Tie());
+    }
+    {
+      BitBoard board(
+          "rnb1k2r/pppppppp/6n1/4bq2/7K/8/PPPP1PPP/RNBQ1BNR w KQkq - 0 1");
+      REQUIRE(board.MateTest());
+      REQUIRE(board.End());
+      REQUIRE(board.Checkmate());
+      REQUIRE(!board.WhiteWin());
+      REQUIRE(board.BlackWin());
+      REQUIRE(!board.Tie());
+    }
+    {
+      BitBoard board("rnb4r/ppppp3/6N1/4BQ2/7k/8/PPPP1PPP/RNBK3R b KQkq - 0 1");
+      REQUIRE(board.MateTest());
+      REQUIRE(board.End());
+      REQUIRE(board.Checkmate());
+      REQUIRE(board.WhiteWin());
+      REQUIRE(!board.BlackWin());
+      REQUIRE(!board.Tie());
+    }
+    {
+      BitBoard board("k7/8/1Q6/2K5/8/8/8/8 b - - 0 1");
+      REQUIRE(!board.MateTest());
+      REQUIRE(board.End());
+      REQUIRE(!board.Checkmate());
+      REQUIRE(board.WhiteWin());
+      REQUIRE(!board.BlackWin());
+      REQUIRE(board.Tie());
+    }
+    {
+      BitBoard board("K7/8/1q6/2k5/8/8/8/8 w - - 0 1");
+      REQUIRE(!board.MateTest());
+      REQUIRE(board.End());
+      REQUIRE(!board.Checkmate());
+      REQUIRE(!board.WhiteWin());
+      REQUIRE(board.BlackWin());
+      REQUIRE(board.Tie());
+    }
   }
 }
 
-bitboard_hash_t BitBoard::GetHash(const BitBoard &board, bitboard_hash_t hash,
-                                  Turn turn) {
-  /*
-  auto from = board.GetCell(turn.from());
-  auto to = board.GetCell(turn.to());
-  hash ^= GetFigureHash(from.type,from.color,turn.from());
-  if(to.type != Figure::kEmpty)
-      hash ^= GetFigureHash(to.type,to.color,turn.to());
-  hash ^= GetFigureHash(from.type,from.color,turn.to());
+TEST_CASE("BitBoard fen", "[bitboard][fen]") {
+  REQUIRE(BitBoard("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 0").Fen() ==
+          "8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 0");
+  REQUIRE(BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 0").Fen() ==
+          "8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 0");
+  REQUIRE(BitBoard("8/8/2p5/8/2R1P3/8/8/8 w - - 0 0").Fen() ==
+          "8/8/2p5/8/2R1P3/8/8/8 w - - 0 0");
+  REQUIRE(BitBoard("2q5/8/8/8/8/8/4P3/3K4 w - - 0 0").Fen() ==
+          "2q5/8/8/8/8/8/4P3/3K4 w - - 0 0");
+  REQUIRE(BitBoard("8/8/8/4pP2/8/8/8/8 w - e6 0 0").Fen() ==
+          "8/8/8/4pP2/8/8/8/8 w - e6 0 0");
+  REQUIRE(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 0 0").Fen() ==
+          "r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 0 0");
+  REQUIRE(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 0").Fen() ==
+          "8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 0");
+  REQUIRE(BitBoard("r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0 0")
+              .Fen() ==
+          "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0 0");
+  REQUIRE(
+      BitBoard(
+          "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 0 0")
+          .Fen() ==
+      "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 0 0");
+  REQUIRE(BitBoard(
+              "2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 0 0")
+              .Fen() ==
+          "2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 0 0");
+  REQUIRE(BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 0 0")
+              .Fen() ==
+          "rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 0 0");
+  REQUIRE(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4").Fen() ==
+          "2r5/3pk3/8/2P5/8/2K5/8/8 w - - 0 0");
+  REQUIRE(BitBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 0 0")
+              .Fen() ==
+          "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 0 0");
+  REQUIRE(BitBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/"
+                   "R4RK1 w - - 0 10")
+              .Fen() ==
+          "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - "
+          "0 0");
+  REQUIRE(BitBoard("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1").Fen() ==
+          "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 0");
+  REQUIRE(BitBoard("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1").Fen() ==
+          "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 0");
+  REQUIRE(BitBoard("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1").Fen() ==
+          "8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 0");
+  REQUIRE(BitBoard("5k2/8/8/8/8/8/8/4K2R w K - 0 1").Fen() ==
+          "5k2/8/8/8/8/8/8/4K2R w K - 0 0");
+  REQUIRE(BitBoard("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1").Fen() ==
+          "3k4/8/8/8/8/8/8/R3K3 w Q - 0 0");
+  REQUIRE(BitBoard("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1").Fen() ==
+          "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 0");
+  REQUIRE(BitBoard("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1").Fen() ==
+          "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 0");
+  REQUIRE(BitBoard("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1").Fen() ==
+          "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 0");
+  REQUIRE(BitBoard("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1").Fen() ==
+          "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 0");
+  REQUIRE(BitBoard("4k3/1P6/8/8/8/8/K7/8 w - - 0 1").Fen() ==
+          "4k3/1P6/8/8/8/8/K7/8 w - - 0 0");
+  REQUIRE(BitBoard("8/P1k5/K7/8/8/8/8/8 w - - 0 1").Fen() ==
+          "8/P1k5/K7/8/8/8/8/8 w - - 0 0");
+  REQUIRE(BitBoard("K1k5/8/P7/8/8/8/8/8 w - - 0 1").Fen() ==
+          "K1k5/8/P7/8/8/8/8/8 w - - 0 0");
+  REQUIRE(BitBoard("8/k1P5/8/1K6/8/8/8/8 w - - 0 1").Fen() ==
+          "8/k1P5/8/1K6/8/8/8/8 w - - 0 0");
+  REQUIRE(BitBoard("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1").Fen() ==
+          "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 0");
+}
 
-  if(from.type == Figure::kPawn && to.type == Figure::kEmpty && turn.from().x()
-  != turn.to().x())
-  {
-
+template <typename Board>
+static size_t MovesCounterBase(Board board, size_t depth) {
+  if (!depth) return 1;
+  size_t counter = 0;
+  for (auto board : board.GenerateSubBoards(board.CurrentColor())) {
+    counter += MovesCounterBase(board, depth - 1);
   }
-
-  */
-  return hash;
+  return counter;
 }
 
-std::vector<Turn> BitBoard::GenerateTurns(
-    const BitBoard &main, const std::vector<BitBoard> &subboards, Color color) {
-  std::vector<Turn> turns;
-  turns.reserve(subboards.size());
-
-  for (const auto &subboard : subboards)
-    turns.push_back(GetTurn(main, subboard, color));
-  return turns;
+template <typename Board>
+static size_t MovesCounterFrom(Board board, size_t depth,
+                               uint64_t maskfrom = 1) {
+  if (!depth) return 1;
+  size_t counter = 0;
+  auto boards1 = board.GenerateSubBoards(board.CurrentColor(), maskfrom);
+  auto boards2 = board.GenerateSubBoards(board.CurrentColor(), ~maskfrom);
+  maskfrom = maskfrom * 3334343 + 1341324;
+  for (auto board : boards1) {
+    counter += MovesCounterFrom(board, depth - 1, maskfrom);
+  }
+  for (auto board : boards2) {
+    counter += MovesCounterFrom(board, depth - 1, maskfrom);
+  }
+  return counter;
 }
 
-bool BitBoard::operator==(const BitBoard &board) const {
-  bitboard_t board_[Color::Max()][Figure::Max()];
-  bitboard_t all_[Color::Max()];
-
-  // additional state
-
-  if (current_player_color_ != board.current_player_color_) return false;
-
-  if (rooking_flags_.black_oo != board.rooking_flags_.black_oo) return false;
-
-  if (rooking_flags_.black_ooo != board.rooking_flags_.black_ooo) return false;
-
-  if (rooking_flags_.white_oo != board.rooking_flags_.white_oo) return false;
-
-  if (rooking_flags_.white_ooo != board.rooking_flags_.white_ooo) return false;
-
-  if (last_pawn_move_ != last_pawn_move_) return false;
-
-  for (size_t color = 0; color < Color::Max(); color++)
-    for (size_t figure = 0; figure < Figure::Max(); figure++)
-      if (board_[color][figure] != board.board_[color][figure]) return false;
-
-  return true;
+template <typename Board>
+static size_t MovesCounterTo(Board board, size_t depth, uint64_t maskto = 1) {
+  if (!depth) return 1;
+  size_t counter = 0;
+  auto boards1 = board.GenerateSubBoards(board.CurrentColor(), kall, maskto);
+  auto boards2 = board.GenerateSubBoards(board.CurrentColor(), kall, ~maskto);
+  maskto = maskto * 3334343 + 1341324;
+  for (auto board : boards1) {
+    counter += MovesCounterTo(board, depth - 1, maskto);
+  }
+  for (auto board : boards2) {
+    counter += MovesCounterTo(board, depth - 1, maskto);
+  }
+  return counter;
 }
 
-bool BitBoard::operator!=(const BitBoard &board) const {
-  return !(*this == board);
+TEST_CASE("BitBoard generation test", "[bitboard][generation]") {
+  REQUIRE(MovesCounterBase(BitBoard(), 1) == 20);
+  REQUIRE(MovesCounterTo(BitBoard(), 1) == 20);
+  REQUIRE(MovesCounterFrom(BitBoard(), 1) == 20);
+
+  REQUIRE(MovesCounterBase(BitBoard(), 2) == 400);
+  REQUIRE(MovesCounterTo(BitBoard(), 2) == 400);
+  REQUIRE(MovesCounterFrom(BitBoard(), 2) == 400);
+
+  REQUIRE(MovesCounterBase(BitBoard(), 3) == 8902);
+  REQUIRE(MovesCounterTo(BitBoard(), 3) == 8902);
+  REQUIRE(MovesCounterFrom(BitBoard(), 3) == 8902);
+}
+
+TEST_CASE("BitBoard generation advanced test", "[bitboard][generation]") {
+  REQUIRE(MovesCounterBase(BitBoard(), 4) == 197281);
+  REQUIRE(MovesCounterTo(BitBoard(), 4) == 197281);
+  REQUIRE(MovesCounterFrom(BitBoard(), 4) == 197281);
+
+  REQUIRE(MovesCounterBase(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2"),
+                           1) == 8);
+  REQUIRE(MovesCounterTo(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2"),
+                         1) == 8);
+  REQUIRE(MovesCounterFrom(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2"),
+                           1) == 8);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3"), 1) ==
+          8);
+  REQUIRE(MovesCounterTo(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3"), 1) ==
+          8);
+  REQUIRE(MovesCounterFrom(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3"), 1) ==
+          8);
+
+  REQUIRE(MovesCounterBase(
+              BitBoard(
+                  "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2 2"),
+              1) == 19);
+  REQUIRE(MovesCounterTo(
+              BitBoard(
+                  "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2 2"),
+              1) == 19);
+  REQUIRE(MovesCounterFrom(
+              BitBoard(
+                  "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2 2"),
+              1) == 19);
+
+  REQUIRE(MovesCounterBase(BitBoard("r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/"
+                                    "PPPBBPPP/R3K2R b KQkq - 3 2"),
+                           1) == 5);
+  REQUIRE(MovesCounterTo(BitBoard("r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/"
+                                  "PPPBBPPP/R3K2R b KQkq - 3 2"),
+                         1) == 5);
+  REQUIRE(MovesCounterFrom(BitBoard("r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/"
+                                    "PPPBBPPP/R3K2R b KQkq - 3 2"),
+                           1) == 5);
+
+  REQUIRE(MovesCounterBase(BitBoard("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/"
+                                    "PPPBBPPP/R3K2R b KQ - 3 2"),
+                           1) == 44);
+  REQUIRE(MovesCounterTo(BitBoard("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/"
+                                  "PPPBBPPP/R3K2R b KQ - 3 2"),
+                         1) == 44);
+  REQUIRE(MovesCounterFrom(BitBoard("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/"
+                                    "PPPBBPPP/R3K2R b KQ - 3 2"),
+                           1) == 44);
+
+  REQUIRE(
+      MovesCounterBase(
+          BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9"),
+          1) == 39);
+  REQUIRE(
+      MovesCounterTo(
+          BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9"),
+          1) == 39);
+  REQUIRE(
+      MovesCounterFrom(
+          BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9"),
+          1) == 39);
+
+  REQUIRE(MovesCounterBase(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4"), 1) ==
+          9);
+  REQUIRE(MovesCounterTo(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4"), 1) ==
+          9);
+  REQUIRE(MovesCounterFrom(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4"), 1) ==
+          9);
+
+  REQUIRE(
+      MovesCounterBase(
+          BitBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"),
+          3) == 62379);
+  REQUIRE(
+      MovesCounterTo(
+          BitBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"),
+          3) == 62379);
+  REQUIRE(
+      MovesCounterFrom(
+          BitBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"),
+          3) == 62379);
+
+  REQUIRE(MovesCounterBase(BitBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/"
+                                    "P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"),
+                           3) == 89890);
+  REQUIRE(MovesCounterTo(BitBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/"
+                                  "P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"),
+                         3) == 89890);
+  REQUIRE(MovesCounterFrom(BitBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/"
+                                    "P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"),
+                           3) == 89890);
+
+  REQUIRE(MovesCounterBase(BitBoard("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1"), 6) ==
+          1134888);
+  REQUIRE(MovesCounterTo(BitBoard("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1"), 6) ==
+          1134888);
+  REQUIRE(MovesCounterFrom(BitBoard("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1"), 6) ==
+          1134888);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1"), 6) ==
+          1015133);
+  REQUIRE(MovesCounterTo(BitBoard("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1"), 6) ==
+          1015133);
+  REQUIRE(MovesCounterFrom(BitBoard("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1"), 6) ==
+          1015133);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1"),
+                           6) == 1440467);
+  REQUIRE(MovesCounterTo(BitBoard("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1"), 6) ==
+          1440467);
+  REQUIRE(MovesCounterFrom(BitBoard("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1"),
+                           6) == 1440467);
+
+  REQUIRE(MovesCounterBase(BitBoard("5k2/8/8/8/8/8/8/4K2R w K - 0 1"), 6) ==
+          661072);
+  REQUIRE(MovesCounterTo(BitBoard("5k2/8/8/8/8/8/8/4K2R w K - 0 1"), 6) ==
+          661072);
+  REQUIRE(MovesCounterFrom(BitBoard("5k2/8/8/8/8/8/8/4K2R w K - 0 1"), 6) ==
+          661072);
+
+  REQUIRE(MovesCounterBase(BitBoard("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1"), 6) ==
+          803711);
+  REQUIRE(MovesCounterTo(BitBoard("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1"), 6) ==
+          803711);
+  REQUIRE(MovesCounterFrom(BitBoard("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1"), 6) ==
+          803711);
+
+  REQUIRE(MovesCounterBase(
+              BitBoard("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1"), 4) ==
+          1274206);
+  REQUIRE(MovesCounterTo(BitBoard("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1"),
+                         4) == 1274206);
+  REQUIRE(MovesCounterFrom(
+              BitBoard("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1"), 4) ==
+          1274206);
+
+  REQUIRE(MovesCounterBase(BitBoard("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1"),
+                           4) == 1720476);
+  REQUIRE(MovesCounterTo(BitBoard("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1"),
+                         4) == 1720476);
+  REQUIRE(MovesCounterFrom(BitBoard("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1"),
+                           4) == 1720476);
+
+  REQUIRE(MovesCounterBase(BitBoard("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1"), 6) ==
+          3821001);
+  REQUIRE(MovesCounterTo(BitBoard("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1"), 6) ==
+          3821001);
+  REQUIRE(MovesCounterFrom(BitBoard("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1"), 6) ==
+          3821001);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1"),
+                           5) == 1004658);
+  REQUIRE(MovesCounterTo(BitBoard("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1"), 5) ==
+          1004658);
+  REQUIRE(MovesCounterFrom(BitBoard("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1"),
+                           5) == 1004658);
+
+  REQUIRE(MovesCounterBase(BitBoard("4k3/1P6/8/8/8/8/K7/8 w - - 0 1"), 6) ==
+          217342);
+  REQUIRE(MovesCounterTo(BitBoard("4k3/1P6/8/8/8/8/K7/8 w - - 0 1"), 6) ==
+          217342);
+  REQUIRE(MovesCounterFrom(BitBoard("4k3/1P6/8/8/8/8/K7/8 w - - 0 1"), 6) ==
+          217342);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/P1k5/K7/8/8/8/8/8 w - - 0 1"), 6) ==
+          92683);
+  REQUIRE(MovesCounterTo(BitBoard("8/P1k5/K7/8/8/8/8/8 w - - 0 1"), 6) ==
+          92683);
+  REQUIRE(MovesCounterFrom(BitBoard("8/P1k5/K7/8/8/8/8/8 w - - 0 1"), 6) ==
+          92683);
+
+  REQUIRE(MovesCounterBase(BitBoard("K1k5/8/P7/8/8/8/8/8 w - - 0 1"), 6) ==
+          2217);
+  REQUIRE(MovesCounterTo(BitBoard("K1k5/8/P7/8/8/8/8/8 w - - 0 1"), 6) == 2217);
+  REQUIRE(MovesCounterFrom(BitBoard("K1k5/8/P7/8/8/8/8/8 w - - 0 1"), 6) ==
+          2217);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"), 7) ==
+          567584);
+  REQUIRE(MovesCounterTo(BitBoard("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"), 7) ==
+          567584);
+  REQUIRE(MovesCounterFrom(BitBoard("8/k1P5/8/1K6/8/8/8/8 w - - 0 1"), 7) ==
+          567584);
+
+  REQUIRE(MovesCounterBase(BitBoard("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"), 4) ==
+          23527);
+  REQUIRE(MovesCounterTo(BitBoard("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"), 4) ==
+          23527);
+  REQUIRE(MovesCounterFrom(BitBoard("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"), 4) ==
+          23527);
+}
+
+template <typename T>
+void TestTurn(T board) {
+  auto mysubs = board.GenerateSubBoards(board.CurrentColor());
+  auto opsubs = board.GenerateSubBoards(board.OpponentColor());
+  auto myturns = board.GenerateTurns(board.CurrentColor());
+  auto opturns = board.GenerateTurns(board.OpponentColor());
+  REQUIRE(mysubs.size() == myturns.size());
+  REQUIRE(opsubs.size() == opturns.size());
+
+  for (size_t i = 0; i < mysubs.size(); ++i) {
+    T temp(board);
+    temp.ExecuteTurn(myturns[i]);
+    REQUIRE(temp.Fen() == mysubs[i].Fen());
+  }
+}
+
+TEST_CASE("Boards turns generation test", "[bitboard][generation][turn]") {
+  (TestTurn(BitBoard()));
+  (TestTurn(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2")));
+  (TestTurn(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3")));
+  (TestTurn(
+      BitBoard("r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2 2")));
+  (TestTurn(BitBoard(
+      "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 3 2")));
+  (TestTurn(BitBoard(
+      "2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 3 2")));
+  (TestTurn(
+      BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9")));
+  (TestTurn(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4")));
+  (TestTurn(
+      BitBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")));
+  (
+      TestTurn(BitBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/"
+                        "1PP1QPPP/R4RK1 w - - 0 10")));
+  (TestTurn(BitBoard("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1")));
+  (TestTurn(BitBoard("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1")));
+  (TestTurn(BitBoard("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1")));
+  (TestTurn(BitBoard("5k2/8/8/8/8/8/8/4K2R w K - 0 1")));
+  (TestTurn(BitBoard("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1")));
+  (TestTurn(BitBoard("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1")));
+  (TestTurn(BitBoard("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1")));
+  (TestTurn(BitBoard("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1")));
+  (TestTurn(BitBoard("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1")));
+  (TestTurn(BitBoard("4k3/1P6/8/8/8/8/K7/8 w - - 0 1")));
+  (TestTurn(BitBoard("8/P1k5/K7/8/8/8/8/8 w - - 0 1")));
+  (TestTurn(BitBoard("K1k5/8/P7/8/8/8/8/8 w - - 0 1")));
+  (TestTurn(BitBoard("8/k1P5/8/1K6/8/8/8/8 w - - 0 1")));
+  (TestTurn(BitBoard("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1")));
 }
