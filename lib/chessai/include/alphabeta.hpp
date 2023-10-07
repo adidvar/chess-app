@@ -1,39 +1,60 @@
 #ifndef ALPHABETA_HPP
 #define ALPHABETA_HPP
 
+#include <atomic>
+
 #include "bftable.hpp"
 #include "bitboard.hpp"
+#include "exitcondition.hpp"
 #include "ordering.hpp"
 #include "statistics.hpp"
-#include "timer.hpp"
 #include "ttable.hpp"
 
 template <typename T>
 class AlphaBeta {
  public:
-  AlphaBeta(Color color) {}
+  AlphaBeta(Color color, std::atomic_bool &stop_flag)
+      : m_color(color), m_stop_flag(stop_flag) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
+    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
+
   Turn GetTurn(const BitBoard &board, int depth) {
+    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth).second;
   }
+
   std::vector<Turn> FindPV(BitBoard board, int depth) {
+    clear();
     return findpv(board, depth);
   }
 
   static T Evaluate(BitBoard board, Color color, int depth) {
-    AlphaBeta<T> core(color);
+    std::atomic_bool flag = 0;
+    AlphaBeta<T> core(color, flag);
     return core.GetValue(board, depth);
   }
 
+  Statistics GetStatistics() const { return m_stat; };
+
+  TTable *GetTTable() const { return m_ttable; };
+  void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
+
  private:
+  void clear() {
+    // m_btable.Clear();
+    m_stat.Clear();
+  };
+
   T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
               int depthmax) {
     auto oldalpha = alpha;
+
+    CheckAndThrow(m_stop_flag);
 
     if (depthleft == 0) {
       // auto value = qsearch_.GetValue(tuple.board, alpha, beta);
@@ -43,7 +64,8 @@ class AlphaBeta {
     }
 
     bool founded = false;
-    auto hashed = m_ttable->Search(tuple.hash, founded);
+    SearchElement *hashed;
+    if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
       if (hashed->depth == depthleft && hashed->type == SearchElement::PV)
@@ -71,7 +93,7 @@ class AlphaBeta {
       return T::Tie();
     }
 
-    // ReOrder(tuple.board, moves, m_btable, m_ttable);
+    ReOrder(tuple.board, moves, m_btable, m_ttable);
     T bestscore = T::Min();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
@@ -89,17 +111,19 @@ class AlphaBeta {
       }
     }
 
-    hashed->hasvalue = true;
-    hashed->hash = tuple.hash;
-    hashed->value = bestscore;
-    hashed->depth = depthleft;
+    if (m_ttable) {
+      hashed->hasvalue = true;
+      hashed->hash = tuple.hash;
+      hashed->value = bestscore;
+      hashed->depth = depthleft;
 
-    if (bestscore > oldalpha && bestscore < beta)
-      hashed->type = SearchElement::PV;
-    else if (bestscore <= oldalpha)
-      hashed->type = SearchElement::FailLow;
-    else if (bestscore >= beta)
-      hashed->type = SearchElement::FailHigh;
+      if (bestscore > oldalpha && bestscore < beta)
+        hashed->type = SearchElement::PV;
+      else if (bestscore <= oldalpha)
+        hashed->type = SearchElement::FailLow;
+      else if (bestscore >= beta)
+        hashed->type = SearchElement::FailHigh;
+    }
 
     return bestscore;
   }
@@ -115,7 +139,7 @@ class AlphaBeta {
       return {T(), Turn()};
     }
 
-    ReOrder(tuple.board, moves, m_btable, *m_ttable);
+    ReOrder(tuple.board, moves, m_btable, m_ttable);
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {
@@ -148,13 +172,11 @@ class AlphaBeta {
   }
 
  private:
-  Color m_color;
+  std::atomic_bool &m_stop_flag;
+  const Color m_color;
   Statistics m_stat;
-
   BFTable m_btable;
-
-  Timer *m_timer;
-  TTable *m_ttable;
+  TTable *m_ttable = nullptr;
 };
 
 #endif

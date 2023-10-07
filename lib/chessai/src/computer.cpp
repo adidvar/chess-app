@@ -50,7 +50,8 @@ void Computer::Go() {
       [](Match match) {
         auto tbegin = std::chrono::high_resolution_clock::now();
         Turn result;
-        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor());
+        std::atomic_bool flag = 0;
+        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor(), flag);
         auto board = match.GetBoard();
         for (size_t d = 1; d <= 10; d++) {
           result = ab.GetTurn(board, d);

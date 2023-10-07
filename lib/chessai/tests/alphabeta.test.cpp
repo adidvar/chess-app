@@ -121,12 +121,14 @@ SECTION("Depth 7") {
 
 TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
   {
-    AlphaBeta<Evaluate> ab(Color::kWhite);
+    std::atomic_bool flag = 0;
+    AlphaBeta<Evaluate> ab(Color::kWhite, flag);
     REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), 4) ==
             Turn::FromChessFormat("f1f8"));
   }
   {
-    AlphaBeta<Evaluate> ab(Color::kWhite);
+    std::atomic_bool flag = 0;
+    AlphaBeta<Evaluate> ab(Color::kWhite, flag);
     REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), 4) ==
             Turn::FromChessFormat("f8f1"));
   }

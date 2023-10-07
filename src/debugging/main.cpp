@@ -1,12 +1,16 @@
 #include <alphabeta.hpp>
 #include <iostream>
+#include <itdeepening.hpp>
 #include <minmax.hpp>
 
 int main() {
-  /*
-  Timer timer(std::chrono::milliseconds{2000});
-  TTable table;
-  AlphaBeta ab(Color::kWhite, timer, stat, table);
-  std::cout << ab.GetValue(BitBoard(), 6).ToString() << std::endl;
-*/
+  std::atomic_bool flag = 0;
+  ItDeepening<Evaluate> ab(Color::kWhite, flag);
+  std::thread thread([&flag]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds{2000});
+    flag = 1;
+  });
+  auto pv = ab.FindPV(BitBoard());
+  for (auto eleme : pv) std::cout << eleme.ToChessFormat() << " ";
+  thread.join();
 }

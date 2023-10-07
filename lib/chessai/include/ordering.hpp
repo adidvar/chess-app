@@ -7,7 +7,7 @@
 #include "ttable.hpp"
 
 inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
-                    const BFTable &bftable, TTable &ttable) {
+                    const BFTable &bftable, TTable *ttable) {
   for (auto &elem : vector) {
     auto from_pos = elem.turn.from();
     auto to_pos = elem.turn.to();
