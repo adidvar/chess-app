@@ -14,49 +14,56 @@ class ItDeepening {
   ItDeepening(Color color, std::atomic_bool &stop_flag)
       : m_color(color), m_stop_flag(stop_flag) {}
 
-  T GetValue(const BitBoard &board, int time, T a = T::Min(), T b = T::Max()) {
+  T GetValue(const BitBoard &board, int max_depth, T a = T::Min(),
+             T b = T::Max()) {
     AlphaBeta<T> ab(m_color, m_stop_flag);
     ab.SetTTable(m_ttable);
     T result = T();
     try {
-      for (int depth = 1;; depth++) result = ab.GetValue(board, depth);
+      for (int depth = 1; depth <= max_depth; depth++)
+        result = ab.GetValue(board, depth);
     } catch (SearchExitException exception) {
-      return result;
     }
+    m_stat += ab.GetStatistics();
     return result;
   }
 
-  Turn GetTurn(const BitBoard &board) {
+  Turn GetTurn(const BitBoard &board, int max_depth) {
     AlphaBeta<T> ab(m_color, m_stop_flag);
     ab.SetTTable(m_ttable);
     Turn result = Turn();
     try {
-      for (int depth = 1;; depth++) result = ab.GetTurn(board, depth);
+      for (int depth = 1; depth <= max_depth; depth++)
+        result = ab.GetTurn(board, depth);
     } catch (SearchExitException exception) {
-      return result;
     }
+    m_stat += ab.GetStatistics();
     return result;
   }
 
-  std::vector<Turn> FindPV(BitBoard board) {
+  std::vector<Turn> FindPV(BitBoard board, int max_depth) {
     AlphaBeta<T> ab(m_color, m_stop_flag);
-    ab.SetTTable(&m_ttable);
+    ab.SetTTable(m_ttable);
     std::vector<Turn> result;
     try {
-      for (int depth = 1;; depth++) result = ab.FindPV(board, depth);
+      for (int depth = 1; depth <= max_depth; depth++)
+        result = ab.FindPV(board, depth);
     } catch (SearchExitException exception) {
-      return result;
     }
+    m_stat += ab.GetStatistics();
     return result;
   }
 
   Statistics GetStatistics() const { return m_stat; };
 
+  TTable *GetTTable() const { return m_ttable; };
+  void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
+
  private:
   std::atomic_bool &m_stop_flag;
   const Color m_color;
   Statistics m_stat;
-  TTable m_ttable;
+  TTable *m_ttable = nullptr;
 };
 
 #endif

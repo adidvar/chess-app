@@ -1,78 +1,19 @@
 #include "computer.hpp"
-#include "alphabeta.hpp"
 
-/*
-Computer::Computer(Match &match, Color color):
-    match_(match),
-    table_(),
-    color_(color)
-{
-}
-
-Computer::~Computer()
-{
-}
-
-void Computer::Wait()
-{
-}
-
-bool Computer::Ready()
-{
-    return false;
-}
-
-Turn Computer::GetBestTurn()
-{
-    table_.Clear();
-    assert(color_ == match_.GetBoard().CurrentColor());
-    AlphaBeta<MainAppraiser> ab(color_,stat_, table_);
-    return ab.GetBestTurn(match_.GetBoard(), 5);
-}
-
-Statistics Computer::GetStatistics()
-{
-    return stat_;
-}
-*/
-
-Computer::Computer() {}
+Computer::Computer(Color color) : m_color(color) {}
 
 Computer::~Computer() {}
 
-void Computer::NewGame() {}
+void Computer::SetMatch(const Match &match) {}
 
-void Computer::Position(const Match &match) { match_ = match; }
+void Computer::Start() {}
 
-void Computer::Go() {
-  turn_future_ = std::async(
-      std::launch::async,
-      [](Match match) {
-        auto tbegin = std::chrono::high_resolution_clock::now();
-        Turn result;
-        std::atomic_bool flag = 0;
-        AlphaBeta<Evaluate> ab(match.GetBoard().CurrentColor(), flag);
-        auto board = match.GetBoard();
-        for (size_t d = 1; d <= 10; d++) {
-          result = ab.GetTurn(board, d);
-          auto dur = std::chrono::high_resolution_clock::now() - tbegin;
-          if (std::chrono::duration_cast<std::chrono::seconds>(dur) >
-              std::chrono::milliseconds{2000})
-            break;
-        }
-        return result;
-      },
-      match_);
-}
+void Computer::Stop() {}
 
-void Computer::Wait() { turn_future_.wait(); }
+std::vector<Turn> Computer::GetPV() const { return m_pv; }
 
-bool Computer::Ready() {
-  auto result = turn_future_.wait_for(std::chrono::seconds{0});
+Evaluate Computer::GetValue() const { return m_value; }
 
-  return result == std::future_status::ready;
-}
+Turn Computer::GetTurn() const { return m_turn; }
 
-Turn Computer::GetBestTurn() { return turn_future_.get(); }
-
-Statistics Computer::GetStatistics() { return stat_; }
+Statistics Computer::GetStatistics() { return m_stat; }

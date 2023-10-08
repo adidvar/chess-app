@@ -1,39 +1,38 @@
 #ifndef COMPUTER_HPP
 #define COMPUTER_HPP
 
-#include <condition_variable>
-#include <functional>
-#include <future>
-#include <mutex>
 #include <thread>
 
 #include "evaluate.hpp"
 #include "match.hpp"
 #include "statistics.hpp"
+#include "ttable.hpp"
 
 class Computer{
  public:
-  Computer();
+  Computer(Color color);
   ~Computer();
 
-  void NewGame();
-  void Position(const Match &match);
+  void SetMatch(const Match &match);
 
-  void Go();
+  void Start();
+  void Stop();
 
-  void Wait();
-  bool Ready();
-
-  Turn GetBestTurn();
+  std::vector<Turn> GetPV() const;
+  Evaluate GetValue() const;
+  Turn GetTurn() const;
 
   Statistics GetStatistics();
-
  private:
-  Match match_;
+  Color m_color;
+  Match m_match;
+  TTable m_table;
+  std::thread *m_thread = nullptr;
 
-  Statistics stat_;
-
-  std::future<Turn> turn_future_;
+  std::vector<Turn> m_pv;
+  Statistics m_stat;
+  Evaluate m_value;
+  Turn m_turn;
 };
 
 #endif

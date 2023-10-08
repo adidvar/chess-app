@@ -16,7 +16,7 @@ public:
    generation_count_ += stat.generation_count_;
    approximation_count_ += stat.approximation_count_;
    extra_node_ += stat.extra_node_;
-    };
+ };
 
     void Clear(){
         generation_count_ = 0;
