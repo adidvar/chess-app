@@ -89,6 +89,23 @@ static bool CompareValue(const char* fen, int depth) {
   return result1 == result2;
 }
 
+TEST_CASE("Testing of hash tables stability in search",
+          "[alphabeta][ttable][ai]") {
+  AlphaBeta ab(Color::kWhite);
+  ab.SetStopFlag(nullptr);
+  ab.SetTTable(nullptr);
+
+  TTable table;
+  AlphaBeta abh(Color::kWhite);
+  abh.SetStopFlag(nullptr);
+  abh.SetTTable(&table);
+
+  auto result1 = ab.FindPV(BitBoard(), 8);
+  auto result2 = abh.FindPV(BitBoard(), 8);
+
+  REQUIRE(result1 == result2);
+}
+
 TEST_CASE("Testing of minmax and alphabeta", "[alphabeta][minmax][ai]") {
   SECTION("Depth 1") {
     REQUIRE(CompareValue(

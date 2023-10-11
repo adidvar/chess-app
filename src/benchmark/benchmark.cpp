@@ -30,9 +30,12 @@ int main() {
     std::this_thread::sleep_for(std::chrono::milliseconds{500});
     cmp.Stop();
 
-    auto value = cmp.GetValue().ToCentiPawns();
+    float value = cmp.GetValue().ToCentiPawns();
+    float error = value - pair.second;
 
-    delta += pow(value - pair.second, 2);
+    std::cout << pair.first << "::::" << error << std::endl;
+
+    delta += error * error;
   }
 
   std::cout << "Delta with stockfish: " << sqrt(delta) << std::endl;

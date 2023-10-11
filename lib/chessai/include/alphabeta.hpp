@@ -79,8 +79,9 @@ class AlphaBeta {
       else if (hashed->depth == depthleft &&
                hashed->type == SearchElement::FailLow)
         beta = std::min(beta, hashed->value);
-      else if (hashed->depth >= depthleft && hashed->type == SearchElement::PV)
-        return hashed->value;
+      // else if (hashed->depth >= depthleft && hashed->type ==
+      // SearchElement::PV)
+      //   return hashed->value;
     }
 
     m_stat.MainNode();
