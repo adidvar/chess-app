@@ -3,15 +3,15 @@
 #include <magic.hpp>
 
 // material
-constexpr static int material[7] = {0, 100, 320, 330, 500, 900, 0};
-constexpr static int pawn = 100;
-constexpr static int knight = 320;
-constexpr static int bishop = 330;
-constexpr static int rook = 500;
-constexpr static int queen = 900;
+constexpr static int material[7] = {0, 126, 781, 825, 1276, 2538, 0};
+constexpr static int pawn = 126;
+constexpr static int knight = 781;
+constexpr static int bishop = 825;
+constexpr static int rook = 1276;
+constexpr static int queen = 2538;
 
 // moves counter
-constexpr static int movementbonus = 4;
+constexpr static int movementbonus = 5;
 
 // position bonuses
 
@@ -51,8 +51,8 @@ constexpr static int king_bonus[64]{
     -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
     0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20};
 
-constexpr static int defended_pawn_bonus = 9;
-constexpr static int doubled_pawn_punishment = 11;
+constexpr static int defended_pawn_bonus = 10;
+constexpr static int doubled_pawn_punishment = 110;
 
 // rangement
 constexpr static int prange = 100000;
@@ -60,10 +60,12 @@ constexpr static int nrange = -prange;
 
 int CalculateBonus(bitboard_t map, const int bonus[], Color color) {
   int value = 0;
+  const int scale = 3;
   BitIterator i(map);
   for (; i.Valid(); ++i) {
     Position index = log2_64(i.Bit());
-    value += bonus[(color == Color::kWhite ? index : index.Rotate()).Value()];
+    value += scale *
+             bonus[(color == Color::kWhite ? index : index.Rotate()).Value()];
   }
   return value;
 }
@@ -198,4 +200,4 @@ Evaluate::ScoreType Evaluate::Value() const { return value_; }
 
 std::string Evaluate::ToString() const { return std::to_string(value_); }
 
-float Evaluate::ToCentiPawns() const { return (float)value_ / pawn; }
+float Evaluate::ToCentiPawns() const { return (float)value_ / pawn / 3; }
