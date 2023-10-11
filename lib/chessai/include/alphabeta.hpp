@@ -10,11 +10,14 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-template <typename T>
 class AlphaBeta {
+  using T = Evaluate;
+
+  // todo I rework to class to when search finds all we nee in one start or
+  // throw exception and keep state
+
  public:
-  AlphaBeta(Color color, std::atomic_bool &stop_flag)
-      : m_color(color), m_stop_flag(stop_flag) {}
+  AlphaBeta(Color color) : m_color(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -33,16 +36,13 @@ class AlphaBeta {
     return findpv(board, depth);
   }
 
-  static T Evaluate(BitBoard board, Color color, int depth) {
-    std::atomic_bool flag = 0;
-    AlphaBeta<T> core(color, flag);
-    return core.GetValue(board, depth);
-  }
-
   Statistics GetStatistics() const { return m_stat; };
 
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
+
+  std::atomic_bool *GetStopFlag() const;
+  void SetStopFlag(std::atomic_bool *Stop_flag);
 
  private:
   void clear() {
@@ -54,7 +54,7 @@ class AlphaBeta {
               int depthmax) {
     auto oldalpha = alpha;
 
-    CheckAndThrow(m_stop_flag);
+    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
 
     if (depthleft == 0) {
       // auto value = qsearch_.GetValue(tuple.board, alpha, beta);
@@ -171,12 +171,17 @@ class AlphaBeta {
     return turns_;
   }
 
- private:
-  std::atomic_bool &m_stop_flag;
-  const Color m_color;
+  std::atomic_bool *m_stop_flag = nullptr;
+  Color m_color;
   Statistics m_stat;
   BFTable m_btable;
   TTable *m_ttable = nullptr;
 };
+
+inline std::atomic_bool *AlphaBeta::GetStopFlag() const { return m_stop_flag; }
+
+inline void AlphaBeta::SetStopFlag(std::atomic_bool *Stop_flag) {
+  m_stop_flag = Stop_flag;
+}
 
 #endif

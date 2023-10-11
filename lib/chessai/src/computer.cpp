@@ -1,14 +1,46 @@
 #include "computer.hpp"
 
+#include "itdeepening.hpp"
+
 Computer::Computer(Color color) : m_color(color) {}
 
-Computer::~Computer() {}
+Computer::~Computer() { Stop(); }
 
-void Computer::SetMatch(const Match &match) {}
+void Computer::SetBoard(const BitBoard &board) { m_board = board; }
 
-void Computer::Start() {}
+void Computer::Start() {
+  if (m_thread != nullptr) return;
 
-void Computer::Stop() {}
+  m_thread = new std::thread([this]() {
+    m_stat.Clear();
+    ItDeepening search(m_color);
+    search.SetTTable(&m_table);
+    search.SetStopFlag(&m_stop_flag);
+
+    int max_depth = 20;
+
+    m_value = search.GetValue(m_board, max_depth);
+    search.SetStopFlag(nullptr);
+    m_stat += search.GetStatistics();
+
+    max_depth = search.GetLastDepth();
+
+    m_turn = search.GetTurn(m_board, max_depth);
+    m_stat += search.GetStatistics();
+    m_pv = search.FindPV(m_board, max_depth);
+    m_stat += search.GetStatistics();
+  });
+}
+
+void Computer::Stop() {
+  if (m_thread == nullptr) return;
+
+  m_stop_flag = true;
+
+  if (m_thread->joinable()) m_thread->join();
+  delete m_thread;
+  m_thread = nullptr;
+}
 
 std::vector<Turn> Computer::GetPV() const { return m_pv; }
 

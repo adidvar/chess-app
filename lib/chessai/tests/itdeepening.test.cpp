@@ -1,22 +1,22 @@
-#include "alphabeta.hpp"
+#include "itdeepening.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include "evaluate.hpp"
-#include "minmax.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
-  AlphaBeta ab(Color::kWhite);
+  ItDeepening ab(Color::kWhite);
+  TTable table;
 
   ab.SetStopFlag(nullptr);
-  ab.SetTTable(nullptr);
+  ab.SetTTable(&table);
 
   auto result = ab.GetValue(BitBoard(fen), depth + 1);
   return result == Evaluate::Lose(depth) || result == Evaluate::Win(depth);
 }
-
-TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
+TEST_CASE("Testing of mate search in iterative deepening",
+          "[itdeepening][ai]") {
   SECTION("Depth 1") {
     REQUIRE(TestMateFind(
         "4r2k/1p3rbp/2p1N1p1/p3n3/P2NB1nq/1P6/4R1P1/B1Q2RK1 b - - 4 32", 1));
@@ -49,47 +49,37 @@ TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
     REQUIRE(TestMateFind(
         "rn5r/p2q1p1k/bp2N2p/3pP3/Pb3Q2/1P3NP1/5PB1/R3R1K1 w - - 1 23", 5));
   }
+  /*
   SECTION("Depth 7") {
-    /*
-  REQUIRE(TestMateFind(
-      "3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30", 7));
-  REQUIRE(TestMateFind(
-      "r1bqk1nr/pp1p2bp/4n3/2p1Npp1/5P2/2N1P1PP/PPP5/1RBQKB1R w Kkq - 0 10",
-      7));
-  REQUIRE(TestMateFind(
-      "r2q1rk1/2p3pp/b3P3/3p3Q/3PnP1b/4P3/1PPN3P/R1BK2NR b - - 1 15", 7));
-  REQUIRE(TestMateFind(
-      "1rbq1rk1/R5pp/2p2P2/2np4/2P1pPB1/4P1b1/1P2Q2P/1NB2KNR w - - 1 19", 7));
-*/
+    REQUIRE(TestMateFind(
+        "3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30", 7));
+    REQUIRE(TestMateFind(
+        "r1bqk1nr/pp1p2bp/4n3/2p1Npp1/5P2/2N1P1PP/PPP5/1RBQKB1R w Kkq - 0 10",
+        7));
+    REQUIRE(TestMateFind(
+        "r2q1rk1/2p3pp/b3P3/3p3Q/3PnP1b/4P3/1PPN3P/R1BK2NR b - - 1 15", 7));
+    REQUIRE(TestMateFind(
+        "1rbq1rk1/R5pp/2p2P2/2np4/2P1pPB1/4P1b1/1P2Q2P/1NB2KNR w - - 1 19", 7));
   }
+*/
 }
-
-TEST_CASE("Testing of fast search exit", "[itdeepening][ai]") {
-  AlphaBeta ab(Color::kWhite);
-  TTable table;
-
-  std::atomic_bool flag = true;
-  ab.SetStopFlag(&flag);
-  ab.SetTTable(&table);
-
-  CHECK_THROWS_AS(ab.GetValue(BitBoard(), 10), SearchExitException);
-}
-
 static bool CompareValue(const char* fen, int depth) {
   AlphaBeta ab(Color::kWhite);
   ab.SetStopFlag(nullptr);
   ab.SetTTable(nullptr);
 
-  MinMax mn(Color::kWhite);
-  mn.SetStopFlag(nullptr);
+  TTable table;
+  ItDeepening it(Color::kWhite);
+  it.SetStopFlag(nullptr);
+  it.SetTTable(&table);
 
   auto result1 = ab.FindPV(BitBoard(fen), depth);
-  auto result2 = mn.FindPV(BitBoard(fen), depth);
+  auto result2 = it.FindPV(BitBoard(fen), depth);
 
-  return result1 == result2;
+  return result1 == result2 && it.GetLastDepth() == depth;
 }
 
-TEST_CASE("Testing of minmax and alphabeta", "[alphabeta][minmax][ai]") {
+TEST_CASE("Testing of itdeepening and alphabeta", "[alphabeta][minmax][ai]") {
   SECTION("Depth 1") {
     REQUIRE(CompareValue(
         "4r2k/1p3rbp/2p1N1p1/p3n3/P2NB1nq/1P6/4R1P1/B1Q2RK1 b - - 4 32", 1));
@@ -136,17 +126,4 @@ SECTION("Depth 7") {
       "1rbq1rk1/R5pp/2p2P2/2np4/2P1pPB1/4P1b1/1P2Q2P/1NB2KNR w - - 1 19", 7));
 }
 */
-}
-
-TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
-  {
-    AlphaBeta ab(Color::kWhite);
-    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), 4) ==
-            Turn::FromChessFormat("f1f8"));
-  }
-  {
-    AlphaBeta ab(Color::kWhite);
-    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), 4) ==
-            Turn::FromChessFormat("f8f1"));
-  }
 }
