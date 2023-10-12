@@ -55,7 +55,7 @@ constexpr static int defended_pawn_bonus = 10;
 constexpr static int doubled_pawn_punishment = 110;
 
 // rangement
-constexpr static int prange = 100000;
+constexpr static int prange = 1000000;
 constexpr static int nrange = -prange;
 
 int CalculateBonus(bitboard_t map, const int bonus[], Color color) {

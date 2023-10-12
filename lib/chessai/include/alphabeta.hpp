@@ -64,7 +64,7 @@ class AlphaBeta {
     }
 
     bool founded = false;
-    SearchElement *hashed;
+    SearchElement *hashed = nullptr;
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
@@ -77,18 +77,20 @@ class AlphaBeta {
       else if (hashed->value >= hashed->b)
         type = FailHigh;
 
-      if (hashed->depth == depthleft && type == PV)
-        return hashed->value;
-      else if (hashed->depth == depthleft && type == FailHigh &&
-               hashed->value > beta)
-        return hashed->value;
-      else if (hashed->depth == depthleft && type == FailHigh)
-        alpha = std::max(alpha, hashed->value);
-      else if (hashed->depth == depthleft && type == FailLow)
-        beta = std::min(beta, hashed->value);
-      // else if (hashed->depth >= depthleft && hashed->type ==
-      // SearchElement::PV)
-      //   return hashed->value;
+      if (hashed->depth == depthleft) {
+        if (alpha >= hashed->a && beta <= hashed->b)
+          return hashed->value;
+        else if (type == PV)
+          return hashed->value;
+        else if (type == FailHigh && hashed->value > beta)
+          return hashed->value;
+        else if (type == FailHigh)
+          alpha = std::max(alpha, hashed->value);
+        else if (type == FailLow)
+          beta = std::min(beta, hashed->value);
+      }  // else if (hashed->depth > depthleft && type == PV)
+      // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
+      //                                             : -hashed->value;
     }
 
     m_stat.MainNode();

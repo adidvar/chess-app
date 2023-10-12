@@ -16,6 +16,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     NegativeAttack = 1,
   };
 
+  /*
   Evaluate pv_value = Evaluate::Min();
   BitBoardTuple *pv = nullptr;
 
@@ -37,6 +38,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     pv->priority.type = HashedMovesWithACutting;
     pv->priority.index = pv_value.Value();
   };
+*/
 
   for (auto &elem : vector) {
     auto from_pos = elem.turn.from();
@@ -45,12 +47,18 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     auto from_figure = board.GetFigure(from_pos);
     auto to_figure = board.GetFigure(to_pos);
 
-    // if (founded && hashed_value > a) {
-    if (elem.priority.type == HashedMovesWithACutting) {
-      //   elem.priority.type = HashedMovesWithACutting;
-      //   elem.priority.index = hashed_value.Value();
+    bool founded = false;
+    const SearchElement *hashed;
+    Evaluate hashed_value;
+    if (ttable != nullptr) {
+      hashed = ttable->Search(elem.hash, founded);
+      hashed_value = -hashed->value;
+    }
+
+    if (founded && hashed_value > a) {
+      elem.priority.type = HashedMovesWithACutting;
+      elem.priority.index = hashed_value.Value();
     } else if (to_figure != Figure::kEmpty) {
-      // (to_figure != Figure::kEmpty) {
       auto delta_price =
           Evaluate::FigurePrice(to_figure) - Evaluate::FigurePrice(from_figure);
       elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
@@ -58,7 +66,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = Evaluate::FigurePrice(from_figure) +
-                            bftable.Get(elem.turn, depthleft) * 100;
+                            bftable.Get(elem.turn, depthleft) * 200;
     }
 
     /*
