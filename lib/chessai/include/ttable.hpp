@@ -10,8 +10,8 @@ struct SearchElement {
   bitboard_hash_t hash;
 
   Evaluate value;
-
-  enum Type { PV, FailLow, FailHigh } type;
+  Evaluate a;
+  Evaluate b;
 
   int depth;
 
@@ -23,6 +23,7 @@ class TTable {
   TTable();
   void Clear();
   SearchElement *Search(bitboard_hash_t hash, bool &founded);
+  const SearchElement *Search(bitboard_hash_t hash, bool &founded) const;
   void Write(SearchElement *element);
 
  private:

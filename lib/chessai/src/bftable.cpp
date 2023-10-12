@@ -1,14 +1,13 @@
 #include "bftable.hpp"
 
-BFTable::BFTable() {
-  table_.resize(64);
-  for (auto &elem : table_) elem.resize(64);
+BFTable::BFTable() { m_tables = new Type{}; }
+
+BFTable::~BFTable() { delete m_tables; }
+
+void BFTable::Push(Turn turn, int depth) {
+  m_tables->at(depth).at(turn.from().Value()).at(turn.to().Value())++;
 }
 
-void BFTable::Push(Turn turn) {
-  table_[turn.from().Value()][turn.to().Value()]++;
-}
-
-size_t BFTable::Get(Turn turn) const {
-  return table_[turn.from().Value()][turn.to().Value()];
+size_t BFTable::Get(Turn turn, int depth) const {
+  return m_tables->at(depth).at(turn.from().Value()).at(turn.to().Value());
 }

@@ -298,7 +298,15 @@ struct BitBoardTuple {
   BitBoard board;
   bitboard_hash_t hash;
   Turn turn;
-  int priority;
+  struct Priority {
+    int64_t type;
+    int64_t index;
+  } priority;
+
+  bool operator<(const BitBoardTuple &t1) const noexcept {
+    return std::tie(priority.type, priority.index) <
+           std::tie(t1.priority.type, t1.priority.index);
+  }
 };
 
 #endif  // BOARD_H

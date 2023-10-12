@@ -68,16 +68,23 @@ class AlphaBeta {
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
-      if (hashed->depth == depthleft && hashed->type == SearchElement::PV)
+      enum Type { PV, FailLow, FailHigh } type;
+
+      if (hashed->value > hashed->a && hashed->value < hashed->b)
+        type = PV;
+      else if (hashed->value <= hashed->a)
+        type = FailLow;
+      else if (hashed->value >= hashed->b)
+        type = FailHigh;
+
+      if (hashed->depth == depthleft && type == PV)
         return hashed->value;
-      else if (hashed->depth == depthleft &&
-               hashed->type == SearchElement::FailHigh && hashed->value > beta)
+      else if (hashed->depth == depthleft && type == FailHigh &&
+               hashed->value > beta)
         return hashed->value;
-      else if (hashed->depth == depthleft &&
-               hashed->type == SearchElement::FailHigh)
+      else if (hashed->depth == depthleft && type == FailHigh)
         alpha = std::max(alpha, hashed->value);
-      else if (hashed->depth == depthleft &&
-               hashed->type == SearchElement::FailLow)
+      else if (hashed->depth == depthleft && type == FailLow)
         beta = std::min(beta, hashed->value);
       // else if (hashed->depth >= depthleft && hashed->type ==
       // SearchElement::PV)
@@ -94,36 +101,31 @@ class AlphaBeta {
       return T::Tie();
     }
 
-    ReOrder(tuple.board, moves, m_btable, m_ttable);
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft);
     T bestscore = T::Min();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
-        m_btable.Push(sub.turn);
+        m_btable.Push(sub.turn, depthleft);
         break;
       }
       if (score > bestscore) {
         bestscore = score;
         if (score > alpha) {
           alpha = score;
-          m_btable.Push(sub.turn);
+          m_btable.Push(sub.turn, depthleft);
         };
       }
     }
 
-    if (m_ttable) {
+    if (m_ttable && hashed->depth < depthleft) {
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
       hashed->value = bestscore;
       hashed->depth = depthleft;
-
-      if (bestscore > oldalpha && bestscore < beta)
-        hashed->type = SearchElement::PV;
-      else if (bestscore <= oldalpha)
-        hashed->type = SearchElement::FailLow;
-      else if (bestscore >= beta)
-        hashed->type = SearchElement::FailHigh;
+      hashed->a = oldalpha;
+      hashed->b = beta;
     }
 
     return bestscore;
@@ -134,13 +136,13 @@ class AlphaBeta {
     m_stat.MainNode();
 
     auto moves =
-        tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+        BitBoard::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
       return {T(), Turn()};
     }
 
-    ReOrder(tuple.board, moves, m_btable, m_ttable);
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft);
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {
@@ -151,7 +153,7 @@ class AlphaBeta {
         turn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          m_btable.Push(sub.turn);
+          m_btable.Push(sub.turn, depthleft);
         };
       }
     }
@@ -161,8 +163,8 @@ class AlphaBeta {
   std::vector<Turn> findpv(BitBoard board, int depth) {
     std::vector<Turn> turns_;
 
-    for (size_t i = 0; i < depth; i++) {
-      auto turn = alphabetaturn({board, board.Hash(), Turn()}, T::Min(),
+    for (int i = 0; i < depth; i++) {
+      auto turn = alphabetaturn({board, board.Hash(), Turn(), 0}, T::Min(),
                                 T::Max(), depth - i, depth);
       if (turn.second == Turn()) break;
       turns_.push_back(turn.second);

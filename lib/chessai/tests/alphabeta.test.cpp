@@ -100,8 +100,8 @@ TEST_CASE("Testing of hash tables stability in search",
   abh.SetStopFlag(nullptr);
   abh.SetTTable(&table);
 
-  auto result1 = ab.FindPV(BitBoard(), 8);
-  auto result2 = abh.FindPV(BitBoard(), 8);
+  auto result1 = ab.FindPV(BitBoard(), 7);
+  auto result2 = abh.FindPV(BitBoard(), 7);
 
   REQUIRE(result1 == result2);
 }

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "computer.hpp"
+#include "itdeepening.hpp"
 
 std::vector<std::pair<const char*, float>> stockfish_result{
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.17},
@@ -29,16 +30,31 @@ int main() {
     cmp.Start();
     std::this_thread::sleep_for(std::chrono::milliseconds{500});
     cmp.Stop();
+    auto stat = cmp.GetStatistics();
 
     float value = cmp.GetValue().ToCentiPawns();
     float error = value - pair.second;
 
-    std::cout << pair.first << "::::" << error << std::endl;
+    std::cout << pair.first << ":::::" << stat.GetMainNode() << "::::" << error
+              << std::endl;
 
     delta += error * error;
   }
 
+  std::cout << std::endl;
   std::cout << "Delta with stockfish: " << sqrt(delta) << std::endl;
+
+  Statistics statistics;
+
+  for (auto pair : stockfish_result) {
+    ItDeepening cmp(Color::kWhite);
+    TTable table;
+    cmp.SetTTable(&table);
+    cmp.SetStopFlag(nullptr);
+    cmp.GetValue(BitBoard(pair.first), 6);
+    statistics += cmp.GetStatistics();
+  }
+  std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
 
   return 0;
 }

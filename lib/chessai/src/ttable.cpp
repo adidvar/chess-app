@@ -17,3 +17,9 @@ SearchElement *TTable::Search(bitboard_hash_t hash, bool &founded) {
   founded = element->hasvalue && element->hash == hash;
   return element;
 }
+
+const SearchElement *TTable::Search(bitboard_hash_t hash, bool &founded) const {
+  const SearchElement *element = &table_[hash % table_.size()];
+  founded = element->hasvalue && element->hash == hash;
+  return element;
+}

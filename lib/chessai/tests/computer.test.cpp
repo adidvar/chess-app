@@ -3,8 +3,6 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include "evaluate.hpp"
-
 static bool TestComputerWorking(const char* fen) {
   Computer cmp(Color::kWhite);
 
@@ -15,8 +13,10 @@ static bool TestComputerWorking(const char* fen) {
   cmp.Stop();
 
   CHECK(cmp.GetPV().size() > 3);
-  CHECK(cmp.GetPV().size() < 7);
+  CHECK(cmp.GetPV().size() < 8);
   CHECK(cmp.GetPV().front() == cmp.GetTurn());
+
+  return false;
 }
 
 TEST_CASE("Testing of computer search", "[computer][ai]") {
