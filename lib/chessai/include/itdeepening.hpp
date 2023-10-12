@@ -34,15 +34,7 @@ class ItDeepening {
   Turn GetTurn(const BitBoard &board, int max_depth) {
     AlphaBeta ab(m_color);
     ab.SetTTable(m_ttable);
-    ab.SetStopFlag(m_stop_flag);
-    Turn result = Turn();
-    try {
-      for (int depth = 1; depth <= max_depth; depth++) {
-        result = ab.GetTurn(board, depth);
-        m_last_depth = depth;
-      }
-    } catch (SearchExitException exception) {
-    }
+    auto result = ab.GetTurn(board, max_depth);
     m_stat = ab.GetStatistics();
     return result;
   }

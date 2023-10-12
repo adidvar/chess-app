@@ -58,13 +58,14 @@ int main() {
 
   TTable table;
   statistics.Clear();
-  for (int d = 1; d < 10; d++) {
+  for (int d = 1; d <= 10; d++) {
     AlphaBeta cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
-    cmp.GetValue(BitBoard(stockfish_result.front().first), d);
+    auto value = cmp.GetValue(BitBoard{}, d);
     statistics += cmp.GetStatistics();
-    std::cout << d << ": " << statistics.GetMainNode() << std::endl;
+    std::cout << d << ": " << statistics.GetMainNode() << ": "
+              << value.ToCentiPawns() << std::endl;
   }
 
   return 0;

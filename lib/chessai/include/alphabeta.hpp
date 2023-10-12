@@ -104,7 +104,7 @@ class AlphaBeta {
     }
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            founded ? hashed->pv : Turn());
+            depthmax, founded ? hashed->pv : Turn());
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
@@ -142,6 +142,28 @@ class AlphaBeta {
                                    int depthleft, int depthmax) {
     m_stat.MainNode();
 
+    bool founded = false;
+    SearchElement *hashed = nullptr;
+    if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
+
+    if (founded) {
+      enum Type { PV, FailLow, FailHigh } type;
+
+      if (hashed->value > hashed->a && hashed->value < hashed->b)
+        type = PV;
+      else if (hashed->value <= hashed->a)
+        type = FailLow;
+      else if (hashed->value >= hashed->b)
+        type = FailHigh;
+
+      if (hashed->depth == depthleft) {
+        if (alpha >= hashed->a && beta <= hashed->b)
+          return {hashed->value, hashed->pv};
+      }  // else if (hashed->depth > depthleft && type == PV)
+      // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
+      //                                             : -hashed->value;
+    }
+
     auto moves =
         BitBoard::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
@@ -150,7 +172,7 @@ class AlphaBeta {
     }
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            Turn());
+            depthmax, founded ? hashed->pv : Turn());
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {
