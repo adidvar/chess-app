@@ -48,7 +48,8 @@ int main() {
             << std::endl;
 
   BFTable btable;
-  ReOrder(board, turns, Evaluate::Min(), Evaluate::Max(), btable, &table, 8);
+  ReOrder(board, turns, Evaluate::Min(), Evaluate::Max(), btable, &table, 8,
+          Turn());
 
   for (auto turn : turns) {
     std::cout << turn.turn.ToChessFormat() << " <---> " << turn.priority.type
@@ -60,6 +61,6 @@ int main() {
   }
   bool founded = false;
   auto elem = table.Search(board.Hash(), founded);
-  std::cout << elem->value.ToString() << " <---> " << elem->a.ToString()
+  std::cout << elem->pv.ToChessFormat() << " <---> " << elem->a.ToString()
             << " <---> " << elem->b.ToString() << " <---> " << std::endl;
 }

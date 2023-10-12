@@ -103,17 +103,21 @@ class AlphaBeta {
       return T::Tie();
     }
 
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft);
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+            founded ? hashed->pv : Turn());
     T bestscore = T::Min();
+    Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
+        bestturn = sub.turn;
         m_btable.Push(sub.turn, depthleft);
         break;
       }
       if (score > bestscore) {
         bestscore = score;
+        bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
           m_btable.Push(sub.turn, depthleft);
@@ -121,10 +125,11 @@ class AlphaBeta {
       }
     }
 
-    if (m_ttable && hashed->depth < depthleft) {
+    if (hashed != nullptr && hashed->depth < depthleft) {
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
       hashed->value = bestscore;
+      hashed->pv = bestturn;
       hashed->depth = depthleft;
       hashed->a = oldalpha;
       hashed->b = beta;
@@ -144,7 +149,8 @@ class AlphaBeta {
       return {T(), Turn()};
     }
 
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft);
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+            Turn());
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {

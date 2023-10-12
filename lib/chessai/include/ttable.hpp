@@ -12,8 +12,9 @@ struct SearchElement {
   Evaluate value;
   Evaluate a;
   Evaluate b;
+  Turn pv;
 
-  int depth;
+  uint8_t depth;
 
   bool hasvalue = false;
 };

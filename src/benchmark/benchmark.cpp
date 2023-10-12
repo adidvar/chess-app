@@ -56,5 +56,16 @@ int main() {
   }
   std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
 
+  TTable table;
+  statistics.Clear();
+  for (int d = 1; d < 10; d++) {
+    AlphaBeta cmp(Color::kWhite);
+    cmp.SetTTable(&table);
+    cmp.SetStopFlag(nullptr);
+    cmp.GetValue(BitBoard(stockfish_result.front().first), d);
+    statistics += cmp.GetStatistics();
+    std::cout << d << ": " << statistics.GetMainNode() << std::endl;
+  }
+
   return 0;
 }
