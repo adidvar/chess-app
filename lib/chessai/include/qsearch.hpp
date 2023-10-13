@@ -8,49 +8,25 @@
 #include "bitboard.hpp"
 #include "ordering.hpp"
 #include "statistics.hpp"
-#include "ttable.hpp"
 
-template <typename T>
 class QSearch {
+  using T = Evaluate;
+
  public:
-  QSearch(Color color, Statistics &stat) : color_(color), stat_(stat) {}
+  QSearch(Color color) : m_color(color) {}
 
   T GetValue(const BitBoard &board, T a = T::Min(), T b = T::Max()) {
-    auto approx = T::Value(board, color_);
+    auto approx = T::Value(board, m_color);
     auto qvalue = qsearch({board, board.Hash(), Turn()}, a, b);
     return qvalue;
   }
 
-  static T Evaluate(BitBoard board, Color color, Statistics &stat) {
-    QSearch<T> core(color, stat);
-    return core.GetValue(board);
-  }
-
  private:
   T qsearch(const BitBoardTuple &tuple, T alpha, T beta) {
-    auto oldalpha = alpha;
+    m_stat.ExtraNode();
 
-    bool founded = false;
-    auto hashed = table_.Search(tuple.hash, founded);
-
-    if (founded) {
-      if (hashed->type == SearchElement::PV)
-        return hashed->value;
-      else if (hashed->type == SearchElement::FailHigh && hashed->value > beta)
-        return hashed->value;
-      else if (hashed->type == SearchElement::FailHigh)
-        alpha = std::max(alpha, hashed->value);
-      else if (hashed->type == SearchElement::FailLow)
-        beta = std::min(beta, hashed->value);
-      /*
-      else if (hashed->depth >= depthleft && hashed->type == SearchElement::PV)
-        return hashed->value;
-*/
-    }
-    stat_.ExtraNode();
-
-    auto stand_pat = T::Value(tuple.board, color_);
-    stand_pat = tuple.board.CurrentColor() == color_ ? stand_pat : -stand_pat;
+    auto stand_pat = T::Value(tuple.board, m_color);
+    stand_pat = tuple.board.CurrentColor() == m_color ? stand_pat : -stand_pat;
 
     if (stand_pat >= beta) return stand_pat;
 
@@ -66,42 +42,33 @@ class QSearch {
 
     if (moves.empty()) return stand_pat;
 
-    ReOrderQ(tuple.board, moves, btable_, table_);
+    ReOrderQ(tuple.board, moves, m_btable);
     T bestscore = T::Min();
+    Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -qsearch(sub, -beta, -alpha);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
-        btable_.Push(sub.turn);
+        bestturn = sub.turn;
+        m_btable.Push(sub.turn, 0);
         break;
       }
       if (score > bestscore) {
         bestscore = score;
+        bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          btable_.Push(sub.turn);
+          m_btable.Push(sub.turn, 0);
         };
       }
     }
-
-    hashed->hasvalue = true;
-    hashed->hash = tuple.hash;
-    hashed->value = bestscore;
-
-    if (bestscore > oldalpha && bestscore < beta)
-      hashed->type = SearchElement::PV;
-    else if (bestscore <= oldalpha)
-      hashed->type = SearchElement::FailLow;
-    else if (bestscore >= beta)
-      hashed->type = SearchElement::FailHigh;
 
     return bestscore;
   }
 
  private:
-  Color color_;
-  Statistics &stat_;
-  BFTable btable_;
-  TTable table_;
+  Color m_color;
+  Statistics m_stat;
+  BFTable m_btable;
 };
 #endif

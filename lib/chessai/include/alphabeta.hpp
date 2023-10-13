@@ -7,6 +7,7 @@
 #include "bitboard.hpp"
 #include "exitcondition.hpp"
 #include "ordering.hpp"
+#include "qsearch.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
 
@@ -17,7 +18,7 @@ class AlphaBeta {
   // throw exception and keep state
 
  public:
-  AlphaBeta(Color color) : m_color(color) {}
+  AlphaBeta(Color color) : m_color(color), m_search(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -57,10 +58,10 @@ class AlphaBeta {
     if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
 
     if (depthleft == 0) {
-      // auto value = qsearch_.GetValue(tuple.board, alpha, beta);
-      auto value = T::Value(tuple.board, m_color);
-      return tuple.board.CurrentColor() == m_color ? value : -value;
-      // return value;
+      auto value = m_search.GetValue(tuple.board, alpha, beta);
+      // auto value = T::Value(tuple.board, m_color);
+      // return tuple.board.CurrentColor() == m_color ? value : -value;
+      return value;
     }
 
     bool founded = false;
@@ -209,6 +210,7 @@ class AlphaBeta {
   Statistics m_stat;
   BFTable m_btable;
   TTable *m_ttable = nullptr;
+  QSearch m_search;
 };
 
 inline std::atomic_bool *AlphaBeta::GetStopFlag() const { return m_stop_flag; }
