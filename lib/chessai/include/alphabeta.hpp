@@ -59,9 +59,9 @@ class AlphaBeta {
 
     if (depthleft == 0) {
       auto value = m_search.GetValue(tuple.board, alpha, beta);
+      return value;
       // auto value = T::Value(tuple.board, m_color);
       // return tuple.board.CurrentColor() == m_color ? value : -value;
-      return value;
     }
 
     bool founded = false;
@@ -126,7 +126,7 @@ class AlphaBeta {
       }
     }
 
-    if (hashed != nullptr && hashed->depth < depthleft) {
+    if (hashed != nullptr && hashed->depth <= depthleft) {
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
       hashed->value = bestscore;
