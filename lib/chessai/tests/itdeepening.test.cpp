@@ -73,10 +73,39 @@ static bool CompareValue(const char* fen, int depth) {
   it.SetStopFlag(nullptr);
   it.SetTTable(&table);
 
-  auto result1 = ab.FindPV(BitBoard(fen), depth);
-  auto result2 = it.FindPV(BitBoard(fen), depth);
+  auto result1 = ab.GetValue(BitBoard(fen), depth);
+  auto result2 = it.GetValue(BitBoard(fen), depth);
 
   return result1 == result2 && it.GetLastDepth() == depth;
+}
+
+TEST_CASE("PV check itdeepening", "[itdepening][pv][ai]") {
+  BitBoard board{};
+
+  TTable table1;
+  TTable table2;
+
+  ItDeepening abw(Color::kWhite);
+  abw.SetStopFlag(nullptr);
+  abw.SetTTable(&table1);
+
+  ItDeepening abb(Color::kWhite);
+  abb.SetStopFlag(nullptr);
+  abb.SetTTable(&table2);
+
+  abw.GetValue(board, 7);
+  auto pv = abw.FindPV(board, 7);
+
+  for (int i = 0; i < 7; i++) {
+    if (i % 2)
+      abw.GetValue(board, 7 - i);
+    else
+      abb.GetValue(board, 7 - i);
+
+    auto move = i % 2 ? abw.GetTurn(board, 7 - i) : abb.GetTurn(board, 7 - i);
+    REQUIRE(move == pv[i]);
+    board.ExecuteTurn(pv[i]);
+  }
 }
 
 TEST_CASE("Testing of itdeepening and alphabeta", "[alphabeta][minmax][ai]") {

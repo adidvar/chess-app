@@ -42,15 +42,8 @@ class ItDeepening {
   std::vector<Turn> FindPV(BitBoard board, int max_depth) {
     AlphaBeta ab(m_color);
     ab.SetTTable(m_ttable);
-    ab.SetStopFlag(m_stop_flag);
     std::vector<Turn> result;
-    try {
-      for (int depth = 1; depth <= max_depth; depth++) {
-        result = ab.FindPV(board, depth);
-        m_last_depth = depth;
-      }
-    } catch (SearchExitException exception) {
-    }
+    result = ab.FindPV(board, max_depth);
     m_stat = ab.GetStatistics();
     return result;
   }

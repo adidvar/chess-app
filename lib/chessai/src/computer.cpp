@@ -32,7 +32,7 @@ void Computer::Start() {
 
     m_turn = search.GetTurn(m_board, max_depth);
     m_stat += search.GetStatistics();
-    // m_pv = search.FindPV(m_board, max_depth);
+    m_pv = search.FindPV(m_board, max_depth);
     m_depth = max_depth;
     m_stat += search.GetStatistics();
   });

@@ -24,15 +24,14 @@ std::vector<std::pair<const char*, float>> stockfish_result{
 int main() {
   float delta = 0;
 
+  auto begin = std::chrono::high_resolution_clock::now();
   for (auto pair : stockfish_result) {
-    Computer cmp(Color::kWhite);
-    cmp.SetBoard(BitBoard(pair.first));
-    cmp.Start();
-    std::this_thread::sleep_for(std::chrono::milliseconds{500});
-    cmp.Stop();
-    auto stat = cmp.GetStatistics();
+    TTable table;
+    ItDeepening cmp(Color::kWhite);
+    cmp.SetTTable(&table);
 
-    float value = cmp.GetValue().ToCentiPawns();
+    float value = cmp.GetValue(BitBoard{pair.first}, 6).ToCentiPawns();
+    auto stat = cmp.GetStatistics();
     float error = value - pair.second;
 
     std::cout << pair.first << ":::::" << stat.GetMainNode() << "::::" << error
@@ -40,6 +39,12 @@ int main() {
 
     delta += error * error;
   }
+  auto end = std::chrono::high_resolution_clock::now();
+  std::cout << "Time: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+                                                                     begin)
+                   .count()
+            << std::endl;
 
   std::cout << std::endl;
   std::cout << "Delta with stockfish: " << sqrt(delta) << std::endl;
@@ -51,44 +56,10 @@ int main() {
     TTable table;
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
-    cmp.GetValue(BitBoard(pair.first), 6);
+    cmp.GetValue(BitBoard(pair.first), 8);
     statistics += cmp.GetStatistics();
+    std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
   }
   std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
-
-  TTable table;
-  statistics.Clear();
-  for (int d = 1; d <= 7; d++) {
-    AlphaBeta cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    auto value = cmp.GetValue(
-        BitBoard{"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
-    statistics += cmp.GetStatistics();
-    std::cout << d << ": " << statistics.GetMainNode() << ": "
-              << value.ToCentiPawns() << std::endl;
-    auto pv = cmp.FindPV(
-        {"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
-    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
-    std::cout << std::endl;
-  }
-
-  table.Clear();
-
-  for (int d = 7; d >= 2; d--) {
-    AlphaBeta cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    auto value = cmp.GetValue(
-        BitBoard{"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
-    statistics += cmp.GetStatistics();
-    std::cout << d << ": " << statistics.GetMainNode() << ": "
-              << value.ToCentiPawns() << std::endl;
-    auto pv = cmp.FindPV(
-        {"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
-    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
-    std::cout << std::endl;
-  }
-
   return 0;
 }

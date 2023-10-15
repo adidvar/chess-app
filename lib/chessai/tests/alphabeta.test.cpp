@@ -100,10 +100,30 @@ TEST_CASE("Testing of hash tables stability in search",
   abh.SetStopFlag(nullptr);
   abh.SetTTable(&table);
 
-  auto result1 = ab.FindPV(BitBoard(), 7);
-  auto result2 = abh.FindPV(BitBoard(), 7);
+  auto result1 = ab.GetValue(BitBoard(), 8);
+  auto result2 = abh.GetValue(BitBoard(), 8);
 
   REQUIRE(result1 == result2);
+}
+
+TEST_CASE("PV check", "[alphabeta][pv][ai]") {
+  BitBoard board{};
+
+  AlphaBeta abw(Color::kWhite);
+  abw.SetStopFlag(nullptr);
+  abw.SetTTable(nullptr);
+
+  AlphaBeta abb(Color::kWhite);
+  abb.SetStopFlag(nullptr);
+  abb.SetTTable(nullptr);
+
+  auto pv = abw.FindPV(board, 7);
+
+  for (int i = 0; i < 7; i++) {
+    auto move = i % 2 ? abw.GetTurn(board, 7 - i) : abb.GetTurn(board, 7 - i);
+    REQUIRE(move == pv[i]);
+    board.ExecuteTurn(pv[i]);
+  }
 }
 
 TEST_CASE("Testing of minmax and alphabeta", "[alphabeta][minmax][ai]") {

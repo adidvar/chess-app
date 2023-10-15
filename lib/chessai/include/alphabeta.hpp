@@ -22,21 +22,21 @@ class AlphaBeta {
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
-    m_ttable->ClearUsedFlag();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
     clear();
-    m_ttable->ClearUsedFlag();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
     clear();
-    m_ttable->ClearUsedFlag();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     return findpv(board, depth);
   }
 
@@ -61,10 +61,10 @@ class AlphaBeta {
     if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
 
     if (depthleft == 0) {
-      auto value = m_search.GetValue(tuple.board, alpha, beta);
-      return value;
-      // auto value = T::Value(tuple.board, m_color);
-      // return tuple.board.CurrentColor() == m_color ? value : -value;
+      // auto value = m_search.GetValue(tuple.board, alpha, beta);
+      // return value;
+      auto value = T::Value(tuple.board, m_color);
+      return tuple.board.CurrentColor() == m_color ? value : -value;
     }
 
     bool founded = false;
@@ -74,30 +74,32 @@ class AlphaBeta {
     if (founded) {
       enum Type { PV, FailLow, FailHigh } type;
 
-      if (hashed->value > hashed->a && hashed->value < hashed->b)
-        type = PV;
-      else if (hashed->value <= hashed->a)
+      auto hv = hashed->value;
+      auto ha = hashed->a;
+      auto hb = hashed->b;
+
+      if (hv <= ha)
         type = FailLow;
-      else if (hashed->value >= hashed->b)
+      else if (hv >= hb)
         type = FailHigh;
+      else
+        type = PV;
 
-      if (hashed->depth >= depthleft) {
-        if (alpha >= hashed->a && beta <= hashed->b)
-          return hashed->value;
-        else if (type == PV)
-          return hashed->value;
-        else if (type == FailHigh && hashed->value > beta)
-          return hashed->value;
+      if (hashed->depth == depthleft) {
+        if (type == PV)
+          return hv;
+        else if (type == FailHigh && hv >= beta)
+          return hv;
         else if (type == FailHigh)
-          alpha = std::max(alpha, hashed->value);
-        else if (type == FailLow)
-          beta = std::min(beta, hashed->value);
-      }  // else if (hashed->depth > depthleft && type == PV)
-      // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
-      //                                             : -hashed->value;
+          alpha = std::max(alpha, hv);
+      } else if (hashed->depth > depthleft) {
+        if (type == PV) return hv;
+        // if (type == FailHigh && hv >= beta)
+        //  return hv;
+        // else if (type == FailHigh)
+        //   alpha = std::max(alpha, hv);
+      }
     }
-
-    m_stat.MainNode();
 
     auto moves =
         tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
@@ -106,6 +108,8 @@ class AlphaBeta {
       if (tuple.board.Checkmate()) return T::Lose(depthmax - depthleft);
       return T::Tie();
     }
+
+    m_stat.MainNode();
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
             depthmax, founded ? hashed->pv : Turn());
@@ -153,20 +157,28 @@ class AlphaBeta {
 
     if (founded) {
       enum Type { PV, FailLow, FailHigh } type;
-      // if (hashed->depth >= depthleft) return hashed->pv;
 
-      if (hashed->value > hashed->a && hashed->value < hashed->b)
-        type = PV;
-      else if (hashed->value <= hashed->a)
+      auto hv = hashed->value;
+      auto ha = hashed->a;
+      auto hb = hashed->b;
+
+      if (hv <= ha)
         type = FailLow;
-      else if (hashed->value >= hashed->b)
+      else if (hv >= hb)
         type = FailHigh;
+      else
+        type = PV;
 
       if (hashed->depth == depthleft) {
-        if (alpha >= hashed->a && beta <= hashed->b) return hashed->pv;
-      }  // else if (hashed->depth > depthleft && type == PV)
-         // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
-         //                                             : -hashed->value;
+        if (type == PV)
+          return hashed->pv;
+        else if (type == FailHigh && hv >= beta)
+          return hashed->pv;
+        else if (type == FailHigh)
+          alpha = std::max(alpha, hv);
+      } else if (hashed->depth > depthleft) {
+        if (type == PV) return hashed->pv;
+      }
     }
 
     auto moves =
@@ -186,10 +198,7 @@ class AlphaBeta {
       if (score > bestscore) {
         bestscore = score;
         turn = sub.turn;
-        if (score > alpha) {
-          alpha = score;
-          m_btable.Push(sub.turn, depthleft);
-        };
+        if (score > alpha) alpha = score;
       }
     }
     return turn;
