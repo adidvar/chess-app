@@ -61,10 +61,10 @@ class AlphaBeta {
     if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
 
     if (depthleft == 0) {
-      // auto value = m_search.GetValue(tuple.board, alpha, beta);
-      // return value;
-      auto value = T::Value(tuple.board, m_color);
-      return tuple.board.CurrentColor() == m_color ? value : -value;
+      auto value = m_search.GetValue(tuple.board, alpha, beta);
+      return value;
+      // auto value = T::Value(tuple.board, m_color);
+      // return tuple.board.CurrentColor() == m_color ? value : -value;
     }
 
     bool founded = false;

@@ -34,7 +34,7 @@ int main() {
   std::cout << "----------------------" << std::endl;
   {
     std::string fen{"startpos"};
-    int d = 6;
+    int d = 7;
     ItDeepening cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
@@ -54,7 +54,7 @@ int main() {
   {
     TTable table;
     std::string fen{"startpos"};
-    int d = 6;
+    int d = 7;
     ItDeepening cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);

@@ -11,7 +11,8 @@ constexpr static int rook = 1276;
 constexpr static int queen = 2538;
 
 // moves counter
-constexpr static int movementbonus = 5;
+constexpr static int movementbonus = 3;
+constexpr static int figure_safety_bonus = 12;
 
 // position bonuses
 
@@ -51,8 +52,8 @@ constexpr static int king_bonus[64]{
     -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
     0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20};
 
-constexpr static int defended_pawn_bonus = 10;
-constexpr static int doubled_pawn_punishment = 110;
+constexpr static int doubled_pawn_punishment = 100;
+constexpr static int doubled_kb_bonus = 176;
 
 // rangement
 constexpr static int prange = 1000000;
@@ -117,13 +118,24 @@ Evaluate Evaluate::Value(const BitBoard &board, Color color) {
   value += pawn * count_1s(board.GetBitBoard(Color::kWhite, Figure::kPawn));
   value -= pawn * count_1s(board.GetBitBoard(Color::kBlack, Figure::kPawn));
 
-  auto wmap =
-      board.AttackMask(Color::kWhite) & ~board.GetColorBitBoard(Color::kWhite);
-  value += movementbonus * count_1s(wmap);
+  {
+    auto wmap = board.AttackMask(Color::kWhite) &
+                ~board.GetColorBitBoard(Color::kWhite);
+    value += movementbonus * count_1s(wmap);
 
-  auto bmap =
-      board.AttackMask(Color::kBlack) & ~board.GetColorBitBoard(Color::kBlack);
-  value -= movementbonus * count_1s(bmap);
+    auto bmap = board.AttackMask(Color::kBlack) &
+                ~board.GetColorBitBoard(Color::kBlack);
+    value -= movementbonus * count_1s(bmap);
+  }
+  {
+    auto wmap =
+        board.AttackMask(Color::kWhite) & board.GetColorBitBoard(Color::kWhite);
+    value += figure_safety_bonus * count_1s(wmap);
+
+    auto bmap =
+        board.AttackMask(Color::kBlack) & board.GetColorBitBoard(Color::kBlack);
+    value -= figure_safety_bonus * count_1s(bmap);
+  }
 
   for (int i = 0; i < 8; ++i) {
     auto white_pawns =
@@ -133,16 +145,6 @@ Evaluate Evaluate::Value(const BitBoard &board, Color color) {
     if (count_1s(white_pawns) > 1) value -= doubled_pawn_punishment;
     if (count_1s(black_pawns) > 1) value += doubled_pawn_punishment;
   }
-
-  auto wpawns = board.GetBitBoard(Color::kWhite, Figure::kPawn);
-  auto wsafe_pawns =
-      (((wpawns << 9) & wpawns) >> 9) | (((wpawns << 7) & wpawns) >> 7);
-  value += defended_pawn_bonus * count_1s(wsafe_pawns);
-
-  auto bpawns = board.GetBitBoard(Color::kBlack, Figure::kPawn);
-  auto bsafe_pawns =
-      (((bpawns << 9) & bpawns) >> 9) | (((bpawns << 7) & bpawns) >> 7);
-  value -= defended_pawn_bonus * count_1s(bsafe_pawns);
 
   value += CalculateBonus(board.GetBitBoard(Color::kWhite, Figure::kPawn),
                           pawn_bonus, Color::kWhite);
@@ -174,6 +176,15 @@ Evaluate Evaluate::Value(const BitBoard &board, Color color) {
   value -= CalculateBonus(board.GetBitBoard(Color::kBlack, Figure::kKing),
                           king_bonus, Color::kBlack);
 
+  if (count_1s(board.GetBitBoard(Color::kWhite, Figure::kKnight)) == 2)
+    value += doubled_kb_bonus;
+  if (count_1s(board.GetBitBoard(Color::kBlack, Figure::kKnight)) == 2)
+    value -= doubled_kb_bonus;
+  if (count_1s(board.GetBitBoard(Color::kWhite, Figure::kBishop)) == 2)
+    value += doubled_kb_bonus;
+  if (count_1s(board.GetBitBoard(Color::kBlack, Figure::kBishop)) == 2)
+    value -= doubled_kb_bonus;
+
   value += knight * count_1s(board.GetBitBoard(Color::kWhite, Figure::kKnight));
   value -= knight * count_1s(board.GetBitBoard(Color::kBlack, Figure::kKnight));
   value += bishop * count_1s(board.GetBitBoard(Color::kWhite, Figure::kBishop));
@@ -200,4 +211,4 @@ Evaluate::ScoreType Evaluate::Value() const { return value_; }
 
 std::string Evaluate::ToString() const { return std::to_string(value_); }
 
-float Evaluate::ToCentiPawns() const { return (float)value_ / pawn / 3; }
+float Evaluate::ToCentiPawns() const { return (float)value_ / pawn / 28 * 10; }
