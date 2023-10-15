@@ -22,18 +22,21 @@ class AlphaBeta {
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
+    m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
     clear();
+    m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
-    return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth).second;
+    return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
     clear();
+    m_ttable->ClearUsedFlag();
     return findpv(board, depth);
   }
 
@@ -126,7 +129,8 @@ class AlphaBeta {
       }
     }
 
-    if (hashed != nullptr && hashed->depth <= depthleft) {
+    if (hashed != nullptr && (((founded && hashed->depth <= depthleft) ||
+                               (hashed->used == false)))) {
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
       hashed->value = bestscore;
@@ -139,8 +143,8 @@ class AlphaBeta {
     return bestscore;
   }
 
-  std::pair<T, Turn> alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta,
-                                   int depthleft, int depthmax) {
+  Turn alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
+                     int depthmax) {
     m_stat.MainNode();
 
     bool founded = false;
@@ -149,6 +153,7 @@ class AlphaBeta {
 
     if (founded) {
       enum Type { PV, FailLow, FailHigh } type;
+      // if (hashed->depth >= depthleft) return hashed->pv;
 
       if (hashed->value > hashed->a && hashed->value < hashed->b)
         type = PV;
@@ -158,8 +163,7 @@ class AlphaBeta {
         type = FailHigh;
 
       if (hashed->depth == depthleft) {
-        if (alpha >= hashed->a && beta <= hashed->b)
-          return {hashed->value, hashed->pv};
+        if (alpha >= hashed->a && beta <= hashed->b) return hashed->pv;
       }  // else if (hashed->depth > depthleft && type == PV)
       // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
       //                                             : -hashed->value;
@@ -169,7 +173,7 @@ class AlphaBeta {
         BitBoard::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
-      return {T(), Turn()};
+      return Turn();
     }
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
@@ -178,7 +182,7 @@ class AlphaBeta {
     Turn turn = Turn();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
-      if (score >= beta) return {score, Turn()};
+      if (score >= beta) return Turn();
       if (score > bestscore) {
         bestscore = score;
         turn = sub.turn;
@@ -188,7 +192,7 @@ class AlphaBeta {
         };
       }
     }
-    return {bestscore, turn};
+    return turn;
   }
 
   std::vector<Turn> findpv(BitBoard board, int depth) {
@@ -197,9 +201,9 @@ class AlphaBeta {
     for (int i = 0; i < depth; i++) {
       auto turn = alphabetaturn({board, board.Hash(), Turn(), 0}, T::Min(),
                                 T::Max(), depth - i, depth);
-      if (turn.second == Turn()) break;
-      turns_.push_back(turn.second);
-      board.ExecuteTurn(turn.second);
+      if (turn == Turn()) break;
+      turns_.push_back(turn);
+      board.ExecuteTurn(turn);
     }
 
     return turns_;

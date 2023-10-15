@@ -1,5 +1,7 @@
 #include "computer.hpp"
 
+#include <iostream>
+
 #include "itdeepening.hpp"
 
 Computer::Computer(Color color) : m_color(color) {}
@@ -10,6 +12,7 @@ void Computer::SetBoard(const BitBoard &board) { m_board = board; }
 
 void Computer::Start() {
   if (m_thread != nullptr) return;
+  m_stop_flag = false;
 
   m_thread = new std::thread([this]() {
     m_stat.Clear();
@@ -25,9 +28,12 @@ void Computer::Start() {
 
     max_depth = search.GetLastDepth();
 
+    // std::cout << m_table.Fill() << " " << m_table.Used() << std::endl;
+
     m_turn = search.GetTurn(m_board, max_depth);
     m_stat += search.GetStatistics();
-    m_pv = search.FindPV(m_board, max_depth);
+    // m_pv = search.FindPV(m_board, max_depth);
+    m_depth = max_depth;
     m_stat += search.GetStatistics();
   });
 }
@@ -47,5 +53,7 @@ std::vector<Turn> Computer::GetPV() const { return m_pv; }
 Evaluate Computer::GetValue() const { return m_value; }
 
 Turn Computer::GetTurn() const { return m_turn; }
+
+int Computer::GetDepth() const { return m_depth; }
 
 Statistics Computer::GetStatistics() { return m_stat; }

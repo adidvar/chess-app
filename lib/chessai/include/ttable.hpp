@@ -17,6 +17,7 @@ struct SearchElement {
   uint8_t depth;
 
   bool hasvalue = false;
+  bool used = false;
 };
 
 class TTable {
@@ -26,6 +27,11 @@ class TTable {
   SearchElement *Search(bitboard_hash_t hash, bool &founded);
   const SearchElement *Search(bitboard_hash_t hash, bool &founded) const;
   void Write(SearchElement *element);
+
+  float Fill();
+  float Used();
+
+  void ClearUsedFlag();
 
  private:
   std::vector<SearchElement> table_;

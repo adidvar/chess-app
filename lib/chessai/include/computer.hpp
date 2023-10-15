@@ -21,6 +21,7 @@ class Computer{
   std::vector<Turn> GetPV() const;
   Evaluate GetValue() const;
   Turn GetTurn() const;
+  int GetDepth() const;
 
   Statistics GetStatistics();
  private:
@@ -33,6 +34,7 @@ class Computer{
   std::vector<Turn> m_pv;
   Statistics m_stat;
   Evaluate m_value;
+  int m_depth;
   Turn m_turn;
 };
 
