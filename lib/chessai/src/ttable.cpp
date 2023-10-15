@@ -10,6 +10,7 @@ TTable::TTable() {
 
 void TTable::Clear() {
   for (auto &elem : table_) elem.hasvalue = false;
+  ClearUsedFlag();
 }
 
 SearchElement *TTable::Search(bitboard_hash_t hash, bool &founded) {

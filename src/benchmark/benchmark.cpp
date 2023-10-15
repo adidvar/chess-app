@@ -58,14 +58,36 @@ int main() {
 
   TTable table;
   statistics.Clear();
-  for (int d = 1; d <= 10; d++) {
+  for (int d = 1; d <= 7; d++) {
     AlphaBeta cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
-    auto value = cmp.GetValue(BitBoard{}, d);
+    auto value = cmp.GetValue(
+        BitBoard{"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
     statistics += cmp.GetStatistics();
     std::cout << d << ": " << statistics.GetMainNode() << ": "
               << value.ToCentiPawns() << std::endl;
+    auto pv = cmp.FindPV(
+        {"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
+    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
+    std::cout << std::endl;
+  }
+
+  table.Clear();
+
+  for (int d = 7; d >= 2; d--) {
+    AlphaBeta cmp(Color::kWhite);
+    cmp.SetTTable(&table);
+    cmp.SetStopFlag(nullptr);
+    auto value = cmp.GetValue(
+        BitBoard{"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
+    statistics += cmp.GetStatistics();
+    std::cout << d << ": " << statistics.GetMainNode() << ": "
+              << value.ToCentiPawns() << std::endl;
+    auto pv = cmp.FindPV(
+        {"2b1rrk1/pp4Pp/2pp4/4p3/2P4Q/2PPP3/P7/2KR1B1R b K - 0 1"}, d);
+    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
+    std::cout << std::endl;
   }
 
   return 0;

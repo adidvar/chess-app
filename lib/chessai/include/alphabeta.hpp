@@ -81,7 +81,7 @@ class AlphaBeta {
       else if (hashed->value >= hashed->b)
         type = FailHigh;
 
-      if (hashed->depth == depthleft) {
+      if (hashed->depth >= depthleft) {
         if (alpha >= hashed->a && beta <= hashed->b)
           return hashed->value;
         else if (type == PV)
@@ -165,8 +165,8 @@ class AlphaBeta {
       if (hashed->depth == depthleft) {
         if (alpha >= hashed->a && beta <= hashed->b) return hashed->pv;
       }  // else if (hashed->depth > depthleft && type == PV)
-      // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
-      //                                             : -hashed->value;
+         // return (hashed->depth - depthleft) % 2 == 0 ? hashed->value
+         //                                             : -hashed->value;
     }
 
     auto moves =

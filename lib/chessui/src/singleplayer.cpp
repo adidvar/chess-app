@@ -10,7 +10,7 @@ SinglePlayer::SinglePlayer(QWidget *parent)
   ui->board->SetMode(BoardWidget::kPlayerWhite);
   connect(ui->board, &BoardWidget::EnteredTurn, this,
           &SinglePlayer::TurnEntered);
-  // computer_.Start();
+  computer_.Start();
 }
 
 SinglePlayer::~SinglePlayer() { delete ui; }
@@ -27,7 +27,7 @@ void SinglePlayer::ComputerEntered() {
   match.Push(turn);
   ui->board->PushTurn(turn);
 
-  // computer_.Start();
+  computer_.Start();
 }
 
 void SinglePlayer::TurnEntered(Turn inputturn) {
@@ -36,7 +36,7 @@ void SinglePlayer::TurnEntered(Turn inputturn) {
   match.Push(inputturn);
   computer_.SetBoard(match.GetBoard());
 
-  // computer_.Stop();
+  computer_.Stop();
   computer_.Start();
 
   QTimer::singleShot(6000, this, &SinglePlayer::ComputerEntered);
