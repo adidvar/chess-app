@@ -69,9 +69,10 @@ int main() {
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
-    auto value = cmp.GetValue(BitBoard{}, d);
+    std::string fen{"r1r3k1/pppb1ppp/8/2bN4/2Pp4/1P6/P1KQB2q/R4R2 w - - 0 1"};
+    auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics += cmp.GetStatistics();
-    auto turn = cmp.GetTurn(BitBoard{}, d);
+    auto turn = cmp.GetTurn(BitBoard{fen}, d);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto msec =
