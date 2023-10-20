@@ -209,7 +209,7 @@ static bitboard_t find_magic(bitboard_t sq, bitboard_t mask,
     // clear hash map
     for (size_t i = 0; i < c; i++) hash[i] = 0;
 
-    if (count_1s(mask * magic >> (64 - n)) < n) continue;
+    if (count_1s(mask * magic >> (64ULL - n)) < n) continue;
 
     for (size_t i = 0; i < c; i++) {
       uint64_t index = input[i] * magic >> (64 - n);

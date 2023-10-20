@@ -22,7 +22,7 @@ add_library(chessai ${ai_headers} ${ai_sources})
 target_link_libraries(chessai chesscore)
 target_include_directories(chessai PUBLIC include)
 
-if(TESTINGAI)
+if(TESTING)
 
 enable_testing()
 

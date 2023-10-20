@@ -252,7 +252,7 @@ struct Knight {
   static bitboard_t GenerateAttack(bitboard_t figure, bitboard_t all,
                                    bitboard_t allies) {
     return (((figure << 10) & ~(row_a | row_b)) | ((figure << 17) & (~row_a)) |
-            ((figure >> 6)) & ~(row_a | row_b) | ((figure >> 15) & ~(row_a)) |
+            (((figure >> 6)) & ~(row_a | row_b)) | ((figure >> 15) & ~(row_a)) |
             ((figure << 6) & ~(row_g | row_h)) | ((figure << 15) & ~(row_h)) |
             ((figure >> 10) & ~(row_g | row_h)) | ((figure >> 17) & ~(row_h)));
     ;
