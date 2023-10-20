@@ -25,7 +25,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     auto from_figure = board.GetFigure(from_pos);
     auto to_figure = board.GetFigure(to_pos);
 
-    const SearchElement *element = nullptr;
+    const TTableItem *element = nullptr;
     bool found = false;
     if (ttable != nullptr && (depthmax - depthleft) <= 2) {
       element = ttable->Search(elem.hash, found);

@@ -6,7 +6,7 @@
 #include "bitboard.hpp"
 #include "evaluate.hpp"
 
-struct SearchElement {
+struct TTableItem {
   bitboard_hash_t hash;
 
   enum Type { PV, FailLow, FailHigh } type;
@@ -17,24 +17,20 @@ struct SearchElement {
   uint8_t depth;
 
   bool hasvalue = false;
-  bool used = false;
 };
 
 class TTable {
  public:
   TTable();
   void Clear();
-  SearchElement *Search(bitboard_hash_t hash, bool &founded);
-  const SearchElement *Search(bitboard_hash_t hash, bool &founded) const;
-  void Write(SearchElement *element);
+  TTableItem *Search(bitboard_hash_t hash, bool &founded);
+  const TTableItem *Search(bitboard_hash_t hash, bool &founded) const;
+  void Write(TTableItem *element);
 
   float Fill();
-  float Used();
-
-  void ClearUsedFlag();
 
  private:
-  std::vector<SearchElement> table_;
+  std::vector<TTableItem> table_;
 };
 
 #endif

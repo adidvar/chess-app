@@ -1,5 +1,5 @@
-#ifndef ALPHABETA_HPP
-#define ALPHABETA_HPP
+#ifndef PVS_HPP
+#define PVS_HPP
 
 #include <atomic>
 
@@ -11,29 +11,32 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-class AlphaBeta {
+class PVS {
   using T = Evaluate;
 
   // todo I rework to class to when search finds all we nee in one start or
   // throw exception and keep state
 
  public:
-  AlphaBeta(Color color) : m_color(color), m_search(color) {}
+  PVS(Color color) : m_color(color), m_search(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
     clear();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
     clear();
+    if (m_ttable) m_ttable->ClearUsedFlag();
     return findpv(board, depth);
   }
 
@@ -75,8 +78,7 @@ class AlphaBeta {
       if (hashed->depth == depthleft) {
         if (hashed->type == TTableItem::PV)
           return hashed->value;
-        else if (hashed->type == TTableItem::FailHigh &&
-                 hashed->value >= beta)
+        else if (hashed->type == TTableItem::FailHigh && hashed->value >= beta)
           return hashed->value;
         else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
@@ -94,6 +96,8 @@ class AlphaBeta {
       if (tuple.board.Checkmate()) return T::Lose(depthmax - depthleft);
       return T::Tie();
     }
+
+    bool bSearchPv = true;
 
     m_stat.MainNode();
 
@@ -119,7 +123,8 @@ class AlphaBeta {
       }
     }
 
-    if (hashed != nullptr && (((founded && hashed->depth <= depthleft)))) {
+    if (hashed != nullptr && (((founded && hashed->depth <= depthleft) ||
+                               (hashed->used == false)))) {
       auto hv = hashed->value;
       auto ha = oldalpha;
       auto hb = beta;
@@ -155,8 +160,7 @@ class AlphaBeta {
       if (hashed->depth == depthleft) {
         if (hashed->type == TTableItem::PV)
           return hashed->pv;
-        else if (hashed->type == TTableItem::FailHigh &&
-                 hashed->value >= beta)
+        else if (hashed->type == TTableItem::FailHigh && hashed->value >= beta)
           return Turn();
         else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
@@ -211,9 +215,9 @@ class AlphaBeta {
   QSearch m_search;
 };
 
-inline std::atomic_bool *AlphaBeta::GetStopFlag() const { return m_stop_flag; }
+inline std::atomic_bool *PVS::GetStopFlag() const { return m_stop_flag; }
 
-inline void AlphaBeta::SetStopFlag(std::atomic_bool *Stop_flag) {
+inline void PVS::SetStopFlag(std::atomic_bool *Stop_flag) {
   m_stop_flag = Stop_flag;
 }
 
