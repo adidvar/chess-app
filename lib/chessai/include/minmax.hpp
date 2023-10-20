@@ -40,8 +40,7 @@ class MinMax {
     std::vector<Turn> turns_;
 
     for (size_t i = 0; i < depth; i++) {
-      auto turn =
-          minimaxturn({board, board.Hash(), Turn(), 0}, depth - i, depth);
+      auto turn = minimaxturn({board}, depth - i, depth);
       if (turn.second == Turn()) break;
       turns_.push_back(turn.second);
       board.ExecuteTurn(turn.second);
@@ -83,7 +82,7 @@ class MinMax {
 
   Turn GetTurn(const BitBoard &board, int depth) {
     m_stat.Clear();
-    return minimaxturn({board, board.Hash(), Turn(), 0}, depth, depth).second;
+    return minimaxturn({board}, depth, depth).second;
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {

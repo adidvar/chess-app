@@ -1,7 +1,7 @@
 #ifndef FIGURES_H
 #define FIGURES_H
 
-#include <inttypes.h>
+#include <cinttypes>
 
 /**
  * @brief The Figure class describes a chess figure

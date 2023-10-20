@@ -26,7 +26,7 @@
 */
 
 /**
- * @brief The Position class describes chess position
+ * @brief The Position class describes a chess position
  */
 class Position {
  public:
@@ -41,39 +41,35 @@ class Position {
 
   constexpr Position(uint8_t index) noexcept : index_(index) {}
 
-  constexpr bool Valid() const noexcept { return index_ < kerror_pos_; }
-
-  constexpr uint8_t Value() const noexcept { return index_; }
-
-  constexpr uint8_t x() const noexcept { return index_ % 8; }
-
-  constexpr uint8_t y() const noexcept { return index_ / 8; }
-
-  constexpr Position Rotate() const noexcept {
-    if (Valid())
-      return Position(63 - index_);
-    else
-      return Position();
+  [[nodiscard]] constexpr bool Valid() const noexcept {
+    return index_ < kerror_pos_;
   }
 
-  std::string ToString() const noexcept {
+  [[nodiscard]] constexpr uint8_t Value() const noexcept { return index_; }
+
+  [[nodiscard]] constexpr uint8_t x() const noexcept { return index_ % 8; }
+
+  [[nodiscard]] constexpr uint8_t y() const noexcept { return index_ / 8; }
+
+  [[nodiscard]] constexpr Position Rotate() const noexcept {
+    if (Valid())
+      return Position(63 - index_);
+    return {};
+  }
+
+  [[nodiscard]] std::string ToString() const {
     std::string str = "00";
     str[0] = static_cast<char>('a' + x());
     str[1] = static_cast<char>('8' - y());
-    if (Valid())
-      return str;
-    else
-      return "--";
+    if (Valid()) return str;
+    return "--";
   }
 
   static Position FromString(std::string_view string) noexcept {
-    if (string.size() != 2)
-      return Position();
-    else if (string[0] >= 'a' && string[0] <= 'h' && string[1] >= '1' &&
-             string[1] <= '8')
+    if (string.size() == 2 && string[0] >= 'a' && string[0] <= 'h' &&
+        string[1] >= '1' && string[1] <= '8')
       return Position(string[0] - 'a', '8' - string[1]);
-    else
-      return Position();
+    return {};
   }
 
   bool operator==(const Position& pos) const noexcept {
@@ -96,4 +92,4 @@ class Position {
   static constexpr uint8_t kerror_pos_ = 64;
 };
 
-#endif  // POSITIONS_H
+#endif  // POSITION_H

@@ -61,10 +61,13 @@ class AlphaBeta {
     if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
 
     if (depthleft == 0) {
+#ifdef DISTRIBUTION
       auto value = m_search.GetValue(tuple.board, alpha, beta);
       return value;
-      // auto value = T::Value(tuple.board, m_color);
-      // return tuple.board.CurrentColor() == m_color ? value : -value;
+#else
+      auto value = T::Value(tuple.board, m_color);
+      return tuple.board.CurrentColor() == m_color ? value : -value;
+#endif
     }
 
     bool founded = false;
@@ -72,32 +75,18 @@ class AlphaBeta {
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
-      enum Type { PV, FailLow, FailHigh } type;
-
-      auto hv = hashed->value;
-      auto ha = hashed->a;
-      auto hb = hashed->b;
-
-      if (hv <= ha)
-        type = FailLow;
-      else if (hv >= hb)
-        type = FailHigh;
-      else
-        type = PV;
-
       if (hashed->depth == depthleft) {
-        if (type == PV)
-          return hv;
-        else if (type == FailHigh && hv >= beta)
-          return hv;
-        else if (type == FailHigh)
-          alpha = std::max(alpha, hv);
+        if (hashed->type == SearchElement::PV)
+          return hashed->value;
+        else if (hashed->type == SearchElement::FailHigh &&
+                 hashed->value >= beta)
+          return hashed->value;
+        else if (hashed->type == SearchElement::FailHigh)
+          alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
-        if (type == PV) return hv;
-        // if (type == FailHigh && hv >= beta)
-        //  return hv;
-        // else if (type == FailHigh)
-        //   alpha = std::max(alpha, hv);
+#ifdef DISTRIBUTION
+        if (hashed->type == SearcSearchElement::PV) return hashed->value;
+#endif
       }
     }
 
@@ -135,13 +124,22 @@ class AlphaBeta {
 
     if (hashed != nullptr && (((founded && hashed->depth <= depthleft) ||
                                (hashed->used == false)))) {
+      auto hv = hashed->value;
+      auto ha = oldalpha;
+      auto hb = beta;
+
+      if (hv <= ha)
+        hashed->type = SearchElement::FailLow;
+      else if (hv >= hb)
+        hashed->type = SearchElement::FailHigh;
+      else
+        hashed->type = SearchElement::PV;
+
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
       hashed->value = bestscore;
       hashed->pv = bestturn;
       hashed->depth = depthleft;
-      hashed->a = oldalpha;
-      hashed->b = beta;
     }
 
     return bestscore;
@@ -151,33 +149,25 @@ class AlphaBeta {
                      int depthmax) {
     m_stat.MainNode();
 
+    if (depthleft == 0) return Turn();
+
     bool founded = false;
     SearchElement *hashed = nullptr;
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
-      enum Type { PV, FailLow, FailHigh } type;
-
-      auto hv = hashed->value;
-      auto ha = hashed->a;
-      auto hb = hashed->b;
-
-      if (hv <= ha)
-        type = FailLow;
-      else if (hv >= hb)
-        type = FailHigh;
-      else
-        type = PV;
-
       if (hashed->depth == depthleft) {
-        if (type == PV)
+        if (hashed->type == SearchElement::PV)
           return hashed->pv;
-        else if (type == FailHigh && hv >= beta)
-          return hashed->pv;
-        else if (type == FailHigh)
-          alpha = std::max(alpha, hv);
+        else if (hashed->type == SearchElement::FailHigh &&
+                 hashed->value >= beta)
+          return Turn();
+        else if (hashed->type == SearchElement::FailHigh)
+          alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
-        if (type == PV) return hashed->pv;
+#ifdef DISTRIBUTION
+        if (hashed->type == SearcSearchElement::PV) return hashed->pv;
+#endif
       }
     }
 
@@ -208,8 +198,7 @@ class AlphaBeta {
     std::vector<Turn> turns_;
 
     for (int i = 0; i < depth; i++) {
-      auto turn = alphabetaturn({board, board.Hash(), Turn(), 0}, T::Min(),
-                                T::Max(), depth - i, depth);
+      auto turn = alphabetaturn({board}, T::Min(), T::Max(), depth - i, depth);
       if (turn == Turn()) break;
       turns_.push_back(turn);
       board.ExecuteTurn(turn);

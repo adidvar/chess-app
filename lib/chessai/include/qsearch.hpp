@@ -25,6 +25,8 @@ class QSearch {
   T qsearch(const BitBoardTuple &tuple, T alpha, T beta) {
     m_stat.ExtraNode();
 
+    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
+
     auto stand_pat = T::Value(tuple.board, m_color);
     stand_pat = tuple.board.CurrentColor() == m_color ? stand_pat : -stand_pat;
 
@@ -65,8 +67,11 @@ class QSearch {
 
     return bestscore;
   }
+  std::atomic_bool *GetStopFlag() const { return m_stop_flag; };
+  void SetStopFlag(std::atomic_bool *Stop_flag) { m_stop_flag = Stop_flag; };
 
  private:
+  std::atomic_bool *m_stop_flag = nullptr;
   Color m_color;
   Statistics m_stat;
   BFTable m_btable;

@@ -9,11 +9,11 @@
 #include "parsingtools.hpp"
 #include "zobrist.hpp"
 
-const char *BitBoard::kStartPosition_ =
+const char *const BitBoard::kStartPosition =
     u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const BitBoard BitBoard::kStartBitBoard_ = BitBoard(BitBoard::kStartPosition_);
+const BitBoard BitBoard::kStartBitBoard{BitBoard::kStartPosition};
 
-BitBoard::BitBoard() : BitBoard(kStartBitBoard_) {}
+BitBoard::BitBoard() : BitBoard(kStartBitBoard) {}
 
 BitBoard::BitBoard(std::string_view fen) : board_{{0}, {0}} {
   size_t index = 0;
@@ -344,7 +344,7 @@ void BitBoard::ProcessFigure(const BitBoard &parrent,
     bitboard_t reverse = ~iterator.Bit();
     while (to.Valid()) {
       boards.emplace_back(parrent);
-      boards.back().Move(iterator.bit_, to.bit_, color, Type::type);
+      boards.back().Move(iterator.Bit(), to.Bit(), color, Type::type);
 
       ++to;
     }
@@ -352,7 +352,7 @@ void BitBoard::ProcessFigure(const BitBoard &parrent,
     to = BitIterator(attack);
     while (to.Valid()) {
       boards.emplace_back(parrent);
-      boards.back().Attack(iterator.bit_, to.bit_, color, Type::type);
+      boards.back().Attack(iterator.Bit(), to.Bit(), color, Type::type);
 
       ++to;
     }
@@ -725,7 +725,7 @@ std::vector<Turn> BitBoard::GenerateTurns(Color color, uint64_t from,
   GenerateSubBoards(boards, color, from, to);
 
   for (const auto &subboard : boards)
-    turns.push_back(GetTurn(*this, subboard, color));
+    turns.push_back(GenerateTurn(*this, subboard, color));
   return turns;
 }
 
@@ -775,15 +775,15 @@ std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(BitBoardTuple tuple,
   tuples.reserve(boards.size());
 
   for (auto &board : boards) {
-    auto turn = GetTurn(tuple.board, board, color);
+    auto turn = GenerateTurn(tuple.board, board, color);
     tuples.push_back(
-        {board, GetHash(tuple.board, tuple.hash, turn, board), turn});
+        {board, GenerateHash(tuple.board, tuple.hash, turn, board), turn});
   }
 
   return tuples;
 }
 
-Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard,
+Turn BitBoard::GenerateTurn(const BitBoard &board, const BitBoard &subboard,
                        Color color) {
   bitboard_t delta = board.all_[color] ^ subboard.all_[color];
   bitboard_t from = board.all_[color] & delta;
@@ -801,7 +801,7 @@ Turn BitBoard::GetTurn(const BitBoard &board, const BitBoard &subboard,
   }
 }
 
-bitboard_hash_t BitBoard::GetHash(const BitBoard &board, bitboard_hash_t hash,
+bitboard_hash_t BitBoard::GenerateHash(const BitBoard &board, bitboard_hash_t hash,
                                   Turn turn, const BitBoard &sub) {
   auto from = board.GetCell(turn.from());
   auto to = board.GetCell(turn.to());
@@ -830,7 +830,7 @@ std::vector<Turn> BitBoard::GenerateTurns(
   turns.reserve(subboards.size());
 
   for (const auto &subboard : subboards)
-    turns.push_back(GetTurn(main, subboard, color));
+      turns.push_back(GenerateTurn(main, subboard, color));
   return turns;
 }
 

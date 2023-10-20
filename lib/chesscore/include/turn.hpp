@@ -34,31 +34,26 @@ class Turn {
    * @param direction напрямок рокіровки
    */
 
-  Turn(const Turn&) noexcept = default;
-  Turn(Turn&&) noexcept = default;
-
-  Turn& operator=(const Turn& b) noexcept = default;
-  Turn& operator=(Turn&& b) noexcept = default;
-
   bool operator==(const Turn& turn) const;
   bool operator<(const Turn& turn) const;
 
-  Position from() const noexcept;
-  Position to() const noexcept;
-  Position& from() noexcept;
-  Position& to() noexcept;
-  Figure figure() const noexcept;
-  Figure& figure() noexcept;
+  [[nodiscard]] Position from() const noexcept;
+  [[nodiscard]] Position to() const noexcept;
+  [[nodiscard]] Position& from() noexcept;
+  [[nodiscard]] Position& to() noexcept;
+  [[nodiscard]] Figure figure() const noexcept;
+  [[nodiscard]] Figure& figure() noexcept;
 
-  bool Valid() const noexcept;
+  [[nodiscard]] bool Valid() const noexcept;
 
-  bool IsCastling() const noexcept;
-  bool IsLongCastling() const noexcept;
-  bool IsShortCastling() const noexcept;
+  [[nodiscard]] bool IsCastling() const noexcept;
+  [[nodiscard]] bool IsLongCastling() const noexcept;
+  [[nodiscard]] bool IsShortCastling() const noexcept;
 
-  bool IsTrasformation() const noexcept;
+  [[nodiscard]] bool IsTrasformation() const noexcept;
 
-  std::string ToChessFormat() const;
+  [[nodiscard]] std::string ToChessFormat() const;
+
   static Turn FromChessFormat(std::string_view string);
   static Turn GetShortCastling(Color color);
   static Turn GetLongCastling(Color color);

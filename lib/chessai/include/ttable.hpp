@@ -9,9 +9,9 @@
 struct SearchElement {
   bitboard_hash_t hash;
 
+  enum Type { PV, FailLow, FailHigh } type;
+
   Evaluate value;
-  Evaluate a;
-  Evaluate b;
   Turn pv;
 
   uint8_t depth;

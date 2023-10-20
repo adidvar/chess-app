@@ -18,7 +18,7 @@ struct BitBoardTuple;
 class BitBoard {
  public:
   /**
-   * @brief The Cell class contains info about bitboard cell
+   * @brief The Cell class contains info about a bitboard cell
    */
   struct Cell {
     Figure type;
@@ -39,7 +39,7 @@ class BitBoard {
    * @param color color of figures we use
    * @return mask
    */
-  bitboard_t AttackMask(Color color) const;
+  [[nodiscard]] bitboard_t AttackMask(Color color) const;
   /**
    * @brief BitBoard construct class with startpos
    */
@@ -83,95 +83,106 @@ class BitBoard {
    * @brief Fen return fen line of a board
    * @return fen line
    */
-  std::string Fen() const;
+  [[nodiscard]] std::string Fen() const;
   /**
    * @brief CurrentColor return current color
    * @return current color
    */
-  Color CurrentColor() const noexcept;
+  [[nodiscard]] Color CurrentColor() const noexcept;
   /**
    * @brief OpponentColor return opponent color
    * @return opponent color
    */
-  Color OpponentColor() const noexcept;
+  [[nodiscard]] Color OpponentColor() const noexcept;
   /**
    * @brief RookingFlags return flags of possible castling
    * @return struct with flags
    */
-  RookingFlagsT RookingFlags() const noexcept;
+  [[nodiscard]] RookingFlagsT RookingFlags() const noexcept;
   /**
    * @brief LastPawnMove return last pawn move for el passant
    * @return position, that last pawn move go through
    */
-  Position LastPawnMove() const noexcept;
+  [[nodiscard]] Position LastPawnMove() const noexcept;
   /**
    * @brief Test test if figure on position is figure
    * @param position position on which we testing
    */
-  bool Test(Figure figure, Position position)
+  [[nodiscard]] bool Test(Figure figure, Position position)
       const noexcept;  ///< Порівнює фігури в заданних координатах
   /**
    * @brief TestColor test is color on position is color
    * @attention color if empty figure is undefined
    * @param position position on which we testing
    */
-  bool TestColor(Color color, Position position)
+  [[nodiscard]] bool TestColor(Color color, Position position)
       const noexcept;  ///< Порівнює колір в заданих координатах
   /**
    * @brief TestEmp test if figure on position is empty
    * @param position position on which we testing
    * @return
    */
-  bool TestEmp(
+  [[nodiscard]] bool TestEmp(
       Position position) const noexcept;  ///< Перевіряє клітинку на пустоту
   /**
    * @brief GetFigure return figure from position
    * @return figure
    */
-  Figure GetFigure(
+  [[nodiscard]] Figure GetFigure(
       Position position) const noexcept;  ///< Повертає фігуру по координатах
   /**
    * @brief GetColor return color from position
    * @return color
    */
-  Color GetColor(
+  [[nodiscard]] Color GetColor(
       Position position) const noexcept;  ///< Повертає колір по координатах
   /**
    * @brief GetCell return cell from position
    * @return cell
    */
-  Cell GetCell(Position position) const noexcept;
-
-  bitboard_t GetBitBoard(Color color, Figure figure) const noexcept;
-  bitboard_t GetColorBitBoard(Color color) const noexcept;
+  [[nodiscard]] Cell GetCell(Position position) const noexcept;
+  /**
+   * @brief GetBitBoard returns the raw bitboard of figure
+   * @param color color
+   * @param figure figure
+   * @return bitboard
+   */
+  [[nodiscard]] bitboard_t GetBitBoard(Color color,
+                                       Figure figure) const noexcept;
+  /**
+   * @brief GetColorBitBoard returns raw bitboard of player all figure
+   * @param color color of player
+   * @return bitboard
+   */
+  [[nodiscard]] bitboard_t GetColorBitBoard(Color color) const noexcept;
   /**
    * @brief MateTest tests mate on current board
    */
-  bool MateTest() const;
+  [[nodiscard]] bool MateTest() const;
   /**
    * @brief End tests that game can continue
    */
-  bool End() const;
+  [[nodiscard]] bool End() const;
   /**
    * @brief Checkmate tests checkmate on current board
    * @return
    */
-  bool Checkmate() const;
+  [[nodiscard]] bool Checkmate() const;
   /**
    * @brief WhiteWin tests white checkmate
    * @return
    */
-  bool WhiteWin() const;
+  [[nodiscard]] bool WhiteWin() const;
   /**
    * @brief BlackWin tests black checkmate
    * @return
    */
-  bool BlackWin() const;
+  [[nodiscard]] bool BlackWin() const;
   /**
    * @brief Tie returns true if there is a tie
    * @return
    */
-  bool Tie() const;
+  [[nodiscard]] bool Tie() const;
   /**
    * @brief GenerateSubBoards returns all valid subboards
    * @param color color
@@ -179,8 +190,8 @@ class BitBoard {
    * @param to to mask
    * @return vector of bitboards
    */
-  std::vector<BitBoard> GenerateSubBoards(Color color, uint64_t from = kall,
-                                          uint64_t to = kall) const;
+  [[nodiscard]] std::vector<BitBoard> GenerateSubBoards(
+      Color color, uint64_t from = kall, uint64_t to = kall) const;
   /**
    * @brief GenerateSubBoards returns all valid subboards
    * @param boards vector for boards placement
@@ -197,8 +208,9 @@ class BitBoard {
    * @param to to mask
    * @return vector of turns
    */
-  std::vector<Turn> GenerateTurns(Color color, uint64_t from = kall,
-                                  uint64_t to = kall) const;
+  [[nodiscard]] std::vector<Turn> GenerateTurns(Color color,
+                                                uint64_t from = kall,
+                                                uint64_t to = kall) const;
   /**
    * @brief ExecuteTurn executes turn on these board
    * @param turn our turn
@@ -209,15 +221,14 @@ class BitBoard {
    * @brief TestTurn tests turn correctness
    * @return true if ok, otherwise false
    */
-  bool TestTurn(Turn turn) const;
+  [[nodiscard]] bool TestTurn(Turn turn) const;
   /**
    * @brief Hash returns zobrist hash of bitboard
    * @return hash
    *
    * to see a realization go zobrist.hpp
    */
-  bitboard_hash_t Hash() const;
-
+  [[nodiscard]] bitboard_hash_t Hash() const;
   /**
    * @brief GenerateTuplesFast generates subboards subturns and subhashes
    * @param tuple input tuple
@@ -231,27 +242,41 @@ class BitBoard {
                                                        Color color,
                                                        uint64_t from = kall,
                                                        uint64_t to = kall);
-
   /**
-   * @brief GetTurn generates a turn from two boards
+   * @brief GenerateTurn generates a turn from two boards
    * @param from board before turn
    * @param to board after turn
    * @param color color of current player
    * @return turn
    */
-  static Turn GetTurn(const BitBoard &from, const BitBoard &to, Color color);
+  static Turn GenerateTurn(const BitBoard &from, const BitBoard &to,
+                           Color color);
   /**
-   * @brief GetHash generates hash from a board its hash and a turn
+   * @brief GenerateHash generates hash from a board its hash and a turn
    * @param board a board
    * @param the hash hash of board
    * @param turn the turn
    * @return the hash of sub board
    */
-  static bitboard_hash_t GetHash(const BitBoard &board, bitboard_hash_t hash,
-                                 Turn turn, const BitBoard &sub);
+  static bitboard_hash_t GenerateHash(const BitBoard &board,
+                                      bitboard_hash_t hash, Turn turn,
+                                      const BitBoard &sub);
+  /**
+   * @brief GenerateTurns generates a vector of turns
+   * @param main the root node
+   * @param subboards subboards
+   * @param color a color
+   * @return the vector of turns
+   */
   static std::vector<Turn> GenerateTurns(const BitBoard &main,
                                          const std::vector<BitBoard> &subboards,
                                          Color color);
+  /**
+   * @brief GenerateHashes generate a vector of hashes
+   * @param main the root node
+   * @param subboards subboards
+   * @return the vector of turns
+   */
   static std::vector<bitboard_hash_t> GenerateHashes(
       const BitBoard &main, const std::vector<BitBoard> &subboards);
 
@@ -259,8 +284,8 @@ class BitBoard {
   bool operator!=(const BitBoard &board) const;
 
  private:
-  static const char *kStartPosition_;
-  static const BitBoard kStartBitBoard_;
+  static const char *const kStartPosition;
+  static const BitBoard kStartBitBoard;
 
   // bitboards
   bitboard_t board_[Color::Max()][Figure::Max()];
@@ -288,16 +313,24 @@ class BitBoard {
                      bitboard_t opponent) const;
 
   template <typename Type>
-  bitboard_t ProcessAttack(Color color, bitboard_t from_mask, bitboard_t all,
-                           bitboard_t yours, bitboard_t opponent) const;
+  [[nodiscard]] bitboard_t ProcessAttack(Color color, bitboard_t from_mask,
+                                         bitboard_t all, bitboard_t yours,
+                                         bitboard_t opponent) const;
 
-  bool OpponentMateTest() const;
+  [[nodiscard]] bool OpponentMateTest() const;
 };
 
 struct BitBoardTuple {
+  BitBoardTuple(const BitBoard &board)
+      : board(board), hash(board.Hash()), turn{}, priority{} {}
+
+  BitBoardTuple(const BitBoard &board, bitboard_hash_t hash, Turn turn)
+      : board(board), hash(hash), turn{turn}, priority{} {}
+
   BitBoard board;
   bitboard_hash_t hash;
   Turn turn;
+
   struct Priority {
     int64_t type;
     int64_t index;
