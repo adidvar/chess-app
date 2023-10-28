@@ -1,11 +1,11 @@
 #include <QApplication>
 #include <QHBoxLayout>
 
-#include "mainmenu.h"
+#include "singleplayer.h"
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
-  MainMenu widget;
-  widget.show();
+  SinglePlayer single;
+  single.show();
   return a.exec();
 }

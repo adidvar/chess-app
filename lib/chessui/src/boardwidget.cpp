@@ -5,22 +5,21 @@
 
 
 static float borderwidth = 2;
-const Figure figure_placing[4] = {Figure::kKnight , Figure::kBishop, Figure::kRook, Figure::kQueen};
+const Figure figure_placing[4] = {Figure::kKnight, Figure::kBishop,
+                                  Figure::kRook, Figure::kQueen};
 
-BoardWidget::BoardWidget(QWidget *parent, Mode mode, BitBoard board, Turn last_turn):
-QWidget(parent),
-  mode_(mode),
-  board_(board),
-  last_turn_(last_turn)
-{
-    connect(this,&BoardWidget::animation_state_updated,this,&BoardWidget::update_animation_frame);
-    setMouseTracking(true);
-    Color color;
-    if(mode_ == kPlayerBlack || mode_ == kPlayerWhite){
-        possible_ = board_.GenerateTurns(mode_);
-    } else {
-        possible_ = board_.GenerateTurns(board.CurrentColor());
-    }
+BoardWidget::BoardWidget(QWidget *parent, Mode mode, BitBoard board,
+                         Turn last_turn)
+    : QWidget(parent), mode_(mode), board_(board), last_turn_(last_turn) {
+  connect(this, &BoardWidget::animation_state_updated, this,
+          &BoardWidget::update_animation_frame);
+  setMouseTracking(true);
+  Color color;
+  if (mode_ == kPlayerBlack || mode_ == kPlayerWhite) {
+    possible_ = board_.GenerateTurns(mode_);
+  } else {
+    possible_ = board_.GenerateTurns(board.CurrentColor());
+  }
 }
 
 void BoardWidget::PushTurn(Turn turn)
