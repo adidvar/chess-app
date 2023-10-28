@@ -65,7 +65,7 @@ int main() {
   begin = std::chrono::high_resolution_clock::now();
 
   TTable table;
-  for (int d = 1; d <= 8; d++) {
+  for (int d = 1; d <= 9; d++) {
     ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
@@ -90,7 +90,7 @@ int main() {
   begin = std::chrono::high_resolution_clock::now();
   table.Clear();
   statistics.Clear();
-  for (int d = 1; d <= 8; d++) {
+  for (int d = 1; d <= 9; d++) {
     ItDeepening<PVS> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
