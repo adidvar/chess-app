@@ -3,6 +3,7 @@
 
 #include <vector>
 
+/*
 #include "bitboard.hpp"
 
 class Frame {
@@ -32,5 +33,6 @@ class ChessTree {
  private:
   std::vector<Frame> m_layers;
 };
+*/
 
 #endif

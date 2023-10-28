@@ -5,8 +5,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "fen.hpp"
 #include "magic.hpp"
-#include "parsingtools.hpp"
 #include "zobrist.hpp"
 
 const char *const BitBoard::kStartPosition =

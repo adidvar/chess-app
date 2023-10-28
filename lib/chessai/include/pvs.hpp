@@ -11,6 +11,7 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
+/*
 class PVS {
   using T = Evaluate;
 
@@ -220,5 +221,6 @@ inline std::atomic_bool *PVS::GetStopFlag() const { return m_stop_flag; }
 inline void PVS::SetStopFlag(std::atomic_bool *Stop_flag) {
   m_stop_flag = Stop_flag;
 }
+*/
 
 #endif

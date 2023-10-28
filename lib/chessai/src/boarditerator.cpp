@@ -1,5 +1,5 @@
 #include "boarditerator.hpp"
-
+/*
 Frame::Frame(const BitBoardTuple &parrent) {}
 
 const BitBoardTuple &Frame::GetCurrent() {}
@@ -19,3 +19,4 @@ void ChessTree::UnMakeTurn() {}
 void ChessTree::NextTurn() {}
 
 bool ChessTree::IsEnd() {}
+*/

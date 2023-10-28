@@ -5,7 +5,7 @@
 #include <iostream>
 #include <map>
 
-#include "parsingtools.hpp"
+#include "fen.hpp"
 
 Match::Match() {}
 
@@ -95,7 +95,7 @@ void Match::LoadFromUCIString(const std::string &line) {
   size_t index = 0;
   LoadFromFen(line, startboard_, index);
   auto turnsstr = line.substr(index);
-  auto turns = SplitByDelims(turnsstr, {' ', '\t', '\n', '\r'});
+  auto turns = Split(turnsstr, {' ', '\t', '\n', '\r'});
   endboard_ = startboard_;
   if (turns.size() != 0 && turns.front() == "moves") {
     turns.erase(turns.cbegin());
@@ -104,23 +104,4 @@ void Match::LoadFromUCIString(const std::string &line) {
       if (!endboard_.ExecuteTurn(turn)) throw LexicalParserError{};
     }
   }
-}
-
-std::vector<Match> LoadFromPGN(std::string text) {
-  /*
-  std::vector<Match> matches;
-  size_t len = 0;
-  while (len != std::string_view::npos) {
-    try {
-      matches.emplace_back(std::move(ReadMatch(text, len)));
-    } catch (ImpossibleMoveError) {
-      std::cout << "Round skipped immposible move" << std::endl;
-    } catch (LexicalParserError) {
-      std::cout << "Round skipped lexical error" << std::endl;
-      return matches;
-    }
-  }
-  return matches;
-*/
-  return {};
 }

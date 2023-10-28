@@ -71,6 +71,4 @@ class Match {
   BitBoard endboard_;
 };
 
-std::vector<Match> LoadFromPGN(std::string text);
-
 #endif  // MATCH_H
