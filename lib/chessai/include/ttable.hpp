@@ -23,8 +23,10 @@ class TTable {
  public:
   TTable();
   void Clear();
+
   TTableItem *Search(bitboard_hash_t hash, bool &founded);
   const TTableItem *Search(bitboard_hash_t hash, bool &founded) const;
+
   void Write(TTableItem *element);
 
   float Fill();

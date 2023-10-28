@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>618</width>
+    <height>642</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>618</width>
+    <height>642</height>
+   </size>
   </property>
   <property name="baseSize">
    <size>
@@ -17,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Single Player</string>
+   <string>Chess5 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
