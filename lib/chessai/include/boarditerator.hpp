@@ -3,7 +3,6 @@
 
 #include <vector>
 
-/*
 #include "bitboard.hpp"
 
 class Frame {
@@ -24,6 +23,7 @@ class ChessTree {
   ChessTree(BitBoard board);
 
   const BitBoardTuple& GetCurrent();
+  const std::vector<BitBoardTuple>& GetChilldren();
 
   void MakeTurn();
   void UnMakeTurn();
@@ -32,7 +32,7 @@ class ChessTree {
 
  private:
   std::vector<Frame> m_layers;
+  size_t m_index;
 };
-*/
 
 #endif

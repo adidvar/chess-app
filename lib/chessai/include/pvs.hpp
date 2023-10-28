@@ -11,7 +11,6 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-/*
 class PVS {
   using T = Evaluate;
 
@@ -23,21 +22,18 @@ class PVS {
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
-    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
-    return alphabeta(tuple, a, b, depth, depth);
+    return pvs(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
     clear();
-    if (m_ttable) m_ttable->ClearUsedFlag();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
-    return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
+    return pvturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
     clear();
-    if (m_ttable) m_ttable->ClearUsedFlag();
     return findpv(board, depth);
   }
 
@@ -55,8 +51,8 @@ class PVS {
     m_stat.Clear();
   };
 
-  T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
-              int depthmax) {
+  T pvs(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
+        int depthmax) {
     auto oldalpha = alpha;
 
     if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
@@ -85,7 +81,7 @@ class PVS {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
 #ifdef DISTRIBUTION
-        if (hashed->type == SearcSearchElement::PV) return hashed->value;
+        if (hashed->type == TTableItem::PV) return hashed->value;
 #endif
       }
     }
@@ -98,16 +94,15 @@ class PVS {
       return T::Tie();
     }
 
-    bool bSearchPv = true;
-
     m_stat.MainNode();
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
             depthmax, founded ? hashed->pv : Turn());
+    /*
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
-      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
+      auto score = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
@@ -123,10 +118,35 @@ class PVS {
         };
       }
     }
+*/
 
-    if (hashed != nullptr && (((founded && hashed->depth <= depthleft) ||
-                               (hashed->used == false)))) {
-      auto hv = hashed->value;
+    Turn bestturn = Turn();
+    bool bSearchPv = true;
+    for (auto &sub : moves) {
+      T bestscore = T::Min();
+      if (bSearchPv) {
+        bestscore = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
+      } else {
+        bestscore = -pvs(sub, -alpha - 1, -alpha, depthleft - 1, depthmax);
+        if (bestscore > alpha)  // in fail-soft ... && score < beta ) is common
+          bestscore = -pvs(sub, -beta, -alpha, depthleft - 1,
+                           depthmax);  // re-search
+      }
+      if (bestscore >= beta) {
+        bestturn = sub.turn;
+        m_btable.Push(sub.turn, depthleft);
+        return beta;  // fail-hard beta-cutoff
+      }
+      if (bestscore > alpha) {
+        bestturn = sub.turn;
+        m_btable.Push(sub.turn, depthleft);
+        alpha = bestscore;  // alpha acts like max in MiniMax
+        bSearchPv = false;  // *1)
+      }
+    }
+
+    if (hashed != nullptr && (((founded && hashed->depth <= depthleft)))) {
+      auto hv = alpha;
       auto ha = oldalpha;
       auto hb = beta;
 
@@ -139,16 +159,16 @@ class PVS {
 
       hashed->hasvalue = true;
       hashed->hash = tuple.hash;
-      hashed->value = bestscore;
+      hashed->value = alpha;
       hashed->pv = bestturn;
       hashed->depth = depthleft;
     }
 
-    return bestscore;
+    return alpha;
   }
 
-  Turn alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
-                     int depthmax) {
+  Turn pvturn(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
+              int depthmax) {
     m_stat.MainNode();
 
     if (depthleft == 0) return Turn();
@@ -167,7 +187,7 @@ class PVS {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
 #ifdef DISTRIBUTION
-        if (hashed->type == SearcSearchElement::PV) return hashed->pv;
+        if (hashed->type == TTableItem::PV) return hashed->pv;
 #endif
       }
     }
@@ -184,7 +204,7 @@ class PVS {
     T bestscore = T::Min();
     Turn turn = Turn();
     for (auto &sub : moves) {
-      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
+      auto score = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
       if (score >= beta) return Turn();
       if (score > bestscore) {
         bestscore = score;
@@ -199,7 +219,7 @@ class PVS {
     std::vector<Turn> turns_;
 
     for (int i = 0; i < depth; i++) {
-      auto turn = alphabetaturn({board}, T::Min(), T::Max(), depth - i, depth);
+      auto turn = pvturn({board}, T::Min(), T::Max(), depth - i, depth);
       if (turn == Turn()) break;
       turns_.push_back(turn);
       board.ExecuteTurn(turn);
@@ -221,6 +241,5 @@ inline std::atomic_bool *PVS::GetStopFlag() const { return m_stop_flag; }
 inline void PVS::SetStopFlag(std::atomic_bool *Stop_flag) {
   m_stop_flag = Stop_flag;
 }
-*/
 
 #endif

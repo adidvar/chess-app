@@ -27,7 +27,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
 
     const TTableItem *element = nullptr;
     bool found = false;
-    if (ttable != nullptr && (depthmax - depthleft) <= 2) {
+    if (ttable != nullptr && (depthmax - depthleft) <= 3) {
       element = ttable->Search(elem.hash, found);
     }
     if (elem.turn == pv && !(pv == Turn())) {

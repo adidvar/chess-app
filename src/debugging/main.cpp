@@ -5,6 +5,8 @@
 #include <itdeepening.hpp>
 #include <minmax.hpp>
 
+#include "pvs.hpp"
+
 int main() {
   std::string fen{"startpos"};
   // std::getline(std::cin, fen);
@@ -16,7 +18,7 @@ int main() {
   {
     std::string fen{"startpos"};
     int d = 8;
-    ItDeepening cmp(Color::kWhite);
+    ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
     std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;
@@ -35,7 +37,7 @@ int main() {
   {
     std::string fen{"startpos"};
     int d = 7;
-    ItDeepening cmp(Color::kWhite);
+    ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
     std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;
@@ -55,7 +57,7 @@ int main() {
     TTable table;
     std::string fen{"startpos"};
     int d = 7;
-    ItDeepening cmp(Color::kWhite);
+    ItDeepening<PVS> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
     std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;

@@ -16,7 +16,7 @@ void Computer::Start() {
 
   m_thread = new std::thread([this]() {
     m_stat.Clear();
-    ItDeepening search(m_color);
+    ItDeepening<AlphaBeta> search(m_color);
     search.SetTTable(&m_table);
     search.SetStopFlag(&m_stop_flag);
 

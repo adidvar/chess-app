@@ -8,6 +8,7 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
+template <class Search>
 class ItDeepening {
   using T = Evaluate;
 
@@ -16,7 +17,7 @@ class ItDeepening {
 
   T GetValue(const BitBoard &board, int max_depth, T a = T::Min(),
              T b = T::Max()) {
-    AlphaBeta ab(m_color);
+    Search ab(m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
     T result = T();
@@ -32,7 +33,7 @@ class ItDeepening {
   }
 
   Turn GetTurn(const BitBoard &board, int max_depth) {
-    AlphaBeta ab(m_color);
+    Search ab(m_color);
     ab.SetTTable(m_ttable);
     auto result = ab.GetTurn(board, max_depth);
     m_stat = ab.GetStatistics();
@@ -40,7 +41,7 @@ class ItDeepening {
   }
 
   std::vector<Turn> FindPV(BitBoard board, int max_depth) {
-    AlphaBeta ab(m_color);
+    Search ab(m_color);
     ab.SetTTable(m_ttable);
     std::vector<Turn> result;
     result = ab.FindPV(board, max_depth);
@@ -56,7 +57,7 @@ class ItDeepening {
   std::atomic_bool *GetStopFlag() const { return m_stop_flag; };
   void SetStopFlag(std::atomic_bool *Stop_flag) { m_stop_flag = Stop_flag; };
 
-  int GetLastDepth() const;
+  int GetLastDepth() const { return m_last_depth; };
 
  private:
   int m_last_depth = 0;
@@ -65,7 +66,5 @@ class ItDeepening {
   Statistics m_stat;
   TTable *m_ttable = nullptr;
 };
-
-inline int ItDeepening::GetLastDepth() const { return m_last_depth; }
 
 #endif

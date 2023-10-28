@@ -82,7 +82,7 @@ class AlphaBeta {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
 #ifdef DISTRIBUTION
-        if (hashed->type == SearcSearchElement::PV) return hashed->value;
+        if (hashed->type == TTableItem::PV) return hashed->value;
 #endif
       }
     }
@@ -120,7 +120,7 @@ class AlphaBeta {
     }
 
     if (hashed != nullptr && (((founded && hashed->depth <= depthleft)))) {
-      auto hv = hashed->value;
+      auto hv = bestscore;
       auto ha = oldalpha;
       auto hb = beta;
 
@@ -162,7 +162,7 @@ class AlphaBeta {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
 #ifdef DISTRIBUTION
-        if (hashed->type == SearcSearchElement::PV) return hashed->pv;
+        if (hashed->type == TTableItem::PV) return hashed->pv;
 #endif
       }
     }

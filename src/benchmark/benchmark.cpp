@@ -5,6 +5,7 @@
 
 #include "computer.hpp"
 #include "itdeepening.hpp"
+#include "pvs.hpp"
 
 std::vector<std::pair<const char*, float>> stockfish_result{
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.17},
@@ -24,10 +25,10 @@ int main() {
   auto begin = std::chrono::high_resolution_clock::now();
   for (auto pair : stockfish_result) {
     TTable table;
-    ItDeepening cmp(Color::kWhite);
+    ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
 
-    float value = cmp.GetValue(BitBoard{pair.first}, 8).ToCentiPawns();
+    float value = cmp.GetValue(BitBoard{pair.first}, 6).ToCentiPawns();
     auto stat = cmp.GetStatistics();
     float error = value - pair.second;
 
@@ -49,7 +50,7 @@ int main() {
   Statistics statistics;
 
   for (auto pair : stockfish_result) {
-    ItDeepening cmp(Color::kWhite);
+    ItDeepening<AlphaBeta> cmp(Color::kWhite);
     TTable table;
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
@@ -60,19 +61,19 @@ int main() {
   std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
   statistics.Clear();
 
-  TTable table;
 
   begin = std::chrono::high_resolution_clock::now();
 
-  for (int d = 1; d <= 10; d++) {
-    ItDeepening cmp(Color::kWhite);
+  TTable table;
+  for (int d = 1; d <= 8; d++) {
+    ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
-    std::string fen{"r1r3k1/pppb1ppp/8/2bN4/2Pp4/1P6/P1KQB2q/R4R2 w - - 0 1"};
+    std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics += cmp.GetStatistics();
-    auto turn = cmp.GetTurn(BitBoard{fen}, d);
+    // auto turn = cmp.GetTurn(BitBoard{fen}, d);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto msec =
@@ -82,7 +83,33 @@ int main() {
     std::cout << std::setw(8) << d << ": " << std::setw(8)
               << statistics.GetMainNode() << "  :  " << std::setw(10)
               << value.ToCentiPawns() << " : " << std::setw(10) << msec << " : "
-              << turn.ToChessFormat() << std::endl;
+              << std::endl;
+    //  << turn.ToChessFormat() << std::endl;
+  }
+
+  begin = std::chrono::high_resolution_clock::now();
+  table.Clear();
+  statistics.Clear();
+  for (int d = 1; d <= 8; d++) {
+    ItDeepening<PVS> cmp(Color::kWhite);
+    cmp.SetTTable(&table);
+    cmp.SetStopFlag(nullptr);
+
+    std::string fen{"startpos"};
+    auto value = cmp.GetValue(BitBoard{fen}, d);
+    statistics += cmp.GetStatistics();
+    // auto turn = cmp.GetTurn(BitBoard{fen}, d);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto msec =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
+            .count();
+
+    std::cout << std::setw(8) << d << ": " << std::setw(8)
+              << statistics.GetMainNode() << "  :  " << std::setw(10)
+              << value.ToCentiPawns() << " : " << std::setw(10) << msec << " : "
+              << std::endl;
+    //<< turn.ToChessFormat() << std::endl;
   }
   return 0;
 }
