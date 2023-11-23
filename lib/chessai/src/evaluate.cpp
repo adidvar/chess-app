@@ -56,7 +56,8 @@ constexpr static int doubled_pawn_punishment = 100;
 constexpr static int doubled_kb_bonus = 176;
 
 // rangement
-constexpr static int prange = 1000000;
+constexpr static int invalid = std::numeric_limits<int>::min();
+constexpr static int prange = std::numeric_limits<int>::max();
 constexpr static int nrange = -prange;
 
 int CalculateBonus(bitboard_t map, const int bonus[], Color color) {
@@ -71,47 +72,30 @@ int CalculateBonus(bitboard_t map, const int bonus[], Color color) {
   return value;
 }
 
-Evaluate::Evaluate() : value_(-9999999) {}
+Score::Score() : value_(invalid) {}
 
-Evaluate::Evaluate(int value) : value_(value) {}
+Score::Score(int value) : value_(value) {}
 
-bool Evaluate::operator<(const Evaluate value) const {
-  return value_ < value.value_;
+bool Score::operator<(Score value) const { return value_ < value.value_; }
+bool Score::operator>(Score value) const { return value_ > value.value_; }
+bool Score::operator<=(Score value) const { return value_ <= value.value_; }
+bool Score::operator>=(Score value) const { return value_ >= value.value_; }
+bool Score::operator==(Score value) const { return value_ == value.value_; }
+bool Score::operator!=(Score value) const { return value_ != value.value_; }
+
+Score Score::operator-(Score value) const {
+  return Score{value_ - value.value_};
 }
 
-bool Evaluate::operator>(const Evaluate value) const {
-  return value_ > value.value_;
-}
+Score Score::operator-() const { return Score(-value_); }
 
-bool Evaluate::operator<=(const Evaluate value) const {
-  return value_ <= value.value_;
-}
+Score Score::Win(int depth) { return Score(prange - depth - 1); }
 
-bool Evaluate::operator>=(const Evaluate value) const {
-  return value_ >= value.value_;
-}
+Score Score::Lose(int depth) { return Score(nrange + depth + 1); }
 
-bool Evaluate::operator==(const Evaluate value) const {
-  return value_ == value.value_;
-}
+Score Score::Tie() { return Score(0); }
 
-bool Evaluate::operator!=(const Evaluate value) const {
-  return value_ != value.value_;
-}
-
-Evaluate Evaluate::operator-(const Evaluate value) const {
-  return value_ - value.value_;
-}
-
-Evaluate Evaluate::operator-() const { return Evaluate(-value_); }
-
-Evaluate Evaluate::Win(int depth) { return Evaluate(prange - depth - 1); }
-
-Evaluate Evaluate::Lose(int depth) { return Evaluate(nrange + depth + 1); }
-
-Evaluate Evaluate::Tie() { return Evaluate(0); }
-
-Evaluate Evaluate::Value(const BitBoard &board, Color color) {
+Score Score::Value(const BitBoard &board, Color color) {
   int value = 0;
 
   // pawns
@@ -196,19 +180,17 @@ Evaluate Evaluate::Value(const BitBoard &board, Color color) {
 
   if (color == Color::kBlack) value = -value;
 
-  return Evaluate{value};
+  return Score{value};
 }
 
-Evaluate Evaluate::Max() { return Evaluate(prange); }
+Score Score::Max() { return Score(prange); }
 
-Evaluate Evaluate::Min() { return Evaluate(nrange); }
+Score Score::Min() { return Score(nrange); }
 
-Evaluate::ScoreType Evaluate::FigurePrice(Figure figure) {
-  return material[figure];
-}
+Score::ScoreType Score::FigurePrice(Figure figure) { return material[figure]; }
 
-Evaluate::ScoreType Evaluate::Value() const { return value_; }
+Score::ScoreType Score::Value() const { return value_; }
 
-std::string Evaluate::ToString() const { return std::to_string(value_); }
+std::string Score::ToString() const { return std::to_string(value_); }
 
-float Evaluate::ToCentiPawns() const { return (float)value_ / pawn / 28 * 10; }
+float Score::ToCentiPawns() const { return (float)value_ / pawn / 28 * 10; }

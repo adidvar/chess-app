@@ -10,7 +10,7 @@
 
 template <class Search>
 class ItDeepening {
-  using T = Evaluate;
+  using T = Score;
 
  public:
   ItDeepening(Color color) : m_color(color) {}

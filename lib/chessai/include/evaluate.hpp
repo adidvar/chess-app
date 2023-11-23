@@ -5,29 +5,29 @@
 
 #include "bitboard.hpp"
 
-class Evaluate {
+class Score {
   using ScoreType = int;
 
  public:
-  Evaluate();
-  Evaluate(ScoreType value);
+  Score();
+  explicit Score(ScoreType value);
 
-  bool operator<(const Evaluate value) const;
-  bool operator>(const Evaluate value) const;
-  bool operator<=(const Evaluate value) const;
-  bool operator>=(const Evaluate value) const;
-  bool operator==(const Evaluate value) const;
-  bool operator!=(const Evaluate value) const;
+  bool operator<(Score value) const;
+  bool operator>(Score value) const;
+  bool operator<=(Score value) const;
+  bool operator>=(Score value) const;
+  bool operator==(Score value) const;
+  bool operator!=(Score value) const;
 
-  Evaluate operator-() const;
-  Evaluate operator-(const Evaluate value) const;
+  Score operator-() const;
+  Score operator-(const Score value) const;
 
-  static Evaluate Win(int depth);
-  static Evaluate Lose(int depth);
-  static Evaluate Tie();
-  static Evaluate Value(const BitBoard &board, Color color);
-  static Evaluate Max();
-  static Evaluate Min();
+  static Score Win(int depth);
+  static Score Lose(int depth);
+  static Score Tie();
+  static Score Value(const BitBoard &board, Color color);
+  static Score Max();
+  static Score Min();
   static ScoreType FigurePrice(Figure figure);
   ScoreType Value() const;
 

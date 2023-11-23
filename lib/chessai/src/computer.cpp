@@ -50,7 +50,7 @@ void Computer::Stop() {
 
 std::vector<Turn> Computer::GetPV() const { return m_pv; }
 
-Evaluate Computer::GetValue() const { return m_value; }
+Score Computer::GetValue() const { return m_value; }
 
 Turn Computer::GetTurn() const { return m_turn; }
 

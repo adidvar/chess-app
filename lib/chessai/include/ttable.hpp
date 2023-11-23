@@ -10,8 +10,8 @@ struct TTableItem {
   bitboard_hash_t hash;
 
   enum Type { PV, FailLow, FailHigh } type;
-
-  Evaluate value;
+  
+  Score value;
   Turn pv;
 
   uint8_t depth;

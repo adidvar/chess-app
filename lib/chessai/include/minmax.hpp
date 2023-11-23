@@ -4,15 +4,13 @@
 #include <atomic>
 #include <bitboard.hpp>
 #include <evaluate.hpp>
-#include <exitcondition.hpp>
+#include <search.hpp>
 #include <statistics.hpp>
 
-class MinMax {
-  using T = Evaluate;
+class MinMax : public Search {
+  using T = Score;
 
-  Color m_color;
   Statistics m_stat;
-  std::atomic_bool *m_stop_flag = nullptr;
 
   T minimax(const BitBoard &bitboard, size_t depth, size_t max_depth) {
     if (depth == 0) {
@@ -20,7 +18,7 @@ class MinMax {
       return bitboard.CurrentColor() == m_color ? approx : -approx;
     }
 
-    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
+    CheckStopFlag();
 
     auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
@@ -73,7 +71,7 @@ class MinMax {
   }
 
  public:
-  explicit MinMax(Color color) : m_color(color) {}
+  explicit MinMax(Color color) : Search(color) {}
 
   T GetValue(const BitBoard &board, int depth) {
     m_stat.Clear();
@@ -91,9 +89,6 @@ class MinMax {
   }
 
   Statistics GetStatistics() const { return m_stat; };
-
-  std::atomic_bool *GetStopFlag() const { return m_stop_flag; };
-  void SetStopFlag(std::atomic_bool *Stop_flag) { m_stop_flag = Stop_flag; };
 };
 
 #endif

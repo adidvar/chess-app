@@ -5,34 +5,11 @@
 
 #include "bitboard.hpp"
 
-class Frame {
- public:
-  Frame(const BitBoardTuple& parrent);
-
-  const BitBoardTuple& GetCurrent();
-  void Next();
-  bool IsEnd();
-
- private:
-  std::vector<BitBoardTuple> m_positions;
-  size_t m_index = -1;
-};
-
 class ChessTree {
  public:
-  ChessTree(BitBoard board);
-
-  const BitBoardTuple& GetCurrent();
-  const std::vector<BitBoardTuple>& GetChilldren();
-
-  void MakeTurn();
-  void UnMakeTurn();
-  void NextTurn();
-  bool IsEnd();
+  std::vector<BitBoardTuple>& Get(size_t depth);
 
  private:
-  std::vector<Frame> m_layers;
-  size_t m_index;
 };
 
 #endif

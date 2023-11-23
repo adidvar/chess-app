@@ -5,20 +5,20 @@
 
 #include "bftable.hpp"
 #include "bitboard.hpp"
-#include "exitcondition.hpp"
 #include "ordering.hpp"
 #include "qsearch.hpp"
+#include "search.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-class AlphaBeta {
-  using T = Evaluate;
+class AlphaBeta : public Search {
+  using T = Score;
 
   // todo I rework to class to when search finds all we nee in one start or
   // throw exception and keep state
 
  public:
-  AlphaBeta(Color color) : m_color(color), m_search(color) {}
+  AlphaBeta(Color color) : Search(color), m_search(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -42,9 +42,6 @@ class AlphaBeta {
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
 
-  std::atomic_bool *GetStopFlag() const;
-  void SetStopFlag(std::atomic_bool *Stop_flag);
-
  private:
   void clear() {
     // m_btable.Clear();
@@ -55,13 +52,14 @@ class AlphaBeta {
               int depthmax) {
     auto oldalpha = alpha;
 
-    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
+    CheckStopFlag();
 
     if (depthleft == 0) {
 #ifdef DISTRIBUTION
       auto value = m_search.GetValue(tuple.board, alpha, beta);
       return value;
 #else
+
       auto value = T::Value(tuple.board, m_color);
       return tuple.board.CurrentColor() == m_color ? value : -value;
 #endif
@@ -203,18 +201,10 @@ class AlphaBeta {
     return turns_;
   }
 
-  std::atomic_bool *m_stop_flag = nullptr;
-  Color m_color;
   Statistics m_stat;
-  BFTable m_btable;
   TTable *m_ttable = nullptr;
+  BFTable m_btable;
   QSearch m_search;
 };
-
-inline std::atomic_bool *AlphaBeta::GetStopFlag() const { return m_stop_flag; }
-
-inline void AlphaBeta::SetStopFlag(std::atomic_bool *Stop_flag) {
-  m_stop_flag = Stop_flag;
-}
 
 #endif

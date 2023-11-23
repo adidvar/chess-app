@@ -19,7 +19,7 @@ class Computer{
   void Stop();
 
   std::vector<Turn> GetPV() const;
-  Evaluate GetValue() const;
+  Score GetValue() const;
   Turn GetTurn() const;
   int GetDepth() const;
 
@@ -33,7 +33,7 @@ class Computer{
 
   std::vector<Turn> m_pv;
   Statistics m_stat;
-  Evaluate m_value;
+  Score m_value;
   int m_depth;
   Turn m_turn;
 };

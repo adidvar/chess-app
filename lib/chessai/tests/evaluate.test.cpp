@@ -4,7 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Evaluate rules", "[evaluate][ai]", ) {
-  using TestType = Evaluate;
+  using TestType = Score;
   SECTION("Test of Max Min") {
     REQUIRE(TestType::Max() > TestType::Min());
     REQUIRE(TestType::Max() > TestType::Lose(0));

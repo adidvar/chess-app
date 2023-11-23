@@ -7,17 +7,18 @@
 #include "bftable.hpp"
 #include "bitboard.hpp"
 #include "ordering.hpp"
+#include "search.hpp"
 #include "statistics.hpp"
 
-class QSearch {
-  using T = Evaluate;
+class QSearch : public Search {
+  using T = Score;
 
  public:
-  QSearch(Color color) : m_color(color) {}
+  QSearch(Color color) : Search(color) {}
 
-  T GetValue(const BitBoard &board, T a = T::Min(), T b = T::Max()) {
-    auto approx = T::Value(board, m_color);
-    auto qvalue = qsearch({board, board.Hash(), Turn()}, a, b);
+  T QuiescenceSearch(const BitBoardTuple &tuple, T a = T::Min(),
+                     T b = T::Max()) {
+    auto qvalue = qsearch(tuple, a, b);
     return qvalue;
   }
 
@@ -25,26 +26,22 @@ class QSearch {
   T qsearch(const BitBoardTuple &tuple, T alpha, T beta) {
     m_stat.ExtraNode();
 
-    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
+    CheckStopFlag();
 
     auto stand_pat = T::Value(tuple.board, m_color);
     stand_pat = tuple.board.CurrentColor() == m_color ? stand_pat : -stand_pat;
 
     if (stand_pat >= beta) return stand_pat;
 
-    T big_delta = 1100;  // queen value
-
-    if (stand_pat < alpha - big_delta) return alpha;
-
     if (alpha < stand_pat) alpha = stand_pat;
 
-    auto moves = tuple.board.GenerateTuplesFast(
+    auto moves = BitBoard::GenerateTuplesFast(
         tuple, tuple.board.CurrentColor(), kall,
         tuple.board.GetColorBitBoard(tuple.board.OpponentColor()));
 
     if (moves.empty()) return stand_pat;
 
-    ReOrderQ(tuple.board, moves, m_btable);
+    ReOrderQ(tuple.board, moves);
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
@@ -52,7 +49,6 @@ class QSearch {
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
-        m_btable.Push(sub.turn, 0);
         break;
       }
       if (score > bestscore) {
@@ -60,20 +56,11 @@ class QSearch {
         bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          m_btable.Push(sub.turn, 0);
         };
       }
     }
 
     return bestscore;
   }
-  std::atomic_bool *GetStopFlag() const { return m_stop_flag; };
-  void SetStopFlag(std::atomic_bool *Stop_flag) { m_stop_flag = Stop_flag; };
-
- private:
-  std::atomic_bool *m_stop_flag = nullptr;
-  Color m_color;
-  Statistics m_stat;
-  BFTable m_btable;
 };
 #endif

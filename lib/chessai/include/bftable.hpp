@@ -7,16 +7,20 @@
 #include "turn.hpp"
 
 class BFTable {
-  using Type = std::array<std::array<std::array<int, 64>, 64>, 64>;
+  using Frame = std::array<std::array<int, 64>, 64>;
+  using Data = std::array<Frame, 64>;
 
  public:
   BFTable();
   ~BFTable();
+
   void Push(Turn turn, int depth);
   [[nodiscard]] size_t Get(Turn turn, int depth) const;
 
+  void Clear();
+
  private:
-  Type *m_tables;
+  Data *m_tables;
 };
 
 #endif

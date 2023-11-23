@@ -14,7 +14,7 @@ static bool TestMateFind(const char* fen, int depth) {
   ab.SetTTable(nullptr);
 
   auto result = ab.GetValue(BitBoard(fen), depth + 1);
-  return result == Evaluate::Lose(depth) || result == Evaluate::Win(depth);
+  return result == Score::Lose(depth) || result == Score::Win(depth);
 }
 
 TEST_CASE("Testing of mate search in pvs", "[pvs][ai]") {

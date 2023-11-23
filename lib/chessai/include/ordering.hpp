@@ -7,7 +7,7 @@
 #include "ttable.hpp"
 
 inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
-                    Evaluate a, Evaluate b, const BFTable &bftable,
+                    Score a, Score b, const BFTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {
   enum TurnTypes {
@@ -38,24 +38,24 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
       elem.priority.index = -element->value.Value();
     } else if (to_figure != Figure::kEmpty) {
       auto delta_price =
-          Evaluate::FigurePrice(to_figure) - Evaluate::FigurePrice(from_figure);
+          Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
       elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
       elem.priority.index =
           delta_price + 200 * bftable.Get(elem.turn, depthleft);
     } else {
       elem.priority.type = NormalMoves;
-      elem.priority.index = Evaluate::FigurePrice(from_figure) +
+      elem.priority.index = Score::FigurePrice(from_figure) +
                             bftable.Get(elem.turn, depthleft) * 200;
     }
   }
   std::sort(vector.rbegin(), vector.rend());
 }
 
-inline void ReOrderQ(const BitBoard &board, std::vector<BitBoardTuple> &vector,
-                     const BFTable &bftable) {
+inline void ReOrderQ(const BitBoard &board,
+                     std::vector<BitBoardTuple> &vector) {
   enum TurnTypes {
-    PositiveAttack = 3,
-    NegativeAttack = 1,
+    PositiveAttack = 1,
+    NegativeAttack = 0,
   };
 
   for (auto &elem : vector) {
@@ -66,9 +66,9 @@ inline void ReOrderQ(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     auto to_figure = board.GetFigure(to_pos);
 
     auto delta_price =
-        Evaluate::FigurePrice(to_figure) - Evaluate::FigurePrice(from_figure);
+        Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
     elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
-    elem.priority.index = delta_price + 20 * bftable.Get(elem.turn, 0);
+    elem.priority.index = delta_price;
   }
   std::sort(vector.rbegin(), vector.rend());
 }

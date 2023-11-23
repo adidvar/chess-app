@@ -11,7 +11,7 @@ int main() {
   std::string fen{"startpos"};
   // std::getline(std::cin, fen);
   BitBoard board(fen);
-  auto value = Evaluate::Value(board, Color::kWhite);
+  auto value = Score::Value(board, Color::kWhite);
   std::cout << value.ToCentiPawns() << std::endl;
 
   TTable table;

@@ -3,22 +3,18 @@
 
 #include <atomic>
 
-#include "bftable.hpp"
 #include "bitboard.hpp"
-#include "exitcondition.hpp"
 #include "ordering.hpp"
 #include "qsearch.hpp"
+#include "search.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-class PVS {
-  using T = Evaluate;
-
-  // todo I rework to class to when search finds all we nee in one start or
-  // throw exception and keep state
+class PVS : public Search {
+  using T = Score;
 
  public:
-  PVS(Color color) : m_color(color), m_search(color) {}
+  PVS(Color color) : Search(color), m_search(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -42,9 +38,6 @@ class PVS {
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
 
-  std::atomic_bool *GetStopFlag() const;
-  void SetStopFlag(std::atomic_bool *Stop_flag);
-
  private:
   void clear() {
     // m_btable.Clear();
@@ -55,7 +48,7 @@ class PVS {
         int depthmax) {
     auto oldalpha = alpha;
 
-    if (m_stop_flag != nullptr) CheckAndThrow(*m_stop_flag);
+    CheckStopFlag();
 
     if (depthleft == 0) {
 #ifdef DISTRIBUTION
@@ -98,28 +91,6 @@ class PVS {
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
             depthmax, founded ? hashed->pv : Turn());
-    /*
-    T bestscore = T::Min();
-    Turn bestturn = Turn();
-    for (auto &sub : moves) {
-      auto score = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
-      if (score >= beta) {  // beta cutoff
-        bestscore = score;
-        bestturn = sub.turn;
-        m_btable.Push(sub.turn, depthleft);
-        break;
-      }
-      if (score > bestscore) {
-        bestscore = score;
-        bestturn = sub.turn;
-        if (score > alpha) {
-          alpha = score;
-          m_btable.Push(sub.turn, depthleft);
-        };
-      }
-    }
-*/
-
     Turn bestturn = Turn();
     bool bSearchPv = true;
     for (auto &sub : moves) {
@@ -127,7 +98,8 @@ class PVS {
       if (bSearchPv) {
         bestscore = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
       } else {
-        bestscore = -pvs(sub, -alpha - 1, -alpha, depthleft - 1, depthmax);
+        bestscore =
+            -pvs(sub, -alpha - Score(1), -alpha, depthleft - 1, depthmax);
         if (bestscore > alpha)  // in fail-soft ... && score < beta ) is common
           bestscore = -pvs(sub, -beta, -alpha, depthleft - 1,
                            depthmax);  // re-search
@@ -228,18 +200,8 @@ class PVS {
     return turns_;
   }
 
-  std::atomic_bool *m_stop_flag = nullptr;
-  Color m_color;
-  Statistics m_stat;
-  BFTable m_btable;
   TTable *m_ttable = nullptr;
+  BFTable m_btable;
   QSearch m_search;
 };
-
-inline std::atomic_bool *PVS::GetStopFlag() const { return m_stop_flag; }
-
-inline void PVS::SetStopFlag(std::atomic_bool *Stop_flag) {
-  m_stop_flag = Stop_flag;
-}
-
 #endif
