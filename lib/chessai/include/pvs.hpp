@@ -52,7 +52,7 @@ class PVS : public Search {
 
     if (depthleft == 0) {
 #ifdef DISTRIBUTION
-      auto value = m_search.GetValue(tuple.board, alpha, beta);
+      auto value = m_search.QuiescenceSearch(tuple.board, alpha, beta);
       return value;
 #else
       auto value = T::Value(tuple.board, m_color);

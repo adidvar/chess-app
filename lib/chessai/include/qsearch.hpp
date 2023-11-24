@@ -1,10 +1,6 @@
 #ifndef QSEARCH_HPP
 #define QSEARCH_HPP
 
-#include <algorithm>
-#include <iostream>
-
-#include "bftable.hpp"
 #include "bitboard.hpp"
 #include "ordering.hpp"
 #include "search.hpp"
@@ -72,7 +68,6 @@ class QSearch : public Search {
     return bestscore;
   }
 
- private:
   std::vector<std::vector<BitBoardTuple>> m_turns;
 };
 #endif
