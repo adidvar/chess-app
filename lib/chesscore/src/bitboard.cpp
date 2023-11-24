@@ -776,11 +776,29 @@ std::vector<BitBoardTuple> BitBoard::GenerateTuplesFast(BitBoardTuple tuple,
 
   for (auto &board : boards) {
     auto turn = GenerateTurn(tuple.board, board, color);
-    tuples.push_back(
-        {board, GenerateHash(tuple.board, tuple.hash, turn, board), turn});
+    bitboard_hash_t hash = GenerateHash(tuple.board, tuple.hash, turn, board);
+    tuples.push_back({board, hash, turn});
   }
 
   return tuples;
+}
+
+void BitBoard::GenerateTuplesFast(std::vector<BitBoardTuple> &list,
+                                  BitBoardTuple tuple, Color color,
+                                  uint64_t from, uint64_t to, bool genHash) {
+  static thread_local std::vector<BitBoard> boards;
+
+  boards = tuple.board.GenerateSubBoards(color, from, to);
+
+  list.reserve(boards.size());
+  list.clear();
+
+  for (auto &board : boards) {
+    auto turn = GenerateTurn(tuple.board, board, color);
+    bitboard_hash_t hash = 0;
+    if (genHash) hash = GenerateHash(tuple.board, tuple.hash, turn, board);
+    list.push_back({board, hash, turn});
+  }
 }
 
 Turn BitBoard::GenerateTurn(const BitBoard &board, const BitBoard &subboard,

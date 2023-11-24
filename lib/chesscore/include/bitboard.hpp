@@ -242,6 +242,11 @@ class BitBoard {
                                                        Color color,
                                                        uint64_t from = kall,
                                                        uint64_t to = kall);
+
+  static void GenerateTuplesFast(std::vector<BitBoardTuple> &list,
+                                 BitBoardTuple tuple, Color color,
+                                 uint64_t from = kall, uint64_t to = kall,
+                                 bool genHash = true);
   /**
    * @brief GenerateTurn generates a turn from two boards
    * @param from board before turn

@@ -63,8 +63,8 @@ void QSearchBenchmark() {
   auto index = 0;
   for (auto test : qsearch_tests) {
     print.Add(GetTest(test), index);
-    print.Add(GetDeepTest(test), index);
-    print.Add(GetStaticTest(test), index);
+    // print.Add(GetDeepTest(test), index);
+    // print.Add(GetStaticTest(test), index);
     index++;
   };
 

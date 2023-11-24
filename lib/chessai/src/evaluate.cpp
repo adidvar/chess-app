@@ -74,7 +74,7 @@ int CalculateBonus(bitboard_t map, const int bonus[], Color color) {
 
 Score::Score() : value_(invalid) {}
 
-Score::Score(int value) : value_(value) {}
+Score::Score(ScoreType value) : value_(value) {}
 
 bool Score::operator<(Score value) const { return value_ < value.value_; }
 bool Score::operator>(Score value) const { return value_ > value.value_; }
@@ -84,10 +84,36 @@ bool Score::operator==(Score value) const { return value_ == value.value_; }
 bool Score::operator!=(Score value) const { return value_ != value.value_; }
 
 Score Score::operator-(Score value) const {
-  return Score{value_ - value.value_};
+  if (value_ == invalid) return Score{invalid};
+  if (value.value_ == invalid) return Score{invalid};
+
+  long long int val = (long long int)value_ - value.value_;
+
+  if (val < nrange)
+    return Score{nrange};
+  else if (val > prange)
+    return Score{prange};
+  return Score(val);
 }
 
-Score Score::operator-() const { return Score(-value_); }
+Score Score::operator+(const Score value) const {
+  if (value_ == invalid) return Score{invalid};
+  if (value.value_ == invalid) return Score{invalid};
+
+  long long int val = (long long int)value_ + value.value_;
+
+  if (val < nrange)
+    return Score{nrange};
+  else if (val > prange)
+    return Score{prange};
+  return Score(val);
+}
+
+Score Score::operator-() const {
+  if (value_ == invalid) return Score{invalid};
+
+  return Score(-value_);
+}
 
 Score Score::Win(int depth) { return Score(prange - depth - 1); }
 

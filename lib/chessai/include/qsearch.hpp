@@ -13,31 +13,40 @@
 class QSearch : public Search {
   using T = Score;
 
+  inline const static Score kBIG_DELTA{
+      Score::FigurePrice(Figure::kPawn) +
+      Score::FigurePrice(Figure::kQueen)};  // queen value
+
  public:
   QSearch(Color color) : Search(color) {}
 
   T QuiescenceSearch(const BitBoardTuple &tuple, T a = T::Min(),
                      T b = T::Max()) {
-    auto qvalue = qsearch(tuple, a, b);
+    auto qvalue = qsearch(tuple, a, b, 0);
     return qvalue;
   }
 
  private:
-  T qsearch(const BitBoardTuple &tuple, T alpha, T beta) {
+  T qsearch(const BitBoardTuple &tuple, T alpha, T beta, int depth) {
     m_stat.ExtraNode();
 
     CheckStopFlag();
 
+    m_stat.EndNode();
     auto stand_pat = T::Value(tuple.board, m_color);
     stand_pat = tuple.board.CurrentColor() == m_color ? stand_pat : -stand_pat;
 
     if (stand_pat >= beta) return stand_pat;
 
+    if (stand_pat < alpha - kBIG_DELTA) return alpha;
+
     if (alpha < stand_pat) alpha = stand_pat;
 
-    auto moves = BitBoard::GenerateTuplesFast(
-        tuple, tuple.board.CurrentColor(), kall,
-        tuple.board.GetColorBitBoard(tuple.board.OpponentColor()));
+    m_turns.resize(depth + 1);
+    BitBoard::GenerateTuplesFast(
+        m_turns[depth], tuple, tuple.board.CurrentColor(), kall,
+        tuple.board.GetColorBitBoard(tuple.board.OpponentColor()), false);
+    auto &moves = m_turns[depth];
 
     if (moves.empty()) return stand_pat;
 
@@ -45,7 +54,7 @@ class QSearch : public Search {
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
-      auto score = -qsearch(sub, -beta, -alpha);
+      auto score = -qsearch(sub, -beta, -alpha, depth + 1);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
@@ -62,5 +71,8 @@ class QSearch : public Search {
 
     return bestscore;
   }
+
+ private:
+  std::vector<std::vector<BitBoardTuple>> m_turns;
 };
 #endif

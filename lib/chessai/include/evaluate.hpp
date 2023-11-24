@@ -21,6 +21,7 @@ class Score {
 
   Score operator-() const;
   Score operator-(const Score value) const;
+  Score operator+(const Score value) const;
 
   static Score Win(int depth);
   static Score Lose(int depth);
