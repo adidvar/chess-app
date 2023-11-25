@@ -51,13 +51,13 @@ class PVS : public QSearch {
     CheckStopFlag();
 
     if (depthleft == 0) {
-      // #ifdef DISTRIBUTION
+#ifdef DISTRIBUTION
       auto value = QuiescenceSearch(tuple.board, alpha, beta);
       return value;
-      // #else
-      //       auto value = T::Value(tuple.board, m_color);
-      //       return tuple.board.CurrentColor() == m_color ? value : -value;
-      // #endif
+#else
+      auto value = T::Value(tuple.board, m_color);
+      return tuple.board.CurrentColor() == m_color ? value : -value;
+#endif
     }
 
     bool founded = false;

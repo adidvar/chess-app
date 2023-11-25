@@ -4,8 +4,6 @@
 #include <iomanip>
 #include <iostream>
 
-#define DISTRIBUTION
-
 #include "alphabeta.hpp"
 #include "itdeepening.hpp"
 #include "pvs.hpp"

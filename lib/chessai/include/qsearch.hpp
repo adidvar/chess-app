@@ -2,11 +2,12 @@
 #define QSEARCH_HPP
 
 #include "bitboard.hpp"
+#include "boarditerator.hpp"
 #include "ordering.hpp"
 #include "search.hpp"
 #include "statistics.hpp"
 
-class QSearch : public Search {
+class QSearch : public Search, private ChessTreeHash {
   using T = Score;
 
   inline const static Score kBIG_DELTA{
@@ -38,11 +39,10 @@ class QSearch : public Search {
 
     if (alpha < stand_pat) alpha = stand_pat;
 
-    m_turns.resize(depth + 1);
     BitBoard::GenerateTuplesFast(
-        m_turns[depth], tuple, tuple.board.CurrentColor(), kall,
+        Get(depth), tuple, tuple.board.CurrentColor(), kall,
         tuple.board.GetColorBitBoard(tuple.board.OpponentColor()), false);
-    auto &moves = m_turns[depth];
+    auto &moves = Get(depth);
 
     if (moves.empty()) return stand_pat;
 
@@ -67,7 +67,5 @@ class QSearch : public Search {
 
     return bestscore;
   }
-
-  std::vector<std::vector<BitBoardTuple>> m_turns;
 };
 #endif

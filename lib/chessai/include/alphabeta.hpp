@@ -55,14 +55,14 @@ class AlphaBeta : public Search {
     CheckStopFlag();
 
     if (depthleft == 0) {
-      /// #ifdef DISTRIBUTION
+#ifdef DISTRIBUTION
       auto value = m_search.QuiescenceSearch(tuple.board, alpha, beta);
       return value;
-      // #else
-      //
-      //       auto value = T::Value(tuple.board, m_color);
-      //       return tuple.board.CurrentColor() == m_color ? value : -value;
-      // #endif
+#else
+
+      auto value = T::Value(tuple.board, m_color);
+      return tuple.board.CurrentColor() == m_color ? value : -value;
+#endif
     }
 
     bool founded = false;
