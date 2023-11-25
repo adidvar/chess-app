@@ -10,11 +10,11 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-class PVS : public Search {
+class PVS : public QSearch {
   using T = Score;
 
  public:
-  PVS(Color color) : Search(color), m_search(color) {}
+  PVS(Color color) : QSearch(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -51,13 +51,13 @@ class PVS : public Search {
     CheckStopFlag();
 
     if (depthleft == 0) {
-#ifdef DISTRIBUTION
-      auto value = m_search.QuiescenceSearch(tuple.board, alpha, beta);
+      // #ifdef DISTRIBUTION
+      auto value = QuiescenceSearch(tuple.board, alpha, beta);
       return value;
-#else
-      auto value = T::Value(tuple.board, m_color);
-      return tuple.board.CurrentColor() == m_color ? value : -value;
-#endif
+      // #else
+      //       auto value = T::Value(tuple.board, m_color);
+      //       return tuple.board.CurrentColor() == m_color ? value : -value;
+      // #endif
     }
 
     bool founded = false;
@@ -202,6 +202,5 @@ class PVS : public Search {
 
   TTable *m_ttable = nullptr;
   BFTable m_btable;
-  QSearch m_search;
 };
 #endif
