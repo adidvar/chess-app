@@ -15,45 +15,6 @@ void SearchBenchmark() {
   auto begin = std::chrono::high_resolution_clock::now();
   auto end = std::chrono::high_resolution_clock::now();
   Statistics statistics;
-  /*
-  for (auto pair : stockfish_result) {
-    TTable table;
-    ItDeepening<AlphaBeta> cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-
-    float value = cmp.GetValue(BitBoard{pair.first}, 6).ToCentiPawns();
-    auto stat = cmp.GetStatistics();
-    float error = value - pair.second;
-
-    std::cout << pair.first << ":::::" << value << "::::" << pair.second
-              << std::endl;
-
-    delta += error * error;
-  }
-  std::cout << "Time: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end -
-                                                                     begin)
-                   .count()
-            << std::endl;
-
-  std::cout << std::endl;
-  std::cout << "Delta with stockfish: " << sqrt(delta) << std::endl;
-
-
-  for (auto pair : stockfish_result) {
-    ItDeepening<AlphaBeta> cmp(Color::kWhite);
-    TTable table;
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    cmp.GetValue(BitBoard(pair.first), 6);
-    statistics += cmp.GetStatistics();
-    std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
-  }
-  std::cout << "NodesCounter: " << statistics.GetMainNode() << std::endl;
-  statistics.Clear();
-*/
-
-  begin = std::chrono::high_resolution_clock::now();
 
   TTable table;
   for (int d = 1; d <= 8; d++) {

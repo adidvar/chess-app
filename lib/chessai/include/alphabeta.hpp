@@ -11,14 +11,14 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-class AlphaBeta : public Search {
+class AlphaBeta : public QSearch {
   using T = Score;
 
   // todo I rework to class to when search finds all we nee in one start or
   // throw exception and keep state
 
  public:
-  AlphaBeta(Color color) : Search(color), m_search(color) {}
+  AlphaBeta(Color color) : QSearch(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
     clear();
@@ -56,7 +56,7 @@ class AlphaBeta : public Search {
 
     if (depthleft == 0) {
 #ifdef DISTRIBUTION
-      auto value = m_search.QuiescenceSearch(tuple.board, alpha, beta);
+      auto value = QuiescenceSearch(tuple.board, alpha, beta);
       return value;
 #else
 
@@ -204,7 +204,6 @@ class AlphaBeta : public Search {
   Statistics m_stat;
   TTable *m_ttable = nullptr;
   BFTable m_btable;
-  QSearch m_search;
 };
 
 #endif
