@@ -21,19 +21,16 @@ class AlphaBeta : public QSearch {
   AlphaBeta(Color color) : QSearch(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
-    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
-    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
-    clear();
     return findpv(board, depth);
   }
 
@@ -42,12 +39,9 @@ class AlphaBeta : public QSearch {
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
 
- private:
-  void clear() {
-    // m_btable.Clear();
-    m_stat.Clear();
-  };
+  BFTable &GetBfTable() { return m_btable; };
 
+ private:
   T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
               int depthmax) {
     auto oldalpha = alpha;
@@ -104,7 +98,7 @@ class AlphaBeta : public QSearch {
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
-        m_btable.Push(sub.turn, depthleft);
+        m_btable.Increment(sub.turn, depthleft, depthmax);
         break;
       }
       if (score > bestscore) {
@@ -112,7 +106,7 @@ class AlphaBeta : public QSearch {
         bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          m_btable.Push(sub.turn, depthleft);
+          m_btable.Increment(sub.turn, depthleft, depthmax);
         };
       }
     }

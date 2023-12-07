@@ -17,32 +17,26 @@ class PVS : public QSearch {
   PVS(Color color) : QSearch(color) {}
 
   T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
-    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return pvs(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(const BitBoard &board, int depth) {
-    clear();
     BitBoardTuple tuple{board, board.Hash(), Turn()};
     return pvturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
   std::vector<Turn> FindPV(BitBoard board, int depth) {
-    clear();
     return findpv(board, depth);
   }
 
   Statistics GetStatistics() const { return m_stat; };
+  BFTable &GetBfTable() { return m_btable; };
 
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
 
  private:
-  void clear() {
-    // m_btable.Clear();
-    m_stat.Clear();
-  };
 
   T pvs(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
         int depthmax) {
@@ -106,12 +100,12 @@ class PVS : public QSearch {
       }
       if (bestscore >= beta) {
         bestturn = sub.turn;
-        m_btable.Push(sub.turn, depthleft);
+        m_btable.Increment(sub.turn, depthleft, depthmax);
         return beta;  // fail-hard beta-cutoff
       }
       if (bestscore > alpha) {
         bestturn = sub.turn;
-        m_btable.Push(sub.turn, depthleft);
+        m_btable.Increment(sub.turn, depthleft, depthmax);
         alpha = bestscore;  // alpha acts like max in MiniMax
         bSearchPv = false;  // *1)
       }
