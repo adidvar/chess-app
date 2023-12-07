@@ -33,7 +33,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     if (elem.turn == pv && !(pv == Turn())) {
       elem.priority.type = PV;
       elem.priority.index = 0;
-    } else if (found && -element->value > a) {
+    } else if (found) {
       elem.priority.type = Hashed;
       elem.priority.index = -element->value.Value();
     } else if (to_figure != Figure::kEmpty) {
@@ -47,28 +47,6 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
       elem.priority.index = Score::FigurePrice(from_figure) +
                             bftable.Get(elem.turn, depthleft) * 200;
     }
-  }
-  std::sort(vector.rbegin(), vector.rend());
-}
-
-inline void ReOrderQ(const BitBoard &board,
-                     std::vector<BitBoardTuple> &vector) {
-  enum TurnTypes {
-    PositiveAttack = 1,
-    NegativeAttack = 0,
-  };
-
-  for (auto &elem : vector) {
-    auto from_pos = elem.turn.from();
-    auto to_pos = elem.turn.to();
-
-    auto from_figure = board.GetFigure(from_pos);
-    auto to_figure = board.GetFigure(to_pos);
-
-    auto delta_price =
-        Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
-    elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
-    elem.priority.index = delta_price;
   }
   std::sort(vector.rbegin(), vector.rend());
 }

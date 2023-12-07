@@ -1,11 +1,35 @@
 #ifndef QSEARCH_HPP
 #define QSEARCH_HPP
 
+#include <algorithm>
+
 #include "bitboard.hpp"
 #include "boarditerator.hpp"
-#include "ordering.hpp"
+#include "evaluate.hpp"
 #include "search.hpp"
 #include "statistics.hpp"
+
+inline void QuiescenceSearchOrdering(const BitBoard &board,
+                                     std::vector<BitBoardTuple> &vector) {
+  enum TurnTypes {
+    PositiveAttack = 1,
+    NegativeAttack = 0,
+  };
+
+  for (auto &elem : vector) {
+    auto from_pos = elem.turn.from();
+    auto to_pos = elem.turn.to();
+
+    auto from_figure = board.GetFigure(from_pos);
+    auto to_figure = board.GetFigure(to_pos);
+
+    auto delta_price =
+        Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
+    elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
+    elem.priority.index = delta_price;
+  }
+  std::sort(vector.rbegin(), vector.rend());
+}
 
 class QSearch : public Search, private ChessTreeHash {
   using T = Score;
@@ -46,7 +70,7 @@ class QSearch : public Search, private ChessTreeHash {
 
     if (moves.empty()) return stand_pat;
 
-    ReOrderQ(tuple.board, moves);
+    QuiescenceSearchOrdering(tuple.board, moves);
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
