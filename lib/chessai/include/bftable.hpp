@@ -15,7 +15,6 @@ class BFTable {
 
  public:
   void Increment(Turn turn, int depth, int max_depth);
-  void PullFrames();
   [[nodiscard]] size_t Get(Turn turn, int depth, int max_depth) const;
 
   void Clear();

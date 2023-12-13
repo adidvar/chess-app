@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "bftable.hpp"
+#include "bitboardtuple.hpp"
 #include "ttable.hpp"
 
 inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
@@ -71,7 +72,7 @@ inline void BFTableReorderer(const BitBoard &board,
     auto from_figure = board.GetFigure(from_pos);
     auto to_figure = board.GetFigure(to_pos);
 
-    if (elem.turn == pv && !(pv == Turn())) {
+    if (elem.turn == pv && pv != Turn()) {
       elem.priority.type = PV;
       elem.priority.index = 0;
     } else if (to_figure != Figure::kEmpty) {

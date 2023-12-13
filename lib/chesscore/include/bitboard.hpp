@@ -230,24 +230,6 @@ class BitBoard {
    */
   [[nodiscard]] bitboard_hash_t Hash() const;
   /**
-   * @brief GenerateTuplesFast generates subboards subturns and subhashes
-   * @param tuple input tuple
-   * @param color color
-   * @param from from mask
-   * @param to to mask
-   * @return array of tuples
-   * @attention function is much faster than split generation
-   */
-  static std::vector<BitBoardTuple> GenerateTuplesFast(BitBoardTuple tuple,
-                                                       Color color,
-                                                       uint64_t from = kall,
-                                                       uint64_t to = kall);
-
-  static void GenerateTuplesFast(std::vector<BitBoardTuple> &list,
-                                 BitBoardTuple tuple, Color color,
-                                 uint64_t from = kall, uint64_t to = kall,
-                                 bool genHash = true);
-  /**
    * @brief GenerateTurn generates a turn from two boards
    * @param from board before turn
    * @param to board after turn
@@ -323,28 +305,6 @@ class BitBoard {
                                          bitboard_t opponent) const;
 
   [[nodiscard]] bool OpponentMateTest() const;
-};
-
-struct BitBoardTuple {
-  BitBoardTuple(const BitBoard &board)
-      : board(board), hash(board.Hash()), turn{}, priority{} {}
-
-  BitBoardTuple(const BitBoard &board, bitboard_hash_t hash, Turn turn)
-      : board(board), hash(hash), turn{turn}, priority{} {}
-
-  BitBoard board;
-  bitboard_hash_t hash;
-  Turn turn;
-
-  struct Priority {
-    int64_t type;
-    int64_t index;
-  } priority;
-
-  bool operator<(const BitBoardTuple &t1) const noexcept {
-    return std::tie(priority.type, priority.index) <
-           std::tie(t1.priority.type, t1.priority.index);
-  }
 };
 
 #endif  // BOARD_H

@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "bitboard.hpp"
+#include "bitboardtuple.hpp"
 #include "boarditerator.hpp"
 #include "evaluate.hpp"
 #include "search.hpp"
@@ -63,7 +64,7 @@ class QSearch : public Search, private ChessTreeHash {
 
     if (alpha < stand_pat) alpha = stand_pat;
 
-    BitBoard::GenerateTuplesFast(
+    BitBoardTuple::GenerateTuplesFast(
         Get(depth), tuple, tuple.board.CurrentColor(), kall,
         tuple.board.GetColorBitBoard(tuple.board.OpponentColor()), false);
     auto &moves = Get(depth);
@@ -72,17 +73,14 @@ class QSearch : public Search, private ChessTreeHash {
 
     QuiescenceSearchOrdering(tuple.board, moves);
     T bestscore = T::Min();
-    Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -qsearch(sub, -beta, -alpha, depth + 1);
       if (score >= beta) {  // beta cutoff
         bestscore = score;
-        bestturn = sub.turn;
         break;
       }
       if (score > bestscore) {
         bestscore = score;
-        bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
         };

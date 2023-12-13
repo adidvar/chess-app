@@ -35,6 +35,7 @@ class Turn {
    */
 
   bool operator==(const Turn& turn) const;
+  bool operator!=(const Turn& turn) const;
   bool operator<(const Turn& turn) const;
 
   [[nodiscard]] Position from() const noexcept;

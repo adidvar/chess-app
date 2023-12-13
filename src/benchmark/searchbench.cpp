@@ -16,15 +16,15 @@ void SearchBenchmark() {
   auto end = std::chrono::high_resolution_clock::now();
   Statistics statistics;
 
-  TTable table;
   for (int d = 1; d <= 8; d++) {
+    TTable table;
     ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
     std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
-    statistics += cmp.GetStatistics();
+    statistics = cmp.GetStatistics();
     // auto turn = cmp.GetTurn(BitBoard{fen}, d);
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -40,7 +40,6 @@ void SearchBenchmark() {
   }
 
   begin = std::chrono::high_resolution_clock::now();
-  table.Clear();
   statistics.Clear();
   for (int d = 1; d <= 8; d++) {
     TTable table;
@@ -66,7 +65,6 @@ void SearchBenchmark() {
   }
 
   begin = std::chrono::high_resolution_clock::now();
-  table.Clear();
   statistics.Clear();
   for (int d = 1; d <= 8; d++) {
     TTable table;

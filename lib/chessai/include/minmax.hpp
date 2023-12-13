@@ -1,11 +1,11 @@
 #ifndef MINIMAX_HPP
 #define MINIMAX_HPP
 
-#include <atomic>
-#include <bitboard.hpp>
-#include <evaluate.hpp>
-#include <search.hpp>
-#include <statistics.hpp>
+#include "bitboard.hpp"
+#include "bitboardtuple.hpp"
+#include "evaluate.hpp"
+#include "search.hpp"
+#include "statistics.hpp"
 
 class MinMax : public Search {
   using T = Score;
@@ -52,7 +52,7 @@ class MinMax : public Search {
     m_stat.MainNode();
 
     auto moves =
-        BitBoard::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+        BitBoardTuple::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
       return {T(), Turn()};

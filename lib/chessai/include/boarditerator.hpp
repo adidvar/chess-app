@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "bitboard.hpp"
+#include "bitboardtuple.hpp"
 
 class ChessTreeHash {
  public:

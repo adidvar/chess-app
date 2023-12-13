@@ -79,8 +79,7 @@ class AlphaBeta : public QSearch {
       }
     }
 
-    auto moves =
-        tuple.board.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+    auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
       if (tuple.board.Checkmate()) return T::Lose(depthmax - depthleft);
@@ -89,8 +88,8 @@ class AlphaBeta : public QSearch {
 
     m_stat.MainNode();
 
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            depthmax, founded ? hashed->pv : Turn());
+    BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
+                     founded ? hashed->pv : Turn());
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
@@ -160,7 +159,7 @@ class AlphaBeta : public QSearch {
     }
 
     auto moves =
-        BitBoard::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+        BitBoardTuple::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
       return Turn();
