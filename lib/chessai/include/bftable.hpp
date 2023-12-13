@@ -9,18 +9,20 @@
 
 class BFTable {
   struct Frame {
-    unsigned data[64][64];
+    std::array<std::array<unsigned, 64>, 64> data{};
   };
   using Data = std::deque<Frame>;
 
  public:
   void Increment(Turn turn, int depth, int max_depth);
-  [[nodiscard]] size_t Get(Turn turn, int depth, int max_depth) const;
+  [[nodiscard]] size_t GetKiller(Turn turn, int depth, int max_depth) const;
+  [[nodiscard]] size_t GetHistory(Turn turn) const;
 
   void Clear();
 
  private:
-  Data m_tables;
+  Data m_killer_table;
+  Frame m_buterfly_table;
 };
 
 #endif

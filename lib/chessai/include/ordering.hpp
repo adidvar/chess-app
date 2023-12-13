@@ -11,10 +11,14 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
                     Score a, Score b, const BFTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {
+  constexpr int killer_scale = 200;
+  constexpr int history_scale = 60;
+
   enum TurnTypes {
-    PV = 5,
-    Hashed = 4,
-    PositiveAttack = 3,
+    PV = 6,
+    Hashed = 6,
+    PositiveAttack = 4,
+    KillerMoves = 3,
     NormalMoves = 2,
     NegativeAttack = 1,
   };
@@ -26,27 +30,34 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     auto from_figure = board.GetFigure(from_pos);
     auto to_figure = board.GetFigure(to_pos);
 
-    const TTableItem *element = nullptr;
-    bool found = false;
-    if (ttable != nullptr && (depthmax - depthleft) <= depthmax / 2) {
-      element = ttable->Search(elem.hash, found);
+    Score hashed_value{};
+
+    if (ttable) {
+      bool founded = false;
+      auto node = ttable->Search(elem.hash, founded);
+      if (founded && node->type == node->PV) hashed_value = -node->value;
     }
-    if (elem.turn == pv && !(pv == Turn())) {
+
+    if (elem.turn == pv && pv != Turn()) {
       elem.priority.type = PV;
       elem.priority.index = 0;
-    } else if (found) {
+    } else if (hashed_value != Score{}) {
       elem.priority.type = Hashed;
-      elem.priority.index = -element->value.Value();
+      elem.priority.index = hashed_value.Value();
     } else if (to_figure != Figure::kEmpty) {
       auto delta_price =
           Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
       elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
+      elem.priority.index = delta_price;
+    } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
+      elem.priority.type = KillerMoves;
       elem.priority.index =
-          delta_price + 200 * bftable.Get(elem.turn, depthleft, depthmax);
+          Score::FigurePrice(from_figure) +
+          killer_scale * bftable.GetKiller(elem.turn, depthleft, depthmax);
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = Score::FigurePrice(from_figure) +
-                            bftable.Get(elem.turn, depthleft, depthmax) * 200;
+                            bftable.GetHistory(elem.turn) * history_scale;
     }
   }
   std::sort(vector.rbegin(), vector.rend());
@@ -56,11 +67,13 @@ inline void BFTableReorderer(const BitBoard &board,
                              std::vector<BitBoardTuple> &vector,
                              const BFTable &bftable, int depthleft,
                              int depthmax, Turn pv) {
-  constexpr int bftable_scale = 200;
+  constexpr int killer_scale = 100;
+  constexpr int history_scale = 50;
 
   enum TurnTypes {
-    PV = 4,
-    PositiveAttack = 3,
+    PV = 5,
+    PositiveAttack = 4,
+    KillerMoves = 3,
     NormalMoves = 2,
     NegativeAttack = 1,
   };
@@ -79,14 +92,16 @@ inline void BFTableReorderer(const BitBoard &board,
       auto delta_price =
           Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
       elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
-      elem.priority.index =
-          delta_price +
-          bftable_scale * bftable.Get(elem.turn, depthleft, depthmax);
-    } else {
-      elem.priority.type = NormalMoves;
+      elem.priority.index = delta_price;
+    } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
+      elem.priority.type = KillerMoves;
       elem.priority.index =
           Score::FigurePrice(from_figure) +
-          bftable.Get(elem.turn, depthleft, depthmax) * bftable_scale;
+          killer_scale * bftable.GetKiller(elem.turn, depthleft, depthmax);
+    } else {
+      elem.priority.type = NormalMoves;
+      elem.priority.index = Score::FigurePrice(from_figure) +
+                            bftable.GetHistory(elem.turn) * history_scale;
     }
   }
   std::sort(vector.rbegin(), vector.rend());
