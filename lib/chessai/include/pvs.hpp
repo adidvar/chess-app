@@ -82,10 +82,10 @@ class PVS : public QSearch {
 
     m_stat.MainNode();
 
-    // ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-    //         depthmax, founded ? hashed->pv : Turn());
-    BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
-                     founded ? hashed->pv : Turn());
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+            depthmax, founded ? hashed->pv : Turn());
+    // BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
+    //                  founded ? hashed->pv : Turn());
 
     Turn bestturn = Turn();
     bool bSearchPv = true;
@@ -113,7 +113,7 @@ class PVS : public QSearch {
       }
     }
 
-    if (hashed != nullptr && (((founded && hashed->depth <= depthleft)))) {
+    if (hashed != nullptr && (founded && hashed->depth <= depthleft)) {
       auto hv = alpha;
       auto ha = oldalpha;
       auto hb = beta;

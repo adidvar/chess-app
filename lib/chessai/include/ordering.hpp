@@ -11,7 +11,6 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
                     Score a, Score b, const BFTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {
-  constexpr int killer_scale = 100;
   constexpr int history_scale = 50;
 
   enum TurnTypes {
@@ -32,10 +31,10 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
 
     Score hashed_value{};
 
-    if (ttable) {
+    if (ttable != nullptr) {
       bool founded = false;
-      const auto node = ttable->Search(elem.hash, founded);
-      if (founded) hashed_value = -node->value;
+      const auto *node = ttable->Search(elem.hash, founded);
+      hashed_value = node->value;
     }
 
     if (elem.turn == pv && pv != Turn()) {
@@ -51,9 +50,9 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
       elem.priority.index = delta_price;
     } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index =
-          Score::FigurePrice(from_figure) +
-          killer_scale * bftable.GetKiller(elem.turn, depthleft, depthmax);
+      elem.priority.index = Score::FigurePrice(from_figure) +
+                            bftable.GetKiller(elem.turn, depthleft, depthmax) *
+                                bftable.GetHistory(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = Score::FigurePrice(from_figure) +
