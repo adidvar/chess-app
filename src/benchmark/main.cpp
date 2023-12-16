@@ -5,7 +5,7 @@
 
 int main() {
   QSearchBenchmark();
-  PVSSearchBenchmark();
+  // PVSSearchBenchmark();
   SearchBenchmark();
   StaticBenchmark();
   return 0;

@@ -22,10 +22,17 @@ class ItDeepening {
     Search ab(board, m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
+    AspirationWindow window;
     T result = T();
     try {
       for (int depth = 1; depth <= max_depth; depth++) {
-        result = ab.GetValue(depth);
+        // T value = ab.GetValue(depth, window.GetLow(), window.GetHigh());
+        // if (value <= window.GetLow() || value >= window.GetHigh()) {
+        T value = ab.GetValue(depth);
+        //}
+
+        window.Push(value);
+        result = value;
         if (m_ttable != nullptr) m_ttable->ClearNoTriggered();
         m_last_depth = depth;
       }

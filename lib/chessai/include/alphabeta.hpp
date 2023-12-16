@@ -11,7 +11,7 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-// #define DISTRIBUTION
+#define DISTRIBUTION
 
 class AlphaBeta : public QSearch {
   using T = Score;
@@ -73,9 +73,7 @@ class AlphaBeta : public QSearch {
         else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
-#ifdef DISTRIBUTION
-        if (hashed->type == TTableItem::PV) return hashed->value;
-#endif
+        // if (hashed->type == TTableItem::PV) return hashed->value;
       }
     }
 

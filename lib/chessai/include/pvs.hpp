@@ -10,7 +10,7 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-// #define DISTRIBUTION
+#define DISTRIBUTION
 
 class PVS : public QSearch {
   using T = Score;

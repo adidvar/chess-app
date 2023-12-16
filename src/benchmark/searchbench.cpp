@@ -41,12 +41,13 @@ void SearchBenchmark() {
   begin = std::chrono::high_resolution_clock::now();
   statistics.Clear();
 
-  for (int d = 1; d <= 9; d++) {
+  for (int d = 1; d <= 10; d++) {
     TTable table;
     ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
+    begin = std::chrono::high_resolution_clock::now();
     std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics = cmp.GetStatistics();
@@ -72,6 +73,7 @@ void SearchBenchmark() {
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
+    begin = std::chrono::high_resolution_clock::now();
     std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics = cmp.GetStatistics();
