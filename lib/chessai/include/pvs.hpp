@@ -55,7 +55,7 @@ class PVS : public QSearch {
     }
 
     bool founded = false;
-    TTableItem *hashed = nullptr;
+    const TTableItem *hashed = nullptr;
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
@@ -66,10 +66,8 @@ class PVS : public QSearch {
           return hashed->value;
         else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
-      } else if (hashed->depth > depthleft) {
-#ifdef DISTRIBUTION
-        if (hashed->type == TTableItem::PV) return hashed->value;
-#endif
+        //} else if (hashed->depth > depthleft) {
+        //  if (hashed->type == TTableItem::PV) return hashed->value;
       }
     }
 
@@ -113,74 +111,28 @@ class PVS : public QSearch {
       }
     }
 
-    if (hashed != nullptr && (founded && hashed->depth <= depthleft)) {
-      auto hv = alpha;
-      auto ha = oldalpha;
-      auto hb = beta;
-
-      if (hv <= ha)
-        hashed->type = TTableItem::FailLow;
-      else if (hv >= hb)
-        hashed->type = TTableItem::FailHigh;
-      else
-        hashed->type = TTableItem::PV;
-
-      hashed->hasvalue = true;
-      hashed->hash = tuple.hash;
-      hashed->value = alpha;
-      hashed->pv = bestturn;
-      hashed->depth = depthleft;
-    }
+    if (m_ttable != nullptr)
+      m_ttable->Write(tuple.hash, oldalpha, beta, alpha, bestturn, depthleft,
+                      depthmax);
 
     return alpha;
   }
 
   Turn pvturn(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
               int depthmax) {
-    m_stat.MainNode();
-
     if (depthleft == 0) return Turn();
 
     bool founded = false;
-    TTableItem *hashed = nullptr;
-    if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
-
-    if (founded) {
-      if (hashed->depth == depthleft) {
-        if (hashed->type == TTableItem::PV)
-          return hashed->pv;
-        else if (hashed->type == TTableItem::FailHigh && hashed->value >= beta)
-          return Turn();
-        else if (hashed->type == TTableItem::FailHigh)
-          alpha = std::max(alpha, hashed->value);
-      } else if (hashed->depth > depthleft) {
-#ifdef DISTRIBUTION
-        if (hashed->type == TTableItem::PV) return hashed->pv;
-#endif
-      }
+    if (m_ttable) {
+      const TTableItem *hashed = m_ttable->Search(tuple.hash, founded);
+      return hashed->pv;
     }
-
-    auto moves =
-        BitBoardTuple::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
-
-    if (moves.empty()) {
-      return Turn();
+    pvs(tuple, alpha, beta, depthleft, depthmax);
+    if (m_ttable) {
+      const TTableItem *hashed = m_ttable->Search(tuple.hash, founded);
+      return hashed->pv;
     }
-
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            depthmax, founded ? hashed->pv : Turn());
-    T bestscore = T::Min();
-    Turn turn = Turn();
-    for (auto &sub : moves) {
-      auto score = -pvs(sub, -beta, -alpha, depthleft - 1, depthmax);
-      if (score >= beta) return Turn();
-      if (score > bestscore) {
-        bestscore = score;
-        turn = sub.turn;
-        if (score > alpha) alpha = score;
-      }
-    }
-    return turn;
+    return Turn{};
   }
 
   std::vector<Turn> findpv(BitBoard board, int depth) {

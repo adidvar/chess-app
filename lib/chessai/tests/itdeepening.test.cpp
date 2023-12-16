@@ -94,7 +94,7 @@ TEST_CASE("PV check itdeepening", "[itdepening][pv][ai]") {
   abb.SetTTable(&table2);
 
   abw.GetValue(board, 7);
-  auto pv = abw.FindPV(board, 7);
+  auto pv = abw.FindPV(board);
 
   for (int i = 0; i < 7; i++) {
     if (i % 2)
@@ -102,7 +102,7 @@ TEST_CASE("PV check itdeepening", "[itdepening][pv][ai]") {
     else
       abb.GetValue(board, 7 - i);
 
-    auto move = i % 2 ? abw.GetTurn(board, 7 - i) : abb.GetTurn(board, 7 - i);
+    auto move = i % 2 ? abw.GetTurn(board) : abb.GetTurn(board);
     REQUIRE(move == pv[i]);
     board.ExecuteTurn(pv[i]);
   }

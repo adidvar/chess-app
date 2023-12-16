@@ -8,68 +8,19 @@
 #include "pvs.hpp"
 
 int main() {
-  std::string fen{"startpos"};
-  // std::getline(std::cin, fen);
-  BitBoard board(fen);
-  auto value = Score::Value(board, Color::kWhite);
-  std::cout << value.ToCentiPawns() << std::endl;
+  Computer computer(Color::kWhite);
+  computer.Start();
+  std::this_thread::sleep_for(std::chrono::seconds{6});
+  auto begin = std::chrono::high_resolution_clock::now();
+  computer.Stop();
+  auto end = std::chrono::high_resolution_clock::now();
 
-  TTable table;
-  {
-    std::string fen{"startpos"};
-    int d = 8;
-    ItDeepening<AlphaBeta> cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    std::cout << cmp.GetTurn({fen}, d).ToChessFormat() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    auto pv = cmp.FindPV({fen}, d);
-    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
-
-    std::cout << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-  }
-  std::cout << "----------------------" << std::endl;
-  {
-    std::string fen{"startpos"};
-    int d = 7;
-    ItDeepening<AlphaBeta> cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    std::cout << cmp.GetTurn({fen}, d).ToChessFormat() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    auto pv = cmp.FindPV({fen}, d);
-    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
-
-    std::cout << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-  }
-  std::cout << "----------------------" << std::endl;
-  {
-    TTable table;
-    std::string fen{"startpos"};
-    int d = 7;
-    ItDeepening<PVS> cmp(Color::kWhite);
-    cmp.SetTTable(&table);
-    cmp.SetStopFlag(nullptr);
-    std::cout << cmp.GetValue({fen}, d).ToCentiPawns() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    std::cout << cmp.GetTurn({fen}, d).ToChessFormat() << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-
-    auto pv = cmp.FindPV({fen}, d);
-    for (auto p : pv) std::cout << p.ToChessFormat() << " ";
-
-    std::cout << std::endl;
-    std::cout << cmp.GetStatistics().GetMainNode() << std::endl;
-  }
+  std::cout << std::chrono::duration_cast<std::chrono::duration<float>>(end -
+                                                                        begin)
+                   .count()
+            << std::endl;
+  std::cout << computer.GetValue().ToCentiPawns() << std::endl;
+  std::cout << computer.GetTurn().ToChessFormat() << std::endl;
+  for (auto turn : computer.GetPV()) std::cout << turn.ToChessFormat() << " ";
+  std::cout << std::endl << computer.GetDepth() << std::endl;
 }

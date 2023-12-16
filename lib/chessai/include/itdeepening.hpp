@@ -18,14 +18,15 @@ class ItDeepening {
 
   T GetValue(const BitBoard &board, int max_depth, T a = T::Min(),
              T b = T::Max()) {
+    m_last_depth = 0;
     Search ab(board, m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
     T result = T();
     try {
       for (int depth = 1; depth <= max_depth; depth++) {
-        Score value = ab.GetValue(depth);
-        result = value;
+        result = ab.GetValue(depth);
+        if (m_ttable != nullptr) m_ttable->ClearNoTriggered();
         m_last_depth = depth;
       }
     } catch (SearchExitException exception) {
@@ -34,19 +35,19 @@ class ItDeepening {
     return result;
   }
 
-  Turn GetTurn(const BitBoard &board, int max_depth) {
+  Turn GetTurn(const BitBoard &board) {
     Search ab(board, m_color);
     ab.SetTTable(m_ttable);
-    auto result = ab.GetTurn(max_depth);
+    auto result = ab.GetTurn(GetLastDepth());
     m_stat = ab.GetStatistics();
     return result;
   }
 
-  std::vector<Turn> FindPV(BitBoard board, int max_depth) {
+  std::vector<Turn> FindPV(BitBoard board) {
     Search ab(board, m_color);
     ab.SetTTable(m_ttable);
     std::vector<Turn> result;
-    result = ab.FindPV(max_depth);
+    result = ab.FindPV(GetLastDepth());
     m_stat = ab.GetStatistics();
     return result;
   }

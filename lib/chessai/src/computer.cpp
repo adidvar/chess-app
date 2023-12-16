@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "itdeepening.hpp"
+#include "pvs.hpp"
 
 Computer::Computer(Color color) : m_color(color) {}
 
@@ -20,20 +21,16 @@ void Computer::Start() {
     search.SetTTable(&m_table);
     search.SetStopFlag(&m_stop_flag);
 
-    int max_depth = 20;
-
-    m_value = search.GetValue(m_board, max_depth);
+    m_value = search.GetValue(m_board, 10);
     search.SetStopFlag(nullptr);
-    m_stat += search.GetStatistics();
-
-    max_depth = search.GetLastDepth();
+    m_stat += search.GetStatistics(); 
 
     // std::cout << m_table.Fill() << " " << m_table.Used() << std::endl;
 
-    m_turn = search.GetTurn(m_board, max_depth);
+    m_turn = search.GetTurn(m_board);
     m_stat += search.GetStatistics();
-    // m_pv = search.FindPV(m_board, max_depth);
-    m_depth = max_depth;
+    m_pv = search.FindPV(m_board);
+    m_depth = search.GetLastDepth();
     m_stat += search.GetStatistics();
   });
 }

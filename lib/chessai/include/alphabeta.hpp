@@ -60,7 +60,7 @@ class AlphaBeta : public QSearch {
     }
 
     bool founded = false;
-    TTableItem *hashed = nullptr;
+    const TTableItem *hashed = nullptr;
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {
@@ -88,8 +88,11 @@ class AlphaBeta : public QSearch {
 
     m_stat.MainNode();
 
+    // ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+    //         depthmax, founded ? hashed->pv : Turn());
     BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
                      founded ? hashed->pv : Turn());
+
     T bestscore = T::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
@@ -110,24 +113,9 @@ class AlphaBeta : public QSearch {
       }
     }
 
-    if (hashed != nullptr && (((founded && hashed->depth <= depthleft)))) {
-      auto hv = bestscore;
-      auto ha = oldalpha;
-      auto hb = beta;
-
-      if (hv <= ha)
-        hashed->type = TTableItem::FailLow;
-      else if (hv >= hb)
-        hashed->type = TTableItem::FailHigh;
-      else
-        hashed->type = TTableItem::PV;
-
-      hashed->hasvalue = true;
-      hashed->hash = tuple.hash;
-      hashed->value = bestscore;
-      hashed->pv = bestturn;
-      hashed->depth = depthleft;
-    }
+    if (m_ttable != nullptr)
+      m_ttable->Write(tuple.hash, oldalpha, beta, bestscore, bestturn,
+                      depthleft, depthmax);
 
     return bestscore;
   }
@@ -139,7 +127,7 @@ class AlphaBeta : public QSearch {
     if (depthleft == 0) return Turn();
 
     bool founded = false;
-    TTableItem *hashed = nullptr;
+    const TTableItem *hashed = nullptr;
     if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
 
     if (founded) {

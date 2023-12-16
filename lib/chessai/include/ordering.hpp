@@ -29,20 +29,18 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
     auto from_figure = board.GetFigure(from_pos);
     auto to_figure = board.GetFigure(to_pos);
 
-    Score hashed_value{};
-
-    if (ttable != nullptr) {
-      bool founded = false;
-      const auto *node = ttable->Search(elem.hash, founded);
-      hashed_value = node->value;
+    const TTableItem *element = nullptr;
+    bool found = false;
+    if (ttable != nullptr && (depthmax - depthleft) <= depthmax / 2) {
+      element = ttable->Search(elem.hash, found);
     }
 
     if (elem.turn == pv && pv != Turn()) {
       elem.priority.type = PV;
       elem.priority.index = 0;
-    } else if (hashed_value != Score{}) {
+    } else if (found && -element->value >= a) {
       elem.priority.type = Hashed;
-      elem.priority.index = hashed_value.Value();
+      elem.priority.index = -element->value.Value();
     } else if (to_figure != Figure::kEmpty) {
       auto delta_price =
           Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);

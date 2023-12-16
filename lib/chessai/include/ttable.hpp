@@ -16,23 +16,23 @@ struct TTableItem {
 
   uint8_t depth;
 
-  bool hasvalue = false;
 };
 
 class TTable {
  public:
   TTable();
   void Clear();
+  void ClearNoTriggered();
 
-  TTableItem *Search(bitboard_hash_t hash, bool &founded);
   const TTableItem *Search(bitboard_hash_t hash, bool &founded) const;
 
-  void Write(TTableItem *element);
-
-  float Fill();
+  void Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
+             Turn pv, int depth, int depthmax);
 
  private:
   std::vector<TTableItem> table_;
+  std::vector<bool> used_;
+  mutable std::vector<bool> triggered_;
 };
 
 #endif
