@@ -11,6 +11,8 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
+// #define DISTRIBUTION
+
 class AlphaBeta : public QSearch {
   using T = Score;
 
@@ -18,21 +20,19 @@ class AlphaBeta : public QSearch {
   // throw exception and keep state
 
  public:
-  AlphaBeta(Color color) : QSearch(color) {}
+  AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
-  T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
-    BitBoardTuple tuple{board, board.Hash(), Turn()};
+  T GetValue(int depth, T a = T::Min(), T b = T::Max()) {
+    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
-  Turn GetTurn(const BitBoard &board, int depth) {
-    BitBoardTuple tuple{board, board.Hash(), Turn()};
+  Turn GetTurn(int depth) {
+    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
-  std::vector<Turn> FindPV(BitBoard board, int depth) {
-    return findpv(board, depth);
-  }
+  std::vector<Turn> FindPV(int depth) { return findpv(m_board, depth); }
 
   Statistics GetStatistics() const { return m_stat; };
 

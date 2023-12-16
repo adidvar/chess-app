@@ -26,7 +26,7 @@ std::vector<const char *> qsearch_tests{
 
 BenchmarkPrint::Test GetTest(std::string fen) {
   return [fen](Statistics &stat, Score &score, Turn &turn, int &depth) {
-    QSearch search(Color::kWhite);
+    QSearch search(BitBoard{}, Color::kWhite);
     auto board = BitBoard{fen};
     search.SetStopFlag(nullptr);
     score = search.QuiescenceSearch(BitBoardTuple(board, board.Hash(), {}));

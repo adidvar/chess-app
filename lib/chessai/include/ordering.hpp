@@ -11,12 +11,12 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
                     Score a, Score b, const BFTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {
-  constexpr int killer_scale = 200;
-  constexpr int history_scale = 60;
+  constexpr int killer_scale = 100;
+  constexpr int history_scale = 50;
 
   enum TurnTypes {
     PV = 6,
-    Hashed = 6,
+    Hashed = 5,
     PositiveAttack = 4,
     KillerMoves = 3,
     NormalMoves = 2,
@@ -34,8 +34,8 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
 
     if (ttable) {
       bool founded = false;
-      auto node = ttable->Search(elem.hash, founded);
-      if (founded && node->type == node->PV) hashed_value = -node->value;
+      const auto node = ttable->Search(elem.hash, founded);
+      if (founded) hashed_value = -node->value;
     }
 
     if (elem.turn == pv && pv != Turn()) {
@@ -67,7 +67,6 @@ inline void BFTableReorderer(const BitBoard &board,
                              std::vector<BitBoardTuple> &vector,
                              const BFTable &bftable, int depthleft,
                              int depthmax, Turn pv) {
-  constexpr int killer_scale = 100;
   constexpr int history_scale = 50;
 
   enum TurnTypes {
@@ -95,9 +94,9 @@ inline void BFTableReorderer(const BitBoard &board,
       elem.priority.index = delta_price;
     } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index =
-          Score::FigurePrice(from_figure) +
-          killer_scale * bftable.GetKiller(elem.turn, depthleft, depthmax);
+      elem.priority.index = Score::FigurePrice(from_figure) +
+                            bftable.GetKiller(elem.turn, depthleft, depthmax) *
+                                bftable.GetHistory(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = Score::FigurePrice(from_figure) +

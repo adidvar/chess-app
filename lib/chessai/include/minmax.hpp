@@ -71,21 +71,21 @@ class MinMax : public Search {
   }
 
  public:
-  explicit MinMax(Color color) : Search(color) {}
+  explicit MinMax(const BitBoard &board, Color color) : Search(board, color) {}
 
-  T GetValue(const BitBoard &board, int depth) {
+  T GetValue(int depth) {
     m_stat.Clear();
-    return minimax(board, depth, depth);
+    return minimax(m_board, depth, depth);
   }
 
-  Turn GetTurn(const BitBoard &board, int depth) {
+  Turn GetTurn(int depth) {
     m_stat.Clear();
-    return minimaxturn({board}, depth, depth).second;
+    return minimaxturn({m_board}, depth, depth).second;
   }
 
-  std::vector<Turn> FindPV(BitBoard board, int depth) {
+  std::vector<Turn> FindPV(int depth) {
     m_stat.Clear();
-    return findpv(board, depth);
+    return findpv(m_board, depth);
   }
 
   Statistics GetStatistics() const { return m_stat; };

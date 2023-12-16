@@ -74,7 +74,14 @@ int CalculateBonus(bitboard_t map, const int bonus[], Color color) {
 
 Score::Score() : value_(invalid) {}
 
-Score::Score(ScoreType value) : value_(value) {}
+Score::Score(long int value) {
+  if (value > prange)
+    value_ = prange;
+  else if (value < nrange)
+    value_ = nrange;
+  else
+    value_ = value;
+}
 
 bool Score::operator<(Score value) const { return value_ < value.value_; }
 bool Score::operator>(Score value) const { return value_ > value.value_; }

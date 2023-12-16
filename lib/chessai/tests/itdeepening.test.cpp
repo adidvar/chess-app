@@ -64,7 +64,7 @@ TEST_CASE("Testing of mate search in iterative deepening",
 */
 }
 static bool CompareValue(const char* fen, int depth) {
-  AlphaBeta ab(Color::kWhite);
+  AlphaBeta ab(BitBoard{fen}, Color::kWhite);
   ab.SetStopFlag(nullptr);
   ab.SetTTable(nullptr);
 
@@ -73,7 +73,7 @@ static bool CompareValue(const char* fen, int depth) {
   it.SetStopFlag(nullptr);
   it.SetTTable(&table);
 
-  auto result1 = ab.GetValue(BitBoard(fen), depth);
+  auto result1 = ab.GetValue(depth);
   auto result2 = it.GetValue(BitBoard(fen), depth);
 
   return result1 == result2 && it.GetLastDepth() == depth;

@@ -68,12 +68,12 @@ void SearchBenchmark() {
   statistics.Clear();
   for (int d = 1; d <= 8; d++) {
     TTable table;
-    PVS cmp(Color::kWhite);
+    std::string fen{"startpos"};
+    PVS cmp(BitBoard{fen}, Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
-    std::string fen{"startpos"};
-    auto value = cmp.GetValue(BitBoard{fen}, d);
+    auto value = cmp.GetValue(d);
     statistics = cmp.GetStatistics();
     // auto turn = cmp.GetTurn(BitBoard{fen}, d);
 

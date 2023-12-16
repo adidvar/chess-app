@@ -53,7 +53,7 @@ class BenchmarkPrint {
                 << std::endl;
       ;
 
-      if (index != indexes.size() && indexes[index + 1] != indexes[index])
+      if (index + 1 < indexes.size() && indexes[index + 1] != indexes[index])
         std::cout << std::endl;
       index++;
     }

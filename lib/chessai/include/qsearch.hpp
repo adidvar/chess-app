@@ -40,7 +40,7 @@ class QSearch : public Search, private ChessTreeHash {
       Score::FigurePrice(Figure::kQueen)};  // queen value
 
  public:
-  QSearch(Color color) : Search(color) {}
+  QSearch(const BitBoard &board, Color color) : Search(board, color) {}
 
   T QuiescenceSearch(const BitBoardTuple &tuple, T a = T::Min(),
                      T b = T::Max()) {

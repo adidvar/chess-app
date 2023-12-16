@@ -10,25 +10,25 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
+// #define DISTRIBUTION
+
 class PVS : public QSearch {
   using T = Score;
 
  public:
-  PVS(Color color) : QSearch(color) {}
+  PVS(const BitBoard &board, Color color) : QSearch(board, color) {}
 
-  T GetValue(const BitBoard &board, int depth, T a = T::Min(), T b = T::Max()) {
-    BitBoardTuple tuple{board, board.Hash(), Turn()};
+  T GetValue(int depth, T a = T::Min(), T b = T::Max()) {
+    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
     return pvs(tuple, a, b, depth, depth);
   }
 
-  Turn GetTurn(const BitBoard &board, int depth) {
-    BitBoardTuple tuple{board, board.Hash(), Turn()};
+  Turn GetTurn(int depth) {
+    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
     return pvturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
-  std::vector<Turn> FindPV(BitBoard board, int depth) {
-    return findpv(board, depth);
-  }
+  std::vector<Turn> FindPV(int depth) { return findpv(m_board, depth); }
 
   Statistics GetStatistics() const { return m_stat; };
   BFTable &GetBfTable() { return m_btable; };
@@ -82,10 +82,8 @@ class PVS : public QSearch {
 
     m_stat.MainNode();
 
-    /*
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            depthmax, founded ? hashed->pv : Turn());
-*/
+    // ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+    //         depthmax, founded ? hashed->pv : Turn());
     BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
                      founded ? hashed->pv : Turn());
 

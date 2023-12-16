@@ -10,7 +10,7 @@ class Score {
 
  public:
   Score();
-  explicit Score(ScoreType value);
+  explicit Score(long int value);
 
   bool operator<(Score value) const;
   bool operator>(Score value) const;

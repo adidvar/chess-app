@@ -2,15 +2,16 @@
 #define SEARCH_HPP
 
 #include <atomic>
-#include <bftable.hpp>
-#include <figures.hpp>
-#include <statistics.hpp>
+
+#include "bitboard.hpp"
+#include "figures.hpp"
+#include "statistics.hpp"
 
 struct SearchExitException {};
 
 class Search {
  public:
-  Search(Color color) : m_color(color) {}
+  Search(const BitBoard &board, Color color) : m_color(color), m_board(board) {}
 
   [[nodiscard]] std::atomic_bool *GetStopFlag() const { return m_stop_flag; };
   void SetStopFlag(std::atomic_bool *stop_flag) { m_stop_flag = stop_flag; };
@@ -27,7 +28,8 @@ class Search {
 
  protected:
   Statistics m_stat;
-  Color m_color;
+  const Color m_color;
+  const BitBoard m_board;
 };
 
 #endif

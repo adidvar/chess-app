@@ -8,12 +8,12 @@
 #include "minmax.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
-  PVS ab(Color::kWhite);
+  PVS ab(BitBoard{fen}, Color::kWhite);
 
   ab.SetStopFlag(nullptr);
   ab.SetTTable(nullptr);
 
-  auto result = ab.GetValue(BitBoard(fen), depth + 1);
+  auto result = ab.GetValue(depth + 1);
   return result == Score::Lose(depth) || result == Score::Win(depth);
 }
 
@@ -66,43 +66,43 @@ TEST_CASE("Testing of mate search in pvs", "[pvs][ai]") {
 }
 
 TEST_CASE("Testing of fast search exit pvs", "[pvs][itdeepening][ai]") {
-  PVS ab(Color::kWhite);
+  PVS ab(BitBoard{}, Color::kWhite);
   TTable table;
 
   std::atomic_bool flag = true;
   ab.SetStopFlag(&flag);
   ab.SetTTable(&table);
 
-  CHECK_THROWS_AS(ab.GetValue(BitBoard(), 10), SearchExitException);
+  CHECK_THROWS_AS(ab.GetValue(10), SearchExitException);
 }
 
 static bool CompareValue(const char* fen, int depth) {
-  PVS ab(Color::kWhite);
+  PVS ab(BitBoard{}, Color::kWhite);
   ab.SetStopFlag(nullptr);
   ab.SetTTable(nullptr);
 
-  AlphaBeta mn(Color::kWhite);
+  AlphaBeta mn(BitBoard{}, Color::kWhite);
   mn.SetStopFlag(nullptr);
 
-  auto result1 = ab.FindPV(BitBoard(fen), depth);
-  auto result2 = mn.FindPV(BitBoard(fen), depth);
+  auto result1 = ab.FindPV(depth);
+  auto result2 = mn.FindPV(depth);
 
   return result1 == result2;
 }
 
 TEST_CASE("Testing of hash tables stability in pvs search",
           "[pvs][ttable][ai]") {
-  PVS ab(Color::kWhite);
+  PVS ab(BitBoard{}, Color::kWhite);
   ab.SetStopFlag(nullptr);
   ab.SetTTable(nullptr);
 
   TTable table;
-  PVS abh(Color::kWhite);
+  PVS abh(BitBoard{}, Color::kWhite);
   abh.SetStopFlag(nullptr);
   abh.SetTTable(&table);
 
-  auto result1 = ab.GetValue(BitBoard(), 8);
-  auto result2 = abh.GetValue(BitBoard(), 8);
+  auto result1 = ab.GetValue(8);
+  auto result2 = abh.GetValue(8);
 
   REQUIRE(result1 == result2);
 }
@@ -110,18 +110,18 @@ TEST_CASE("Testing of hash tables stability in pvs search",
 TEST_CASE("PV check", "[pvs][pv][ai]") {
   BitBoard board{};
 
-  PVS abw(Color::kWhite);
+  PVS abw(board, Color::kWhite);
   abw.SetStopFlag(nullptr);
   abw.SetTTable(nullptr);
 
-  PVS abb(Color::kWhite);
+  PVS abb(board, Color::kWhite);
   abb.SetStopFlag(nullptr);
   abb.SetTTable(nullptr);
 
-  auto pv = abw.FindPV(board, 7);
+  auto pv = abw.FindPV(7);
 
   for (int i = 0; i < 7; i++) {
-    auto move = i % 2 ? abw.GetTurn(board, 7 - i) : abb.GetTurn(board, 7 - i);
+    auto move = i % 2 ? abw.GetTurn(7 - i) : abb.GetTurn(7 - i);
     REQUIRE(move == pv[i]);
     board.ExecuteTurn(pv[i]);
   }
@@ -178,13 +178,11 @@ SECTION("Depth 7") {
 
 TEST_CASE("Testing of pvs move correctness", "[pvs][minmax][ai]") {
   {
-    PVS ab(Color::kWhite);
-    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), 4) ==
-            Turn::FromChessFormat("f1f8"));
+    PVS ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), Color::kWhite);
+    REQUIRE(ab.GetTurn(4) == Turn::FromChessFormat("f1f8"));
   }
   {
-    PVS ab(Color::kWhite);
-    REQUIRE(ab.GetTurn(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), 4) ==
-            Turn::FromChessFormat("f8f1"));
+    PVS ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), Color::kWhite);
+    REQUIRE(ab.GetTurn(4) == Turn::FromChessFormat("f8f1"));
   }
 }

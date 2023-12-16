@@ -4,6 +4,7 @@
 #include <atomic>
 
 #include "alphabeta.hpp"
+#include "awindow.hpp"
 #include "bitboard.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
@@ -17,13 +18,14 @@ class ItDeepening {
 
   T GetValue(const BitBoard &board, int max_depth, T a = T::Min(),
              T b = T::Max()) {
-    Search ab(m_color);
+    Search ab(board, m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
     T result = T();
     try {
       for (int depth = 1; depth <= max_depth; depth++) {
-        result = ab.GetValue(board, depth);
+        Score value = ab.GetValue(depth);
+        result = value;
         m_last_depth = depth;
       }
     } catch (SearchExitException exception) {
@@ -33,18 +35,18 @@ class ItDeepening {
   }
 
   Turn GetTurn(const BitBoard &board, int max_depth) {
-    Search ab(m_color);
+    Search ab(board, m_color);
     ab.SetTTable(m_ttable);
-    auto result = ab.GetTurn(board, max_depth);
+    auto result = ab.GetTurn(max_depth);
     m_stat = ab.GetStatistics();
     return result;
   }
 
   std::vector<Turn> FindPV(BitBoard board, int max_depth) {
-    Search ab(m_color);
+    Search ab(board, m_color);
     ab.SetTTable(m_ttable);
     std::vector<Turn> result;
-    result = ab.FindPV(board, max_depth);
+    result = ab.FindPV(max_depth);
     m_stat = ab.GetStatistics();
     return result;
   }
