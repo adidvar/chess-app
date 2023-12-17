@@ -73,7 +73,7 @@ class AlphaBeta : public QSearch {
         else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
-        // if (hashed->type == TTableItem::PV) return hashed->value;
+        if (hashed->type == TTableItem::PV) return hashed->value;
       }
     }
 

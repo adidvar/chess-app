@@ -23,11 +23,13 @@ int main() {
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
+    /*
     std::cout << "Forecast: " << window.GetLow().ToCentiPawns() << " <--> "
               << window.GetHigh().ToCentiPawns() << std::endl;
+*/
 
     begin = std::chrono::high_resolution_clock::now();
-    std::string fen{"startpos"};
+    std::string fen{"8/7K/8/8/8/8/R7/7k w - - 0 1"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     window.Push(value);
     statistics = cmp.GetStatistics();
