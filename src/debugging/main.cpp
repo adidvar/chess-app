@@ -6,7 +6,6 @@
 #include <itdeepening.hpp>
 #include <minmax.hpp>
 
-#include "pvs.hpp"
 
 int main() {
   float delta = 0;
@@ -14,8 +13,6 @@ int main() {
   auto begin = std::chrono::high_resolution_clock::now();
   auto end = std::chrono::high_resolution_clock::now();
   Statistics statistics;
-
-  AspirationWindow window;
 
   for (int d = 1; d <= 11; d++) {
     TTable table;
@@ -29,9 +26,8 @@ int main() {
 */
 
     begin = std::chrono::high_resolution_clock::now();
-    std::string fen{"8/7K/8/8/8/8/R7/7k w - - 0 1"};
+    std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
-    window.Push(value);
     statistics = cmp.GetStatistics();
     // auto turn = cmp.GetTurn(BitBoard{fen}, d);
 

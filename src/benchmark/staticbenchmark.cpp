@@ -5,13 +5,13 @@
 #include <iostream>
 
 #include "itdeepening.hpp"
-#include "pvs.hpp"
 #include "ttable.hpp"
 
 static std::vector<std::pair<const char*, float>> stockfish_result{
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.08f}};
 
 void StaticBenchmark() {
+  /*
   std::string name{"StaticBenchmark"};
   const int d = 16;
   const auto delim = std::string(8 * d - name.size() + 4, '-');
@@ -41,4 +41,5 @@ void StaticBenchmark() {
   std::cout << "Delta: " << sqrt(delta) / stockfish_result.size() << std::endl;
 
   std::cout << name << delim << std::endl;
+*/
 }

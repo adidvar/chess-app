@@ -3,9 +3,9 @@
 #include "benchmark.hpp"
 #include "evaluate.hpp"
 #include "itdeepening.hpp"
-#include "pvs.hpp"
 #include "qsearch.hpp"
 
+/*
 static std::vector<const char *> pvssearch_tests{
     "startpos",
     "r3k2r/ppp1bppp/q1np1n2/1B2p3/3P2b1/2N1PN2/PPPBQPPP/R4RK1 w Qkq - 0 1",
@@ -22,8 +22,10 @@ static BenchmarkPrint::Test GetTest(std::string fen) {
     stat = search.GetStatistics();
   };
 };
+*/
 
 void PVSSearchBenchmark() {
+  /*
   BenchmarkPrint print("PVSSearch");
 
   auto index = 0;
@@ -33,4 +35,5 @@ void PVSSearchBenchmark() {
   };
 
   print.RunAndPrint();
+*/
 }

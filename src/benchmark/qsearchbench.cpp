@@ -3,9 +3,9 @@
 #include "benchmark.hpp"
 #include "evaluate.hpp"
 #include "itdeepening.hpp"
-#include "pvs.hpp"
 #include "qsearch.hpp"
 
+/*
 std::vector<const char *> qsearch_tests{
     "rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1",
     "r1bqkbnr/pppp1ppp/2n5/4p3/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1",
@@ -57,7 +57,9 @@ BenchmarkPrint::Test GetStaticTest(std::string fen) {
   };
 };
 
+*/
 void QSearchBenchmark() {
+  /*
   BenchmarkPrint print("QSearch");
 
   auto index = 0;
@@ -69,4 +71,5 @@ void QSearchBenchmark() {
   };
 
   print.RunAndPrint();
+*/
 }

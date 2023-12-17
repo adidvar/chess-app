@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "itdeepening.hpp"
-#include "pvs.hpp"
 
 Computer::Computer(Color color) : m_color(color) {}
 

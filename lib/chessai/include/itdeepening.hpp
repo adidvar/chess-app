@@ -4,7 +4,6 @@
 #include <atomic>
 
 #include "alphabeta.hpp"
-#include "awindow.hpp"
 #include "bitboard.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
@@ -22,7 +21,6 @@ class ItDeepening {
     Search ab(board, m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
-    AspirationWindow window;
     T result = T();
     try {
       for (int depth = 1; depth <= max_depth; depth++) {
@@ -31,7 +29,6 @@ class ItDeepening {
         T value = ab.GetValue(depth);
         //}
 
-        window.Push(value);
         result = value;
         if (m_ttable != nullptr) m_ttable->ClearNoTriggered();
         m_last_depth = depth;
