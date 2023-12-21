@@ -1,17 +1,16 @@
 #include "score.hpp"
 
+#include <algorithm>
+
 #include "evaluator.hpp"
 
-static Score::ProcessType kinvalid_score(
-    std::numeric_limits<Score::ScoreType>::min());
-static Score::ProcessType kmax_score(
-    std::numeric_limits<Score::ScoreType>::max());
-static Score::ProcessType kmin_score(
-    -std::numeric_limits<Score::ScoreType>::max());
-static Score::ProcessType kcheckmate_score(
-    -std::numeric_limits<Score::ScoreType>::max() + 50);
+static Score::ScoreType k_invalid =
+    std::numeric_limits<Score::ScoreType>::min();
+static Score::ScoreType k_min = k_invalid + 1;
+static Score::ScoreType k_checkmate_0 = k_min + 1;
+static Score::ScoreType k_checkmate_max = k_checkmate_0 + 100;
 
-Score::Score() : Score(kinvalid_score) {}
+Score::Score() : Score(k_invalid) {}
 
 Score::Score(ProcessType type) : m_value(type) {}
 
@@ -40,8 +39,8 @@ Score Score::operator+(Score value) const {
 Score Score::operator*(int value) const { return Clamp(this->m_value * value); }
 
 Score Score::CheckMate(int depthleft, int depthmax) {
-  Score value{kmin_score + depthmax - depthleft + 1};
-  return value.IsCheckMate() ? value : kcheckmate_score;
+  Score::ProcessType value{k_checkmate_0 + depthmax - depthleft};
+  return std::min<Score::ProcessType>(k_checkmate_max, value);
 }
 
 Score Score::Tie() { return {0}; }
@@ -52,21 +51,21 @@ Score Score::GetStaticValue(const BitBoard &board, Color color,
   return Clamp(evaluator.Evaluate());
 }
 
-Score Score::Max() { return kmax_score; }
+Score Score::Max() { return -k_min; }
 
-Score Score::Min() { return kmin_score; }
+Score Score::Min() { return k_min; }
 
-bool Score::IsValid() const { return *this != kinvalid_score; }
+bool Score::IsValid() const { return *this != k_invalid; }
 
 bool Score::IsCheckMate() const {
-  return m_value <= kcheckmate_score || m_value >= -kcheckmate_score;
+  return m_value <= k_checkmate_max || m_value >= -k_checkmate_max;
 }
 
 int Score::GetTurnsToCheckMate() const {
   if (m_value < 0)
-    return m_value - kmin_score - 1;
+    return m_value - k_checkmate_0;
   else
-    return -kmin_score - m_value - 1;
+    return k_checkmate_0 - m_value;
 }
 
 Score Score::GetFigureScore(Figure figure) {
@@ -74,7 +73,9 @@ Score Score::GetFigureScore(Figure figure) {
 }
 
 std::string Score::ToCentiPawns() const {
-  if (IsCheckMate())
+  if (*this == Score{})
+    return "I";
+  else if (IsCheckMate())
     return std::string("M") + std::to_string(GetTurnsToCheckMate());
   else
     return std::to_string(m_value);
@@ -83,7 +84,7 @@ std::string Score::ToCentiPawns() const {
 Score::operator ProcessType() { return m_value; }
 
 Score::ScoreType Score::Clamp(ProcessType value) {
-  if (value <= kcheckmate_score) return kcheckmate_score + 1;
-  if (value >= -kcheckmate_score) return kcheckmate_score - 1;
+  if (value <= k_checkmate_max) return k_checkmate_max + 1;
+  if (value >= -k_checkmate_max) return -k_checkmate_max - 1;
   return value;
 }
