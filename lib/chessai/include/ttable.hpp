@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "bitboard.hpp"
-#include "evaluate.hpp"
+#include "score.hpp"
 
 struct TTableItem {
   bitboard_hash_t hash;

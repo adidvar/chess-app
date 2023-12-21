@@ -4,7 +4,7 @@
 #include <atomic>
 #include <thread>
 
-#include "evaluate.hpp"
+#include "score.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
 

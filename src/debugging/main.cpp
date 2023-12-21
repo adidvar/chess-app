@@ -14,22 +14,17 @@ int main() {
   auto end = std::chrono::high_resolution_clock::now();
   Statistics statistics;
 
-  for (int d = 1; d <= 11; d++) {
+  for (int d = 0; d <= 11; d++) {
     TTable table;
     ItDeepening<AlphaBeta> cmp(Color::kWhite);
     cmp.SetTTable(&table);
     cmp.SetStopFlag(nullptr);
 
-    /*
-    std::cout << "Forecast: " << window.GetLow().ToCentiPawns() << " <--> "
-              << window.GetHigh().ToCentiPawns() << std::endl;
-*/
-
     begin = std::chrono::high_resolution_clock::now();
     std::string fen{"startpos"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics = cmp.GetStatistics();
-    // auto turn = cmp.GetTurn(BitBoard{fen}, d);
+    auto turn = cmp.GetTurn(BitBoard{fen});
 
     auto end = std::chrono::high_resolution_clock::now();
     auto msec =
@@ -37,9 +32,10 @@ int main() {
             .count();
 
     std::cout << std::setw(8) << d << ": " << std::setw(8)
-              << statistics.GetMainNode() << "  :  " << std::setw(10)
-              << value.ToCentiPawns() << " : " << std::setw(10) << msec << " : "
-              << std::endl;
+              << statistics.GetMainNode() << "  :  " << std::setw(10) << " : "
+              << value.ToCentiPawns() << std::setw(10) << msec << " : "
+              << turn.ToChessFormat() << std::endl;
     //  << turn.ToChessFormat() << std::endl;
   }
+Score::GetStaticValue({}, Color::kWhite, GameStage{});
 }

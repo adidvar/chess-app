@@ -40,20 +40,21 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
       elem.priority.index = 0;
     } else if (found && -element->value >= a) {
       elem.priority.type = Hashed;
-      elem.priority.index = -element->value.Value();
+      elem.priority.index = -element->value;
     } else if (to_figure != Figure::kEmpty) {
       auto delta_price =
-          Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
-      elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
+          Score::GetFigureScore(to_figure) - Score::GetFigureScore(from_figure);
+      elem.priority.type =
+          (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
       elem.priority.index = delta_price;
     } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index = Score::FigurePrice(from_figure) +
+      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
                             bftable.GetKiller(elem.turn, depthleft, depthmax) *
                                 bftable.GetHistory(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
-      elem.priority.index = Score::FigurePrice(from_figure) +
+      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
                             bftable.GetHistory(elem.turn) * history_scale;
     }
   }
@@ -86,17 +87,18 @@ inline void BFTableReorderer(const BitBoard &board,
       elem.priority.index = 0;
     } else if (to_figure != Figure::kEmpty) {
       auto delta_price =
-          Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
-      elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
+          Score::GetFigureScore(to_figure) - Score::GetFigureScore(from_figure);
+      elem.priority.type =
+          (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
       elem.priority.index = delta_price;
     } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index = Score::FigurePrice(from_figure) +
+      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
                             bftable.GetKiller(elem.turn, depthleft, depthmax) *
                                 bftable.GetHistory(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
-      elem.priority.index = Score::FigurePrice(from_figure) +
+      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
                             bftable.GetHistory(elem.turn) * history_scale;
     }
   }

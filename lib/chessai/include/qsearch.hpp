@@ -5,8 +5,8 @@
 
 #include "bitboard.hpp"
 #include "bitboardtuple.hpp"
-#include "boarditerator.hpp"
-#include "evaluate.hpp"
+#include "chesstreehash.hpp"
+#include "score.hpp"
 #include "search.hpp"
 #include "statistics.hpp"
 
@@ -25,8 +25,9 @@ inline void QuiescenceSearchOrdering(const BitBoard &board,
     auto to_figure = board.GetFigure(to_pos);
 
     auto delta_price =
-        Score::FigurePrice(to_figure) - Score::FigurePrice(from_figure);
-    elem.priority.type = delta_price >= 0 ? PositiveAttack : NegativeAttack;
+        Score::GetFigureScore(to_figure) - Score::GetFigureScore(from_figure);
+    elem.priority.type =
+        (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
     elem.priority.index = delta_price;
   }
   std::sort(vector.rbegin(), vector.rend());
@@ -36,8 +37,8 @@ class QSearch : public Search, private ChessTreeHash {
   using T = Score;
 
   inline const static Score kBIG_DELTA{
-      Score::FigurePrice(Figure::kPawn) +
-      Score::FigurePrice(Figure::kQueen)};  // queen value
+      Score::GetFigureScore(Figure::kPawn) +
+      Score::GetFigureScore(Figure::kQueen)};  // queen value
 
  public:
   QSearch(const BitBoard &board, Color color) : Search(board, color) {}
@@ -50,13 +51,13 @@ class QSearch : public Search, private ChessTreeHash {
 
  private:
   T qsearch(const BitBoardTuple &tuple, T alpha, T beta, int depth) {
-    m_stat.ExtraNode();
+    GetStatistics().ExtraNode();
 
     CheckStopFlag();
 
-    m_stat.EndNode();
-    auto stand_pat = T::Value(tuple.board, m_color);
-    stand_pat = tuple.board.CurrentColor() == m_color ? stand_pat : -stand_pat;
+    GetStatistics().EndNode();
+    T stand_pat = T::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
+                                    GetSearchSettings().GetStage());
 
     if (stand_pat >= beta) return stand_pat;
 

@@ -3,17 +3,17 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include "evaluate.hpp"
 #include "minmax.hpp"
+#include "score.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
+  TTable table;
   AlphaBeta ab(BitBoard{fen}, Color::kWhite);
-
   ab.SetStopFlag(nullptr);
-  ab.SetTTable(nullptr);
+  ab.SetTTable(&table);
 
   auto result = ab.GetValue(depth + 1);
-  return result == Score::Lose(depth) || result == Score::Win(depth);
+  return result.IsCheckMate();
 }
 
 TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
@@ -83,8 +83,8 @@ static bool CompareValue(const char* fen, int depth) {
   MinMax mn(BitBoard{fen}, Color::kWhite);
   mn.SetStopFlag(nullptr);
 
-  auto result1 = ab.FindPV(depth);
-  auto result2 = mn.FindPV(depth);
+  auto result1 = ab.GetValue(depth);
+  auto result2 = mn.GetValue(depth);
 
   return result1 == result2;
 }
@@ -180,10 +180,10 @@ SECTION("Depth 7") {
 TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
   {
     AlphaBeta ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), Color::kWhite);
-    REQUIRE(ab.GetTurn(4) == Turn::FromChessFormat("f1f8"));
+    REQUIRE(ab.GetTurn(4).ToChessFormat() == "f1f8");
   }
   {
     AlphaBeta ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), Color::kWhite);
-    REQUIRE(ab.GetTurn(4) == Turn::FromChessFormat("f8f1"));
+    REQUIRE(ab.GetTurn(4).ToChessFormat() == "f8f1");
   }
 }

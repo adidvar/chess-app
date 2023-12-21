@@ -23,18 +23,16 @@ class AlphaBeta : public QSearch {
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
   T GetValue(int depth, T a = T::Min(), T b = T::Max()) {
-    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
+    BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
   Turn GetTurn(int depth) {
-    BitBoardTuple tuple{m_board, m_board.Hash(), Turn()};
+    BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
     return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
   }
 
-  std::vector<Turn> FindPV(int depth) { return findpv(m_board, depth); }
-
-  Statistics GetStatistics() const { return m_stat; };
+  std::vector<Turn> FindPV(int depth) { return findpv(GetBoard(), depth); }
 
   TTable *GetTTable() const { return m_ttable; };
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
@@ -80,7 +78,7 @@ class AlphaBeta : public QSearch {
     auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
-      if (tuple.board.Checkmate()) return T::Lose(depthmax - depthleft);
+      if (tuple.board.Checkmate()) return T::CheckMate(depthleft, depthmax);
       return T::Tie();
     }
 

@@ -2,7 +2,7 @@
 #define BITBOARDTUPLE_HPP
 
 #include "bitboard.hpp"
-#include "evaluate.hpp"
+#include "score.hpp"
 
 struct BitBoardTuple {
   BitBoardTuple(const BitBoard &board)

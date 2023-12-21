@@ -36,7 +36,6 @@ void SearchBenchmark() {
               << std::endl;
     //  << turn.ToChessFormat() << std::endl;
   }
-*/
   begin = std::chrono::high_resolution_clock::now();
   statistics.Clear();
 
@@ -63,4 +62,5 @@ void SearchBenchmark() {
               << std::endl;
     //  << turn.ToChessFormat() << std::endl;
   }
+*/
 }

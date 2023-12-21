@@ -3,7 +3,7 @@
 
 #include "bitboard.hpp"
 #include "bitboardtuple.hpp"
-#include "evaluate.hpp"
+#include "score.hpp"
 #include "search.hpp"
 #include "statistics.hpp"
 
@@ -14,8 +14,9 @@ class MinMax : public Search {
 
   T minimax(const BitBoard &bitboard, size_t depth, size_t max_depth) {
     if (depth == 0) {
-      auto approx = T::Value(bitboard, m_color);
-      return bitboard.CurrentColor() == m_color ? approx : -approx;
+      auto approx = T::GetStaticValue(bitboard, bitboard.CurrentColor(),
+                                      GetSearchSettings().GetStage());
+      return approx;
     }
 
     CheckStopFlag();
@@ -23,7 +24,7 @@ class MinMax : public Search {
     auto nodes = bitboard.GenerateSubBoards(bitboard.CurrentColor());
 
     if (nodes.empty()) {
-      if (bitboard.Checkmate()) return T::Lose(max_depth - depth);
+      if (bitboard.Checkmate()) return T::CheckMate(depth, max_depth);
       return T::Tie();
     }
 
@@ -75,20 +76,18 @@ class MinMax : public Search {
 
   T GetValue(int depth) {
     m_stat.Clear();
-    return minimax(m_board, depth, depth);
+    return minimax(GetBoard(), depth, depth);
   }
 
   Turn GetTurn(int depth) {
     m_stat.Clear();
-    return minimaxturn({m_board}, depth, depth).second;
+    return minimaxturn({GetBoard()}, depth, depth).second;
   }
 
   std::vector<Turn> FindPV(int depth) {
     m_stat.Clear();
-    return findpv(m_board, depth);
+    return findpv(GetBoard(), depth);
   }
-
-  Statistics GetStatistics() const { return m_stat; };
 };
 
 #endif

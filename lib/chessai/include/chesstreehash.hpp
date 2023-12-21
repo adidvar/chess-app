@@ -1,5 +1,5 @@
-#ifndef BOARDITERATOR_HPP
-#define BOARDITERATOR_HPP
+#ifndef CHESSTREEHASH_H
+#define CHESSTREEHASH_H
 
 #include <vector>
 

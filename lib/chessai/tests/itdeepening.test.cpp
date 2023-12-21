@@ -3,7 +3,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include "evaluate.hpp"
+#include "score.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
   ItDeepening<AlphaBeta> ab(Color::kWhite);
@@ -13,7 +13,7 @@ static bool TestMateFind(const char* fen, int depth) {
   ab.SetTTable(&table);
 
   auto result = ab.GetValue(BitBoard(fen), depth + 1);
-  return result == Score::Lose(depth) || result == Score::Win(depth);
+  return result.IsCheckMate();
 }
 TEST_CASE("Testing of mate search in iterative deepening",
           "[itdeepening][ai]") {

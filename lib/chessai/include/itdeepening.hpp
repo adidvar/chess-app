@@ -21,9 +21,9 @@ class ItDeepening {
     Search ab(board, m_color);
     ab.SetStopFlag(m_stop_flag);
     ab.SetTTable(m_ttable);
-    T result = T();
+    T result = T{};
     try {
-      for (int depth = 1; depth <= max_depth; depth++) {
+      for (int depth = 0; depth <= max_depth; depth++) {
         // T value = ab.GetValue(depth, window.GetLow(), window.GetHigh());
         // if (value <= window.GetLow() || value >= window.GetHigh()) {
         T value = ab.GetValue(depth);
@@ -35,7 +35,7 @@ class ItDeepening {
       }
     } catch (SearchExitException exception) {
     }
-    m_stat = ab.GetStatistics();
+    // m_stat = ab.GetStatistics();
     return result;
   }
 
@@ -43,7 +43,7 @@ class ItDeepening {
     Search ab(board, m_color);
     ab.SetTTable(m_ttable);
     auto result = ab.GetTurn(GetLastDepth());
-    m_stat = ab.GetStatistics();
+    // m_stat = ab.GetStatistics();
     return result;
   }
 
@@ -52,7 +52,7 @@ class ItDeepening {
     ab.SetTTable(m_ttable);
     std::vector<Turn> result;
     result = ab.FindPV(GetLastDepth());
-    m_stat = ab.GetStatistics();
+    // m_stat = ab.GetStatistics();
     return result;
   }
 

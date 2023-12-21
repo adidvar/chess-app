@@ -1,7 +1,7 @@
 #include "qsearchbench.hpp"
 
 #include "benchmark.hpp"
-#include "evaluate.hpp"
+#include "score.hpp"
 #include "itdeepening.hpp"
 #include "qsearch.hpp"
 

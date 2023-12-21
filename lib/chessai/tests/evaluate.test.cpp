@@ -1,31 +1,31 @@
-#include "evaluate.hpp"
-
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include "score.hpp"
+
 TEST_CASE("Evaluate rules", "[evaluate][ai]", ) {
-  using TestType = Score;
-  SECTION("Test of Max Min") {
-    REQUIRE(TestType::Max() > TestType::Min());
-    REQUIRE(TestType::Max() > TestType::Lose(0));
-    REQUIRE(TestType::Max() > TestType::Win(0));
-    REQUIRE(TestType::Max() > TestType::Tie());
-    REQUIRE(TestType::Max() > TestType::Value(BitBoard(), Color::kWhite));
-    REQUIRE(TestType::Max() > TestType::Value(BitBoard(), Color::kBlack));
-
-    REQUIRE(TestType::Min() < TestType::Max());
-    REQUIRE(TestType::Min() < TestType::Lose(0));
-    REQUIRE(TestType::Min() < TestType::Win(0));
-    REQUIRE(TestType::Min() < TestType::Tie());
-    REQUIRE(TestType::Min() < TestType::Value(BitBoard(), Color::kWhite));
-    REQUIRE(TestType::Min() < TestType::Value(BitBoard(), Color::kBlack));
+  SECTION("Basic rules") {
+    REQUIRE(Score{}.IsValid() == false);
+    REQUIRE(Score::Min() < Score::CheckMate(10, 10));
+    REQUIRE(Score::CheckMate(10, 10) < Score::CheckMate(0, 10));
+    REQUIRE(Score::CheckMate(0, 10) < Score::Tie());
+    REQUIRE(Score::CheckMate(0, 10) < -Score::Min());
+    REQUIRE(Score::CheckMate(100, 1000) == Score::CheckMate(200, 1000));
   }
-
-  SECTION("Test of Win Lose Tie") {
-    REQUIRE(TestType::Win(0) > TestType::Lose(0));
-    REQUIRE(TestType::Lose(0) < TestType::Win(0));
-
-    REQUIRE(TestType::Win(0) > TestType::Tie());
-    REQUIRE(TestType::Lose(0) < TestType::Tie());
+  SECTION("Extended rules") {
+    REQUIRE(Score::CheckMate(0, 10).IsCheckMate());
+    REQUIRE(Score::CheckMate(100, 1000).IsCheckMate());
+    REQUIRE(!Score::Tie().IsCheckMate());
+    REQUIRE(Score::Max() == -Score::Min());
+    REQUIRE(Score::CheckMate(10, 10).GetTurnsToCheckMate() == 0);
+    REQUIRE(Score::CheckMate(0, 10).GetTurnsToCheckMate() == 10);
+    REQUIRE((-Score::CheckMate(10, 10)).GetTurnsToCheckMate() == 0);
+    REQUIRE((-Score::CheckMate(0, 10)).GetTurnsToCheckMate() == 10);
+  }
+  SECTION("Evaluator rules") {
+    REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},
+                                  Color::kWhite, GameStage{}) > Score::Tie());
+    REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},
+                                  Color::kBlack, GameStage{}) < Score::Tie());
   }
 }
