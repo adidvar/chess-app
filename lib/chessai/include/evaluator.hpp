@@ -14,6 +14,12 @@ class Evaluator {
   static Score::ProcessType GetFigurePrice(Figure figure);
 
  private:
+  int GetMaterial();
+  int GetTables();
+  int GetPawnStructure();
+  int GetMobilityCS();
+
+ private:
   const BitBoard &m_board;
   const bitboard_t white_mask;
   const bitboard_t black_mask;

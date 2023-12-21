@@ -65,7 +65,7 @@ int Score::GetTurnsToCheckMate() const {
   if (m_value < 0)
     return m_value - k_checkmate_0;
   else
-    return k_checkmate_0 - m_value;
+    return -m_value - k_checkmate_0;
 }
 
 Score Score::GetFigureScore(Figure figure) {
