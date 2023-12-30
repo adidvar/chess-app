@@ -21,7 +21,8 @@ int main() {
     cmp.SetStopFlag(nullptr);
 
     begin = std::chrono::high_resolution_clock::now();
-    std::string fen{"startpos"};
+    std::string fen{
+        "rn5r/p2q1p1k/bp2N2p/3pP3/Pb3Q2/1P3NP1/5PB1/R3R1K1 w - - 1 23"};
     auto value = cmp.GetValue(BitBoard{fen}, d);
     statistics = cmp.GetStatistics();
     auto turn = cmp.GetTurn(BitBoard{fen});

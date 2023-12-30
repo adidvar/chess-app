@@ -28,6 +28,10 @@ Score::ProcessType Evaluator::Evaluate() {
          (GetMaterial() + GetTables() + GetPawnStructure() + GetMobilityCS());
 }
 
+float Evaluator::Normalize(int value) {
+  return 20.0 / (1.0 + pow(3.0, -value / 1260.0)) - 10;
+}
+
 S kfigure_prices[]{S(),         S(126, 208),   S(781, 854),
                    S(825, 915), S(1276, 1380), S(2538, 2682)};
 
@@ -112,7 +116,7 @@ int Evaluator::GetTables() {
       value -= tables[figure][index.Rotate().Value()];
     }
   }
-  return value;
+  return 2 * value;
 }
 
 int Evaluator::GetPawnStructure() {

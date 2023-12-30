@@ -11,6 +11,7 @@ class Evaluator {
 
   Score::ProcessType Evaluate();
 
+  static float Normalize(int value);
   static Score::ProcessType GetFigurePrice(Figure figure);
 
  private:

@@ -1,6 +1,8 @@
 #include "score.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
 
 #include "evaluator.hpp"
 
@@ -72,13 +74,19 @@ Score Score::GetFigureScore(Figure figure) {
   return Evaluator::GetFigurePrice(figure);
 }
 
+static std::string to_string2(float var) {
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(2) << var;
+  return ss.str();
+}
+
 std::string Score::ToCentiPawns() const {
   if (*this == Score{})
     return "I";
   else if (IsCheckMate())
-    return std::string("M") + std::to_string(GetTurnsToCheckMate());
+    return std::string("#") + std::to_string(GetTurnsToCheckMate());
   else
-    return std::to_string(m_value);
+    return to_string2(Evaluator::Normalize(m_value));
 }
 
 Score::operator ProcessType() { return m_value; }
