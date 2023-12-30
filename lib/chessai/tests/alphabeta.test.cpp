@@ -180,10 +180,12 @@ SECTION("Depth 7") {
 TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
   {
     AlphaBeta ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K w - - 0 1"), Color::kWhite);
-    REQUIRE(ab.GetTurn(4).ToChessFormat() == "f1f8");
+    ab.GetValue(4);
+    REQUIRE(ab.GetTurn().ToChessFormat() == "f1f8");
   }
   {
     AlphaBeta ab(BitBoard("5q1k/8/8/8/8/8/8/5Q1K b - - 0 1"), Color::kWhite);
-    REQUIRE(ab.GetTurn(4).ToChessFormat() == "f8f1");
+    ab.GetValue(4);
+    REQUIRE(ab.GetTurn().ToChessFormat() == "f8f1");
   }
 }

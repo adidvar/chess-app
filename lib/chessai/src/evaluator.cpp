@@ -10,7 +10,7 @@ struct S {
   int mg;
   int eg;
 
-  int operator()(const GameStage &settings) const { return mg; };
+  int operator()(const GameStage &settings) const { return mg; }
 };
 
 Evaluator::Evaluator(const BitBoard &board, Color color,

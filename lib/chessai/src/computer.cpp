@@ -16,17 +16,17 @@ void Computer::Start() {
 
   m_thread = new std::thread([this]() {
     m_stat.Clear();
-    ItDeepening<AlphaBeta> search(m_color);
+    ItDeepening search(m_board, m_color);
     search.SetTTable(&m_table);
     search.SetStopFlag(&m_stop_flag);
 
-    m_value = search.GetValue(m_board, 10);
+    m_value = search.GetValue(10);
     search.SetStopFlag(nullptr);
     m_stat += search.GetStatistics(); 
 
     // std::cout << m_table.Fill() << " " << m_table.Used() << std::endl;
 
-    m_turn = search.GetTurn(m_board);
+    m_turn = search.GetTurn();
     m_stat += search.GetStatistics();
     // m_pv = search.FindPV(m_board);
     m_depth = search.GetLastDepth();

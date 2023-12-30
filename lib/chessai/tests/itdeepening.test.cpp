@@ -6,13 +6,13 @@
 #include "score.hpp"
 
 static bool TestMateFind(const char* fen, int depth) {
-  ItDeepening<AlphaBeta> ab(Color::kWhite);
+  ItDeepening ab({fen}, Color::kWhite);
   TTable table;
 
   ab.SetStopFlag(nullptr);
   ab.SetTTable(&table);
 
-  auto result = ab.GetValue(BitBoard(fen), depth + 1);
+  auto result = ab.GetValue(depth + 1);
   return result.IsCheckMate();
 }
 TEST_CASE("Testing of mate search in iterative deepening",
@@ -69,12 +69,12 @@ static bool CompareValue(const char* fen, int depth) {
   ab.SetTTable(nullptr);
 
   TTable table;
-  ItDeepening<AlphaBeta> it(Color::kWhite);
+  ItDeepening it({fen}, Color::kWhite);
   it.SetStopFlag(nullptr);
   it.SetTTable(&table);
 
   auto result1 = ab.GetValue(depth);
-  auto result2 = it.GetValue(BitBoard(fen), depth);
+  auto result2 = it.GetValue(depth);
 
   return result1 == result2 && it.GetLastDepth() == depth;
 }
@@ -85,24 +85,24 @@ TEST_CASE("PV check itdeepening", "[itdepening][pv][ai]") {
   TTable table1;
   TTable table2;
 
-  ItDeepening<AlphaBeta> abw(Color::kWhite);
+  ItDeepening abw(board, Color::kWhite);
   abw.SetStopFlag(nullptr);
   abw.SetTTable(&table1);
 
-  ItDeepening<AlphaBeta> abb(Color::kWhite);
+  ItDeepening abb(board, Color::kWhite);
   abb.SetStopFlag(nullptr);
   abb.SetTTable(&table2);
 
-  abw.GetValue(board, 7);
-  auto pv = abw.FindPV(board);
+  abw.GetValue(7);
+  auto pv = abw.FindPV();
 
   for (int i = 0; i < 7; i++) {
     if (i % 2)
-      abw.GetValue(board, 7 - i);
+      abw.GetValue(7 - i);
     else
-      abb.GetValue(board, 7 - i);
+      abb.GetValue(7 - i);
 
-    auto move = i % 2 ? abw.GetTurn(board) : abb.GetTurn(board);
+    auto move = i % 2 ? abw.GetTurn() : abb.GetTurn();
     REQUIRE(move == pv[i]);
     board.ExecuteTurn(pv[i]);
   }

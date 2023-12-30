@@ -2,6 +2,7 @@
 #define ALPHABETA_HPP
 
 #include <atomic>
+#include <iostream>
 
 #include "bftable.hpp"
 #include "bitboard.hpp"
@@ -27,17 +28,35 @@ class AlphaBeta : public QSearch {
     return alphabeta(tuple, a, b, depth, depth);
   }
 
-  Turn GetTurn(int depth) {
-    BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
-    return alphabetaturn(tuple, T::Min(), T::Max(), depth, depth);
+  Turn GetTurn() {
+    auto elem = m_ttable->GetLastElement();
+    return elem.pv;
   }
 
-  std::vector<Turn> FindPV(int depth) { return findpv(GetBoard(), depth); }
+  std::vector<Turn> FindPV() {
+    auto elem = m_ttable->GetLastElement();
+    auto depth = elem.depth;
+    BitBoard board = GetBoard();
 
-  TTable *GetTTable() const { return m_ttable; };
-  void SetTTable(TTable *newTtable) { m_ttable = newTtable; };
+    std::vector<Turn> pv;
+    int i = 0;
+    do {
+      BitBoardTuple tuple(board, board.Hash(), Turn());
+      alphabeta(tuple, Score::Min(), Score::Max(), depth - i, depth);
+      auto turn = GetTurn();
+      if (!turn.Valid()) break;
+      pv.push_back(turn);
+      board.ExecuteTurn(turn);
+      i++;
+    } while (pv.back().Valid() && depth != i);
 
-  BFTable &GetBfTable() { return m_btable; };
+    return pv;
+  }
+
+  TTable *GetTTable() const { return m_ttable; }
+  void SetTTable(TTable *newTtable) { m_ttable = newTtable; }
+
+  BFTable &GetBfTable() { return m_btable; }
 
  private:
   T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
@@ -114,68 +133,6 @@ class AlphaBeta : public QSearch {
                       depthleft, depthmax);
 
     return bestscore;
-  }
-
-  Turn alphabetaturn(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
-                     int depthmax) {
-    m_stat.MainNode();
-
-    if (depthleft == 0) return Turn();
-
-    bool founded = false;
-    const TTableItem *hashed = nullptr;
-    if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
-
-    if (founded) {
-      if (hashed->depth == depthleft) {
-        if (hashed->type == TTableItem::PV)
-          return hashed->pv;
-        else if (hashed->type == TTableItem::FailHigh &&
-                 hashed->value >= beta)
-          return Turn();
-        else if (hashed->type == TTableItem::FailHigh)
-          alpha = std::max(alpha, hashed->value);
-      } else if (hashed->depth > depthleft) {
-#ifdef DISTRIBUTION
-        if (hashed->type == TTableItem::PV) return hashed->pv;
-#endif
-      }
-    }
-
-    auto moves =
-        BitBoardTuple::GenerateTuplesFast(tuple, tuple.board.CurrentColor());
-
-    if (moves.empty()) {
-      return Turn();
-    }
-
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            depthmax, founded ? hashed->pv : Turn());
-    T bestscore = T::Min();
-    Turn turn = Turn();
-    for (auto &sub : moves) {
-      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
-      if (score >= beta) return Turn();
-      if (score > bestscore) {
-        bestscore = score;
-        turn = sub.turn;
-        if (score > alpha) alpha = score;
-      }
-    }
-    return turn;
-  }
-
-  std::vector<Turn> findpv(BitBoard board, int depth) {
-    std::vector<Turn> turns_;
-
-    for (int i = 0; i < depth; i++) {
-      auto turn = alphabetaturn({board}, T::Min(), T::Max(), depth - i, depth);
-      if (turn == Turn()) break;
-      turns_.push_back(turn);
-      board.ExecuteTurn(turn);
-    }
-
-    return turns_;
   }
 
   Statistics m_stat;

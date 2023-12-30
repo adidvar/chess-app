@@ -5,36 +5,48 @@ constexpr size_t mb = 64;
 TTable::TTable() {
   size_t bytes = mb * 1024 * 1024;
   size_t size = bytes / sizeof(TTableItem);
-  table_.resize(size);
-  used_.resize(size, false);
-  triggered_.resize(size, false);
+  m_table.resize(size);
+  m_used.resize(size, false);
+  m_triggered.resize(size, false);
 }
 
 void TTable::Clear() {
-  for (int i = 0; i < used_.size(); i++) used_[i] = false;
+  for (int i = 0; i < m_used.size(); i++) m_used[i] = false;
 }
 
 void TTable::ClearNoTriggered() {
-  for (int i = 0; i < triggered_.size(); i++) {
-    if (!triggered_[i]) used_[i] = false;
-    triggered_[i] = false;
+  for (int i = 0; i < m_triggered.size(); i++) {
+    if (!m_triggered[i]) m_used[i] = false;
+    m_triggered[i] = false;
   }
 }
 
 const TTableItem *TTable::Search(bitboard_hash_t hash, bool &founded) const {
-  auto index = hash % table_.size();
-  const TTableItem *element = &table_[index];
-  founded = used_[index] && element->hash == hash;
-  triggered_[index] = triggered_[index] | founded;
+  auto index = hash % m_table.size();
+  const TTableItem *element = &m_table[index];
+  founded = m_used[index] && element->hash == hash;
+  m_triggered[index] = m_triggered[index] | founded;
   return element;
 }
 
 void TTable::Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
                    Turn pv, int depth, int depthmax) {
-  auto index = hash % table_.size();
-  auto used = used_[index];
-  auto triggered = triggered_[index];
-  auto &element = table_[index];
+  if (value <= alpha)
+    m_last_elem.type = TTableItem::FailLow;
+  else if (value >= beta)
+    m_last_elem.type = TTableItem::FailHigh;
+  else
+    m_last_elem.type = TTableItem::PV;
+
+  m_last_elem.hash = hash;
+  m_last_elem.value = value;
+  m_last_elem.pv = pv;
+  m_last_elem.depth = depth;
+
+  auto index = hash % m_table.size();
+  auto used = m_used[index];
+  auto triggered = m_triggered[index];
+  auto &element = m_table[index];
 
   if (depth != depthmax)
     if (used && element.depth > depth) return;
@@ -51,6 +63,12 @@ void TTable::Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
   element.pv = pv;
   element.depth = depth;
 
-  used_[index] = true;
-  triggered_[index] = true;
+  m_used[index] = true;
+  m_triggered[index] = true;
+}
+
+TTableItem TTable::GetLastElement() const { return m_last_elem; }
+
+void TTable::SetLastElement(const TTableItem &element) {
+  m_last_elem = element;
 }
