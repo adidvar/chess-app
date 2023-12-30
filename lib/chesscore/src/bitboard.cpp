@@ -505,7 +505,7 @@ bitboard_t BitBoard::ProcessAttack<Pawn>(Color color, bitboard_t from_mask,
   }
 }
 
-bitboard_t BitBoard::AttackMask(Color color) const {
+bitboard_t BitBoard::AttackMask(Color color, bitboard_t from) const {
   bitboard_t empty = board_[color][Figure::kEmpty];
   bitboard_t opponent = all_[!color];
   bitboard_t yours = all_[color];
@@ -514,17 +514,17 @@ bitboard_t BitBoard::AttackMask(Color color) const {
   bitboard_t result = 0;
 
   // pawns
-  result |= ProcessAttack<Pawn>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<Pawn>(color, from, all, yours, opponent);
   // knight
-  result |= ProcessAttack<Knight>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<Knight>(color, from, all, yours, opponent);
   // king
-  result |= ProcessAttack<King>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<King>(color, from, all, yours, opponent);
   // bishop
-  result |= ProcessAttack<Bishop>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<Bishop>(color, from, all, yours, opponent);
   // rook
-  result |= ProcessAttack<Rook>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<Rook>(color, from, all, yours, opponent);
   // queen
-  result |= ProcessAttack<Queen>(color, kall, all, yours, opponent);
+  result |= ProcessAttack<Queen>(color, from, all, yours, opponent);
 
   return result;
 }

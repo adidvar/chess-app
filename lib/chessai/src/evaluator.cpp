@@ -18,8 +18,10 @@ Evaluator::Evaluator(const BitBoard &board, Color color,
     : m_board(board),
       m_color(color),
       m_settings(settings),
-      white_mask(board.AttackMask(Color::kWhite)),
-      black_mask(board.AttackMask(Color::kBlack)) {}
+      white_mask(board.AttackMask(Color::kWhite) &
+                 ~board.GetBitBoard(Color::kWhite, Figure::kQueen)),
+      black_mask(board.AttackMask(Color::kBlack) &
+                 ~board.GetBitBoard(Color::kBlack, Figure::kQueen)) {}
 
 Score::ProcessType Evaluator::Evaluate() {
   return (m_color == Color::kWhite ? 1 : -1) *
@@ -54,9 +56,62 @@ int Evaluator::GetMaterial() {
   return value;
 }
 
+constexpr static int tables[7][64]{
+    {},  // empty
+    // pawn
+    {0,  0,  0,  0,   0,   0,  0,  0,  50, 50, 50,  50, 50, 50,  50, 50,
+     10, 10, 20, 30,  30,  20, 10, 10, 5,  5,  10,  25, 25, 10,  5,  5,
+     0,  0,  0,  20,  20,  0,  0,  0,  5,  -5, -10, 0,  0,  -10, -5, 5,
+     5,  10, 10, -20, -20, 10, 10, 5,  0,  0,  0,   0,  0,  0,   0,  0},
+    // knight
+    {
+        -50, -40, -30, -30, -30, -30, -40, -50, -40, -20, 0,   0,   0,
+        0,   -20, -40, -30, 0,   10,  15,  15,  10,  0,   -30, -30, 5,
+        15,  20,  20,  15,  5,   -30, -30, 0,   15,  20,  20,  15,  0,
+        -30, -30, 5,   10,  15,  15,  10,  5,   -30, -40, -20, 0,   5,
+        5,   0,   -20, -40, -50, -40, -30, -30, -30, -30, -40, -50,
+    },
+    // bishop
+    {
+        -20, -10, -10, -10, -10, -10, -10, -20, -10, 0,   0,   0,   0,
+        0,   0,   -10, -10, 0,   5,   10,  10,  5,   0,   -10, -10, 5,
+        5,   10,  10,  5,   5,   -10, -10, 0,   10,  10,  10,  10,  0,
+        -10, -10, 10,  10,  10,  10,  10,  10,  -10, -10, 5,   0,   0,
+        0,   0,   5,   -10, -20, -10, -10, -10, -10, -10, -10, -20,
+    },
+    // rook
+    {0,  0, 0, 0, 0, 0, 0, 0,  5,  10, 10, 10, 10, 10, 10, 5,
+     -5, 0, 0, 0, 0, 0, 0, -5, -5, 0,  0,  0,  0,  0,  0,  -5,
+     -5, 0, 0, 0, 0, 0, 0, -5, -5, 0,  0,  0,  0,  0,  0,  -5,
+     -5, 0, 0, 0, 0, 0, 0, -5, 0,  0,  0,  5,  5,  0,  0,  0},
+    // queen
+    {-20, -10, -10, -5,  -5,  -10, -10, -20, -10, 0,   0,   0,  0,
+     0,   0,   -10, -10, 0,   5,   5,   5,   5,   0,   -10, -5, 0,
+     5,   5,   5,   5,   0,   -5,  0,   0,   5,   5,   5,   5,  0,
+     -5,  -10, 5,   5,   5,   5,   5,   0,   -10, -10, 0,   5,  0,
+     0,   0,   0,   -10, -20, -10, -10, -5,  -5,  -10, -10, -20},
+    // king
+    {-30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50,
+     -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40,
+     -40, -50, -50, -40, -40, -30, -20, -30, -30, -40, -40, -30, -30,
+     -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
+     0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20}};
+
 int Evaluator::GetTables() {
   int value = 0;
 
+  for (int figure = Figure::kPawn; figure <= Figure::kKing; ++figure) {
+    BitIterator i = m_board.GetBitBoard(Color::kWhite, figure);
+    for (; i.Valid(); ++i) {
+      Position const index = log2_64(i.Bit());
+      value += tables[figure][index.Value()];
+    }
+    i = m_board.GetBitBoard(Color::kBlack, figure);
+    for (; i.Valid(); ++i) {
+      Position const index = log2_64(i.Bit());
+      value -= tables[figure][index.Rotate().Value()];
+    }
+  }
   return value;
 }
 
@@ -79,8 +134,8 @@ int Evaluator::GetPawnStructure() {
   }
 
   for (int i = 0; i < 8; i++) {
-    if (file_white[i] > 2) value += S(-120)(m_settings) * file_white[i];
-    if (file_black[i] > 2) value -= S(-120)(m_settings) * file_black[i];
+    if (file_white[i] > 2) value += S(-80)(m_settings) * file_white[i];
+    if (file_black[i] > 2) value -= S(-80)(m_settings) * file_black[i];
   }
 
   return value;

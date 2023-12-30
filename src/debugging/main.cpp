@@ -37,5 +37,5 @@ int main() {
               << turn.ToChessFormat() << std::endl;
     //  << turn.ToChessFormat() << std::endl;
   }
-Score::GetStaticValue({}, Color::kWhite, GameStage{});
+  Score::GetStaticValue({}, Color::kWhite, GameStage{});
 }

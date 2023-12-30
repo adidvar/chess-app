@@ -39,7 +39,8 @@ class BitBoard {
    * @param color color of figures we use
    * @return mask
    */
-  [[nodiscard]] bitboard_t AttackMask(Color color) const;
+  [[nodiscard]] bitboard_t AttackMask(Color color,
+                                      bitboard_t from = kall) const;
   /**
    * @brief BitBoard construct class with startpos
    */
