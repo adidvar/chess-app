@@ -29,11 +29,15 @@ class AlphaBeta : public QSearch {
   }
 
   Turn GetTurn() {
+    /*
     auto elem = m_ttable->GetLastElement();
     return elem.pv;
+*/
+    return {};
   }
 
   std::vector<Turn> FindPV() {
+    /*
     auto elem = m_ttable->GetLastElement();
     auto depth = elem.depth;
     BitBoard board = GetBoard();
@@ -51,6 +55,8 @@ class AlphaBeta : public QSearch {
     } while (pv.back().Valid() && depth != i);
 
     return pv;
+*/
+    return {};
   }
 
   TTable *GetTTable() const { return m_ttable; }

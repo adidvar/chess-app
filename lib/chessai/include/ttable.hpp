@@ -29,15 +29,10 @@ class TTable {
   void Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
              Turn pv, int depth, int depthmax);
 
-  TTableItem GetLastElement() const;
-  void SetLastElement(const TTableItem &);
-
  private:
   std::vector<TTableItem> m_table;
   std::vector<bool> m_used;
   mutable std::vector<bool> m_triggered;
-
-  TTableItem m_last_elem;
 };
 
 #endif
