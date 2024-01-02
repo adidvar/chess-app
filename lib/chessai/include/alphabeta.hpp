@@ -88,8 +88,8 @@ class AlphaBeta : public QSearch {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
         if (hashed->type == TTableItem::PV) {
-          m_last_turn = hashed->pv;
-          return hashed->value;
+          //  m_last_turn = hashed->pv;
+          //  return hashed->value;
         }
       }
     }
@@ -102,7 +102,7 @@ class AlphaBeta : public QSearch {
       return T::Tie();
     }
 
-    m_stat.MainNode();
+    GetStatistics().MainNode();
 
     // ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
     //         depthmax, founded ? hashed->pv : Turn());
@@ -137,7 +137,6 @@ class AlphaBeta : public QSearch {
     return bestscore;
   }
 
-  Statistics m_stat;
   TTable *m_ttable = nullptr;
   BFTable m_btable;
 

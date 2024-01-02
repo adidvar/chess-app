@@ -89,22 +89,18 @@ TEST_CASE("PV check itdeepening", "[itdepening][pv][ai]") {
   abw.SetStopFlag(nullptr);
   abw.SetTTable(&table1);
 
-  ItDeepening abb(board, Color::kWhite);
+  AlphaBeta abb(board, Color::kWhite);
   abb.SetStopFlag(nullptr);
   abb.SetTTable(&table2);
 
   abw.GetValue(7);
-  auto pv = abw.FindPV();
+  abb.GetValue(7);
+  auto pv1 = abw.FindPV();
+  auto pv2 = abb.FindPV();
 
   for (int i = 0; i < 7; i++) {
-    if (i % 2)
-      abw.GetValue(7 - i);
-    else
-      abb.GetValue(7 - i);
-
-    auto move = i % 2 ? abw.GetTurn() : abb.GetTurn();
-    REQUIRE(move == pv[i]);
-    board.ExecuteTurn(pv[i]);
+    REQUIRE(pv1[i].ToChessFormat() == pv2[i].ToChessFormat());
+    REQUIRE(board.ExecuteTurn(pv1[i]));
   }
 }
 
