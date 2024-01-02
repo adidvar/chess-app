@@ -24,23 +24,17 @@ class AlphaBeta : public QSearch {
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
   T GetValue(int depth, T a = T::Min(), T b = T::Max()) {
+    m_last_depth = depth;
     BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
   }
 
-  Turn GetTurn() {
-    /*
-    auto elem = m_ttable->GetLastElement();
-    return elem.pv;
-*/
-    return {};
-  }
+  Turn GetTurn() { return m_last_turn; }
 
   std::vector<Turn> FindPV() {
-    /*
-    auto elem = m_ttable->GetLastElement();
-    auto depth = elem.depth;
+    auto last_turn = m_last_turn;
     BitBoard board = GetBoard();
+    int depth = m_last_depth;
 
     std::vector<Turn> pv;
     int i = 0;
@@ -54,9 +48,9 @@ class AlphaBeta : public QSearch {
       i++;
     } while (pv.back().Valid() && depth != i);
 
+    // restore state
+    m_last_turn = last_turn;
     return pv;
-*/
-    return {};
   }
 
   TTable *GetTTable() const { return m_ttable; }
@@ -88,21 +82,27 @@ class AlphaBeta : public QSearch {
 
     if (founded) {
       if (hashed->depth == depthleft) {
-        if (hashed->type == TTableItem::PV)
+        if (hashed->type == TTableItem::PV) {
+          m_last_turn = hashed->pv;
           return hashed->value;
-        else if (hashed->type == TTableItem::FailHigh &&
-                 hashed->value >= beta)
+        } else if (hashed->type == TTableItem::FailHigh &&
+                   hashed->value >= beta) {
+          m_last_turn = hashed->pv;
           return hashed->value;
-        else if (hashed->type == TTableItem::FailHigh)
+        } else if (hashed->type == TTableItem::FailHigh)
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
-        if (hashed->type == TTableItem::PV) return hashed->value;
+        if (hashed->type == TTableItem::PV) {
+          m_last_turn = hashed->pv;
+          return hashed->value;
+        }
       }
     }
 
     auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
+      m_last_turn = Turn();
       if (tuple.board.Checkmate()) return T::CheckMate(depthleft, depthmax);
       return T::Tie();
     }
@@ -138,12 +138,15 @@ class AlphaBeta : public QSearch {
       m_ttable->Write(tuple.hash, oldalpha, beta, bestscore, bestturn,
                       depthleft, depthmax);
 
+    m_last_turn = bestturn;
     return bestscore;
   }
 
   Statistics m_stat;
   TTable *m_ttable = nullptr;
   BFTable m_btable;
-};
 
+  Turn m_last_turn;
+  int m_last_depth;
+};
 #endif

@@ -14,7 +14,7 @@ int main() {
   auto end = std::chrono::high_resolution_clock::now();
   Statistics statistics;
 
-  for (int d = 6; d <= 6; d++) {
+  for (int d = 1; d <= 11; d++) {
     TTable table;
     ItDeepening cmp({"startpos"}, Color::kWhite);
     cmp.SetTTable(&table);
