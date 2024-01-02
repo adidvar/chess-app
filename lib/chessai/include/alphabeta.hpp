@@ -15,15 +15,10 @@
 #define DISTRIBUTION
 
 class AlphaBeta : public QSearch {
-  using T = Score;
-
-  // todo I rework to class to when search finds all we nee in one start or
-  // throw exception and keep state
-
  public:
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
-  T GetValue(int depth, T a = T::Min(), T b = T::Max()) {
+  Score GetValue(int depth, Score a = Score::Min(), Score b = Score::Max()) {
     m_last_depth = depth;
     BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
     return alphabeta(tuple, a, b, depth, depth);
@@ -59,8 +54,8 @@ class AlphaBeta : public QSearch {
   BFTable &GetBfTable() { return m_btable; }
 
  private:
-  T alphabeta(const BitBoardTuple &tuple, T alpha, T beta, int depthleft,
-              int depthmax) {
+  Score alphabeta(const BitBoardTuple &tuple, Score alpha, Score beta,
+                  int depthleft, int depthmax) {
     auto oldalpha = alpha;
 
     CheckStopFlag();
@@ -114,7 +109,7 @@ class AlphaBeta : public QSearch {
     BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
                      founded ? hashed->pv : Turn());
 
-    T bestscore = T::Min();
+    Score bestscore = Score::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
