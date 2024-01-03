@@ -761,6 +761,7 @@ bitboard_t GetElpassantHash(Position position);
   for (size_t i = 0; i < 64; i++) {
     if (!TestEmp(i)) hash ^= GetFigureHash(GetFigure(i), GetColor(i), i);
   }
+  hash ^= GetCurrentColorHash(CurrentColor());
 
   return hash;
 }
@@ -790,7 +791,10 @@ bitboard_hash_t BitBoard::GenerateHash(const BitBoard &board, bitboard_hash_t ha
   hash ^= GetFigureHash(from.type,from.color,turn.from());
   if(to.type != Figure::kEmpty)
       hash ^= GetFigureHash(to.type,to.color,turn.to());
-  hash ^= GetFigureHash(from.type,from.color,turn.to());
+  hash ^= GetFigureHash(from.type, from.color, turn.to());
+
+  hash ^= GetCurrentColorHash(Color::kWhite);
+  hash ^= GetCurrentColorHash(Color::kBlack);
 
   if (from.type == Figure::kPawn && to.type == Figure::kEmpty &&
       turn.from().x() != turn.to().x()) {
