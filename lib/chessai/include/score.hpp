@@ -12,6 +12,7 @@ class Score {
   using ProcessType = long int;
 
   Score();
+  [[deprecated]] Score(ProcessType type);
 
   bool operator<(Score value) const;
   bool operator>(Score value) const;
@@ -45,7 +46,6 @@ class Score {
   operator ProcessType();
 
  private:
-  [[deprecated]] Score(ProcessType type);
   static ScoreType Clamp(ProcessType);
 
   ScoreType m_value;
