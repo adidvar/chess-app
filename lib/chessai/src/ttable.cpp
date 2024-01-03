@@ -1,6 +1,6 @@
 #include "ttable.hpp"
 
-constexpr size_t mb = 64;
+constexpr size_t mb = 4;
 
 TTable::TTable() {
   size_t bytes = mb * 1024 * 1024;
