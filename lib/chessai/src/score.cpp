@@ -8,7 +8,7 @@
 
 static Score::ScoreType k_invalid =
     std::numeric_limits<Score::ScoreType>::min();
-static Score::ScoreType k_min = k_invalid + 1;
+static Score::ScoreType k_min = -((k_invalid - 4) / 2);
 static Score::ScoreType k_checkmate_0 = k_min + 1;
 static Score::ScoreType k_checkmate_max = k_checkmate_0 + 100;
 
