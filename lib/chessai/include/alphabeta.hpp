@@ -12,8 +12,6 @@
 #include "statistics.hpp"
 #include "ttable.hpp"
 
-#define DISTRIBUTION
-
 class AlphaBeta : public QSearch {
  public:
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
@@ -61,14 +59,13 @@ class AlphaBeta : public QSearch {
     CheckStopFlag();
 
     if (depthleft == 0) {
-#ifdef DISTRIBUTION
       auto value = QuiescenceSearch(tuple.board, alpha, beta);
       return value;
-#else
 
+      /*
       auto value = T::Value(tuple.board, m_color);
       return tuple.board.CurrentColor() == m_color ? value : -value;
-#endif
+*/
     }
 
     bool founded = false;
@@ -88,31 +85,58 @@ class AlphaBeta : public QSearch {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
         if (hashed->type == TTableItem::PV) {
-          //  m_last_turn = hashed->pv;
-          //  return hashed->value;
+          m_last_turn = hashed->pv;
+          return hashed->value;
         }
       }
     }
+    bool inCheck = tuple.board.Checkmate();
+
+    if (depthleft >= 3 && inCheck == false) {
+      auto copy = tuple;
+      copy.board.SkipMove();
+      auto score = -alphabeta(copy, -beta, -beta + Score{1}, depthleft - 1 - 2,
+                              depthmax);
+      if (score >= beta) return beta;
+    }
+
+    /*
+    if (depthleft == 1) {
+      const static Score kBIG_DELTA{Score::GetFigureScore(Figure::kBishop)};
+      auto stand_pat =
+          Score::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
+                                GetSearchSettings().GetStage());
+      if (stand_pat < alpha - kBIG_DELTA) return alpha;
+    }
+    if (depthleft == 2) {
+      const static Score kBIG_DELTA{Score::GetFigureScore(Figure::kQueen)};
+      auto stand_pat =
+          Score::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
+                                GetSearchSettings().GetStage());
+      if (stand_pat < alpha - kBIG_DELTA) return alpha;
+    }
+*/
 
     auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
       m_last_turn = Turn();
-      if (tuple.board.Checkmate()) return T::CheckMate(depthleft, depthmax);
+      if (inCheck) return T::CheckMate(depthleft, depthmax);
       return T::Tie();
     }
 
     GetStatistics().MainNode();
 
-    // ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-    //         depthmax, founded ? hashed->pv : Turn());
-    BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
-                     founded ? hashed->pv : Turn());
+    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+            depthmax, founded ? hashed->pv : Turn());
+    // BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
+    //                  founded ? hashed->pv : Turn());
 
     Score bestscore = Score::Min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
+
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
