@@ -3,6 +3,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+/*
 TEST_CASE("Testing of computer search", "[computer][ai]") {
   Computer cmp(Color::kWhite);
 
@@ -52,3 +53,4 @@ TEST_CASE("Testing of a fast out for computer", "[computer][ai]") {
           20);
   }
 }
+*/

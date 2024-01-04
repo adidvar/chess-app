@@ -6,50 +6,23 @@
 
 Computer::Computer(Color color) : m_color(color) {}
 
-Computer::~Computer() { Stop(); }
+Computer::~Computer() { Wait(); }
 
 void Computer::SetBoard(const BitBoard &board) { m_board = board; }
 
-void Computer::Start() {
-  if (m_thread != nullptr) return;
-  m_stop_flag = false;
+void Computer::Start() {}
 
-  m_thread = new std::thread([this]() {
-    m_stat.Clear();
-    ItDeepening search(m_board, m_color);
-    search.SetTTable(&m_table);
-    search.SetStopFlag(&m_stop_flag);
+void Computer::Wait() {}
 
-    m_value = search.GetValue(10);
-    search.SetStopFlag(nullptr);
-    m_stat += search.GetStatistics(); 
+bool Computer::IsReady() { return false; }
 
-    // std::cout << m_table.Fill() << " " << m_table.Used() << std::endl;
+Turn Computer::Get() { return {}; }
 
-    m_turn = search.GetTurn();
-    m_stat += search.GetStatistics();
-    // m_pv = search.FindPV(m_board);
-    m_depth = search.GetLastDepth();
-    m_stat += search.GetStatistics();
-  });
+Turn Computer::Work() {
+  ItDeepening search(m_board, m_color);
+  search.SetStopFlag(nullptr);
+  search.SetTTable(&m_table);
+
+  search.GetValue(9);
+  return search.GetTurn();
 }
-
-void Computer::Stop() {
-  if (m_thread == nullptr) return;
-
-  m_stop_flag = true;
-
-  if (m_thread->joinable()) m_thread->join();
-  delete m_thread;
-  m_thread = nullptr;
-}
-
-std::vector<Turn> Computer::GetPV() const { return m_pv; }
-
-Score Computer::GetValue() const { return m_value; }
-
-Turn Computer::GetTurn() const { return m_turn; }
-
-int Computer::GetDepth() const { return m_depth; }
-
-Statistics Computer::GetStatistics() { return m_stat; }

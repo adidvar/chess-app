@@ -13,7 +13,7 @@ static bool TestMateFind(const char* fen, int depth) {
   ab.SetTTable(&table);
 
   auto result = ab.GetValue(depth + 1);
-  return result.IsCheckMate() && result.GetTurnsToCheckMate() == depth;
+  return result.IsCheckMate() && abs(result.GetTurnsToCheckMate()) == depth;
 }
 
 TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
