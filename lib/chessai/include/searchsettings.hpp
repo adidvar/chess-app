@@ -24,7 +24,12 @@ class SearchSettings {
 
   [[nodiscard]] GameStage GetStage() const { return stage; }
 
+  bool NullMoveEnabled() const { return null_pruning; }
+  bool NullMoveR() const { return null_pruning_r; }
+
  private:
+  bool null_pruning = true;
+  int null_pruning_r = 2;
   GameStage stage;
 };
 

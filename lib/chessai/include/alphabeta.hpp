@@ -92,7 +92,8 @@ class AlphaBeta : public QSearch {
     }
     bool inCheck = tuple.board.Checkmate();
 
-    if (depthleft >= 3 && inCheck == false) {
+    if (GetSearchSettings().NullMoveEnabled() && depthleft >= 3 &&
+        inCheck == false) {
       auto copy = tuple;
       copy.board.SkipMove();
       auto score = -alphabeta(copy, -beta, -beta + Score{1}, depthleft - 1 - 2,
