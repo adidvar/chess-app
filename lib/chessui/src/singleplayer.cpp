@@ -38,10 +38,10 @@ void SinglePlayer::TurnEntered(Turn inputturn) {
   match.Push(inputturn);
   computer_.SetBoard(match.GetBoard());
 
-  auto turn = computer_.Work();
+  // auto turn = computer_.Work();
 
-  match.Push(turn);
-  ui->board->PushTurn(turn);
+  // match.Push(turn);
+  // ui->board->PushTurn(turn);
 
   // computer_.Stop();
 

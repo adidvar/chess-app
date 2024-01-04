@@ -89,44 +89,77 @@ static bool CompareValue(const char* fen, int depth) {
   return result1 == result2;
 }
 
-TEST_CASE("Testing of hash tables stability in search",
-          "[alphabeta][ttable][ai]") {
-  AlphaBeta ab(BitBoard{}, Color::kWhite);
-  ab.SetStopFlag(nullptr);
-  ab.SetTTable(nullptr);
-
-  TTable table;
-  AlphaBeta abh(BitBoard{}, Color::kWhite);
-  abh.SetStopFlag(nullptr);
-  abh.SetTTable(&table);
-
-  auto result1 = ab.GetValue(8);
-  auto result2 = abh.GetValue(8);
-
-  REQUIRE(result1 == result2);
-}
-
-/*
-TEST_CASE("PV check", "[alphabeta][pv][ai]") {
+TEST_CASE("Test of state of turn search", "[alphabeta][ai]") {
   BitBoard board{};
 
-  AlphaBeta abw(board, Color::kWhite);
-  abw.SetStopFlag(nullptr);
-  abw.SetTTable(nullptr);
+  TTable table;
+  AlphaBeta ab(board, Color::kWhite);
+  ab.SetStopFlag(nullptr);
+  ab.SetTTable(&table);
 
-  AlphaBeta abb(board, Color::kWhite);
-  abb.SetStopFlag(nullptr);
-  abb.SetTTable(nullptr);
+  int depth = 6;
 
-  auto pv = abw.FindPV(7);
+  REQUIRE(!ab.GetTurn().Valid());
+  REQUIRE(ab.FindPV().size() == 0);
+
+  auto value = ab.GetValue(depth);
+  auto turn = ab.GetTurn();
+  auto pv = ab.FindPV();
+  auto turn1 = ab.GetTurn();
+
+  REQUIRE(turn == turn1);
+  REQUIRE(pv.size() == depth);
+}
+
+TEST_CASE("Test of research on same object", "[alphabeta][ai]") {
+  BitBoard board{};
+
+  TTable table1;
+  TTable table2;
+  AlphaBeta ab1(board, Color::kWhite);
+  AlphaBeta ab2(board, Color::kWhite);
+
+  ab1.SetStopFlag(nullptr);
+  ab1.SetTTable(&table1);
+
+  ab2.SetStopFlag(nullptr);
+  ab2.SetTTable(&table2);
+
+  ab1.GetValue(4);
+  ab1.GetValue(6);
+  auto turn1 = ab1.GetTurn();
+
+  ab2.GetValue(6);
+  auto turn2 = ab2.GetTurn();
+
+  REQUIRE(turn1 == turn2);
+}
+
+TEST_CASE("Test of research on same object with different depth",
+          "[alphabeta][ai]") {
+  BitBoard board{};
+
+  TTable table1;
+  AlphaBeta ab1(board, Color::kWhite);
+
+  ab1.SetStopFlag(nullptr);
+  ab1.SetTTable(&table1);
 
   for (int i = 0; i < 7; i++) {
-    auto move = i % 2 ? abw.GetTurn(7 - i) : abb.GetTurn(7 - i);
-    REQUIRE(move == pv[i]);
-    board.ExecuteTurn(pv[i]);
+    AlphaBeta ab2(board, Color::kWhite);
+    TTable table2;
+    ab2.SetStopFlag(nullptr);
+    ab2.SetTTable(&table2);
+
+    ab1.GetValue(i);
+    auto turn1 = ab1.GetTurn();
+
+    ab2.GetValue(i);
+    auto turn2 = ab2.GetTurn();
+
+    REQUIRE(turn1 == turn2);
   }
 }
-*/
 
 TEST_CASE("Testing of minmax and alphabeta", "[alphabeta][minmax][ai]") {
   SECTION("Depth 1") {

@@ -17,9 +17,14 @@ class AlphaBeta : public QSearch {
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
   Score GetValue(int depth, Score a = Score::Min(), Score b = Score::Max()) {
-    m_last_depth = depth;
-    BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
-    return alphabeta(tuple, a, b, depth, depth);
+    try {
+      m_last_depth = depth;
+      BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
+      return alphabeta(tuple, a, b, depth, depth);
+    } catch (...) {
+      m_last_turn = Turn();
+      throw;
+    }
   }
 
   Turn GetTurn() { return m_last_turn; }
@@ -101,23 +106,6 @@ class AlphaBeta : public QSearch {
       if (score >= beta) return beta;
     }
 
-    /*
-    if (depthleft == 1) {
-      const static Score kBIG_DELTA{Score::GetFigureScore(Figure::kBishop)};
-      auto stand_pat =
-          Score::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
-                                GetSearchSettings().GetStage());
-      if (stand_pat < alpha - kBIG_DELTA) return alpha;
-    }
-    if (depthleft == 2) {
-      const static Score kBIG_DELTA{Score::GetFigureScore(Figure::kQueen)};
-      auto stand_pat =
-          Score::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
-                                GetSearchSettings().GetStage());
-      if (stand_pat < alpha - kBIG_DELTA) return alpha;
-    }
-*/
-
     auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
     if (moves.empty()) {
@@ -165,7 +153,8 @@ class AlphaBeta : public QSearch {
   TTable *m_ttable = nullptr;
   BFTable m_btable;
 
-  Turn m_last_turn;
-  int m_last_depth;
+ protected:
+  Turn m_last_turn{};
+  int m_last_depth = 0;
 };
 #endif
