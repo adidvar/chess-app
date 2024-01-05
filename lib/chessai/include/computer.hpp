@@ -22,8 +22,10 @@ class ThreadController {
     m_thread = new std::thread(&ThreadController::Work, this);
   }
   void Stop() {
+    if (m_thread == nullptr) return;
+
     m_flag = true;
-    m_thread->join();
+    if (m_thread->joinable()) m_thread->join();
     delete m_thread;
     m_thread = nullptr;
   }
@@ -33,13 +35,9 @@ class ThreadController {
   void Work() {
     ItDeepening search(m_board, m_color);
     search.SetTTable(m_table);
-    search.SetStopFlag(nullptr);
-    for (int i = 1; i < 8; i++) {
-      auto value = search.GetValue(i);
-      m_turn = search.GetTurn();
-      std::cout << value.ToCentiPawns() << " " << m_turn.ToChessFormat()
-                << std::endl;
-    }
+    search.SetStopFlag(&m_flag);
+    auto value = search.GetValue(20);
+    m_turn = search.GetTurn();
   }
 
  private:
@@ -69,7 +67,7 @@ class Computer{
 
  private:
   std::thread *m_thread;
-  std::atomic_bool m_flag;
+  std::atomic_bool m_ready;
   Turn m_turn;
 
   TTable m_table;

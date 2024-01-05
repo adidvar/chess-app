@@ -15,11 +15,11 @@ class ItDeepening : public AlphaBeta {
   Score GetValue(int max_depth, Score a = T::Min(), Score b = T::Max()) {
     m_last_depth = 0;
     Score result{};
-    Turn turn;
+    Turn turn{};
     try {
       for (int depth = 1; depth <= max_depth; depth++) {
         result = AlphaBeta::GetValue(depth, a, b);
-        turn = GetTurn();
+        turn = AlphaBeta::GetTurn();
         if (GetTTable() != nullptr) GetTTable()->ClearNoTriggered();
         m_last_depth = depth;
       }

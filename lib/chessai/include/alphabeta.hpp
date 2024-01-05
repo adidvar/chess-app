@@ -90,12 +90,13 @@ class AlphaBeta : public QSearch {
           alpha = std::max(alpha, hashed->value);
       } else if (hashed->depth > depthleft) {
         if (hashed->type == TTableItem::PV) {
-          m_last_turn = hashed->pv;
-          return hashed->value;
+          // m_last_turn = hashed->pv;
+          // return hashed->value;
         }
       }
     }
     bool inCheck = tuple.board.Checkmate();
+    /*
 
     if (GetSearchSettings().NullMoveEnabled() && depthleft >= 3 &&
         inCheck == false) {
@@ -105,6 +106,7 @@ class AlphaBeta : public QSearch {
                               depthmax);
       if (score >= beta) return beta;
     }
+*/
 
     auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
 
