@@ -5,45 +5,39 @@
 #include "ui_singleplayer.h"
 
 SinglePlayer::SinglePlayer(QWidget *parent)
-    : QMainWindow(parent), computer_(Color::kBlack), ui(new Ui::SinglePlayer) {
+    : QMainWindow(parent), ui(new Ui::SinglePlayer) {
   ui->setupUi(this);
   ui->board->SetMode(BoardWidget::kPlayerWhite);
   connect(ui->board, &BoardWidget::EnteredTurn, this,
           &SinglePlayer::TurnEntered);
-  // computer_.Start();
 }
 
 SinglePlayer::~SinglePlayer() { delete ui; }
 
 void SinglePlayer::ComputerEntered() {
-  /*
-  computer_.Stop();
+  computer_->Stop();
 
-  auto turn = computer_.GetTurn();
-  auto pv = computer_.GetDepth();
-  std::cout << pv << std::endl;
+  auto turn = computer_->GetTurn();
+  std::cout << turn.ToChessFormat() << std::endl;
+
+  delete computer_;
 
   if (!turn.Valid()) return;
 
   match.Push(turn);
   ui->board->PushTurn(turn);
-
-*/
-  // computer_.Start();
 }
 
 void SinglePlayer::TurnEntered(Turn inputturn) {
   if (match.GetBoard().CurrentColor() != Color::kWhite) return;
 
   match.Push(inputturn);
-  computer_.SetBoard(match.GetBoard());
+  ui->board->PushTurn(inputturn);
 
-  // auto turn = computer_.Work();
+  table_.Clear();
+  computer_ = new ThreadController(Color::kWhite, match.GetBoard(), &table_);
 
-  // match.Push(turn);
-  // ui->board->PushTurn(turn);
+  computer_->Start();
 
-  // computer_.Stop();
-
-  // QTimer::singleShot(6000, this, &SinglePlayer::ComputerEntered);
+  QTimer::singleShot(6000, this, &SinglePlayer::ComputerEntered);
 }

@@ -15,8 +15,10 @@ class SinglePlayer : public QMainWindow
 {
     Q_OBJECT
     Match match;
-    Computer computer_;
-public:
+    ThreadController *computer_;
+    TTable table_;
+
+   public:
     explicit SinglePlayer(QWidget *parent = nullptr);
     ~SinglePlayer();
 
@@ -26,7 +28,7 @@ public:
    private:
     Ui::SinglePlayer *ui;
 
-public slots:
+   public slots:
     void TurnEntered(Turn);
 };
 
