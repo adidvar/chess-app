@@ -32,7 +32,6 @@ void SinglePlayer::TurnEntered(Turn inputturn) {
   if (match.GetBoard().CurrentColor() != Color::kWhite) return;
 
   match.Push(inputturn);
-  ui->board->PushTurn(inputturn);
 
   table_.Clear();
   computer_ = new ThreadController(Color::kWhite, match.GetBoard(), &table_);
