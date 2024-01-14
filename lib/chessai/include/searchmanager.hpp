@@ -25,9 +25,9 @@ class SearchManager {
       }
 */
     } else if (const auto* pval = std::get_if<ConstTimer>(&m_timer)) {
-      return pval->time;
+      return {pval->time};
     } else if (const auto* pval = std::get_if<InfiniteTimer>(&m_timer)) {
-      return std::numeric_limits<float>::min();
+      return {std::numeric_limits<float>::min()};
     }
   }
 

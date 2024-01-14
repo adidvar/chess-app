@@ -10,6 +10,7 @@
 int main() {
   float delta = 0;
 
+  /*
   auto lambda = []() {
     auto begin = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
@@ -41,29 +42,14 @@ int main() {
     }
   };
 
-  /*
   lambda();
-
-  std::thread th(lambda);
-  th.join();
 */
 
-  TTable table;
-  ThreadController controller(Color::kWhite, {"startpos"}, &table);
-  controller.Start();
-  std::this_thread::sleep_for(std::chrono::milliseconds{2000});
-  controller.Stop();
-  auto turn = controller.GetTurn();
-  std::cout << "Turn: " << turn.ToChessFormat() << std::endl;
-
-  /*
-  Computer cmp(Color::kWhite);
-
-  cmp.SetBoard({"startpos"});
-  cmp.Start();
-  cmp.Wait();
-  auto turn = cmp.Get();
-*/
-
-  // std::cout << turn.ToChessFormat();
+  Computer computer;
+  computer.SetBoard({"startpos"});
+  computer.Start();
+  std::this_thread::sleep_for(std::chrono::seconds{6});
+  computer.Abort();
+  std::cout << computer.Get().ToChessFormat() << std::endl;
+  std::cout << "end of code" << std::endl;
 }

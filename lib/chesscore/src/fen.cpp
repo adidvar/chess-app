@@ -7,9 +7,9 @@
 
 #include "bitboard.hpp"
 
-static std::string_view ReadUntillDelims(std::string_view data,
-                                         const std::vector<char> &seperators,
-                                         size_t &index) {
+std::string_view ReadUntillDelims(std::string_view data,
+                                  const std::vector<char> &seperators,
+                                  size_t &index) {
   auto prefix_size = index;
   data.remove_prefix(prefix_size);
 

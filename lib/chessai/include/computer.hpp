@@ -6,6 +6,7 @@
 
 #include "itdeepening.hpp"
 #include "score.hpp"
+#include "searchmanager.hpp"
 #include "statistics.hpp"
 #include "ttable.hpp"
 
@@ -52,27 +53,29 @@ class ThreadController {
 
 class Computer{
  public:
-  Computer(Color color);
+  Computer();
   ~Computer();
 
   void SetBoard(const BitBoard &board);
 
   void Start();
-  void Stop();
+  void Abort();
 
-  void Wait();
   bool IsReady();
 
   Turn Get();
 
+  void Work();
+
+  SearchManager &GetManager();
+
  private:
   std::thread *m_thread;
-  std::atomic_bool m_ready;
+  std::atomic_bool m_abort_flag;
   Turn m_turn;
 
-  TTable m_table;
   BitBoard m_board;
-  Color m_color;
+  SearchManager m_manager;
 };
 
 #endif

@@ -12,7 +12,7 @@
 #include <string>
 #include <thread>
 
-#include "parsingtools.hpp"
+#include "fen.hpp"
 
 struct Command{
     std::string name;

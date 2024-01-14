@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "computer.hpp"
+#include "fen.hpp"
+#include "match.hpp"
 
 void uciok() { std::cout << "uciok" << std::endl; };
 // to controller
@@ -41,42 +43,42 @@ void option(){
 struct UCIState {
   Computer computer;
 
+  UCIState() {}
+
   bool working = false;
 
   // from controller
-  void uci() { id(); };
-  void stop() { ; };
-  void quit() { exit(0); };
-  void isready() { readyok(); };
-  void ponderhit() { ; };
-  void ucinewgame() {
-    if (!working) computer.NewGame();
-  };
+  void uci() { id(); }
+  void stop() { ; }
+  void quit() { exit(0); }
+  void isready() { readyok(); }
+  void ponderhit() { ; }
+  void ucinewgame() {}
 
-  void debug(Command command) { ; };
-  void setoption(Command command) { ; };
-  void registered(Command command) { ; };
+  void debug(Command command) { ; }
+  void setoption(Command command) { ; }
+  void registered(Command command) { ; }
 
   void position(Command command) {
     if (!working) {
       Match match;
       match.LoadFromUCIString(command.parameters_line);
-      computer.Position(match);
+      computer.SetBoard(match.GetBoard());
     }
-  };
+  }
   void go(Command command) {
     if (!working) {
-      computer.Go();
+      computer.Start();
       working = true;
     }
-  };
+  }
   void exec() {
-    if (working && computer.Ready()) {
-      bestmove(computer.GetBestTurn());
+    if (working && computer.IsReady()) {
+      bestmove(computer.Get());
       working = false;
     }
     std::cout.flush();
-  };
+  }
 };
 
 int main(){

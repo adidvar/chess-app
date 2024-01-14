@@ -11,10 +11,10 @@ file(GLOB files
      "*.cpp"
 )
 
-#add_executable(uci_adapter ${files})
+add_executable(uci_adapter ${files})
 
-#target_include_directories(uci_adapter PUBLIC  .)
+target_include_directories(uci_adapter PUBLIC  .)
 
-#target_link_libraries(uci_adapter chesscore chessai)
+target_link_libraries(uci_adapter chesscore chessai)
 
 

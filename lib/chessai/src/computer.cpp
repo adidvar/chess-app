@@ -2,30 +2,47 @@
 
 #include <iostream>
 
-Computer::Computer(Color color) : m_color(color) {}
+#include "searchmanager.hpp"
 
-Computer::~Computer() { Wait(); }
+Computer::Computer() { m_thread = nullptr; }
+
+Computer::~Computer() { Abort(); }
 
 void Computer::SetBoard(const BitBoard &board) { m_board = board; }
 
 void Computer::Start() {
-  /*
   if (m_thread) return;
 
-  m_flag = false;
+  m_abort_flag = false;
+  m_turn = {};
   m_thread = new std::thread(&Computer::Work, this);
-*/
 }
 
-void Computer::Stop() {
-  /*
-  m_flag = true;
-  m_thread->join();
-*/
+void Computer::Abort() {
+  if (m_thread == nullptr) return;
+
+  m_abort_flag = true;
+  if (m_thread->joinable()) m_thread->join();
+  delete m_thread;
+  m_thread = nullptr;
 }
 
-void Computer::Wait() {}
+bool Computer::IsReady() { return m_turn != Turn{}; }
 
-bool Computer::IsReady() { return false; }
+Turn Computer::Get() { return m_turn; }
 
-Turn Computer::Get() { return {}; }
+void Computer::Work() {
+  TTable table;
+  ThreadController controller(m_board.CurrentColor(), m_board, &table);
+
+  auto begin = std::chrono::high_resolution_clock::now();
+  auto time = std::chrono::duration<float, std::ratio<1, 1>>{6};
+  controller.Start();
+
+  while (m_abort_flag == false) std::this_thread::yield();
+
+  controller.Stop();
+  m_turn = controller.GetTurn();
+}
+
+SearchManager &Computer::GetManager() { return m_manager; }
