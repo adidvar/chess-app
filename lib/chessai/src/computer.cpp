@@ -35,11 +35,13 @@ void Computer::Work() {
   TTable table;
   ThreadController controller(m_board.CurrentColor(), m_board, &table);
 
-  auto begin = std::chrono::high_resolution_clock::now();
+  using timer = std::chrono::high_resolution_clock;
+  auto begin = timer::now();
   auto time = std::chrono::duration<float, std::ratio<1, 1>>{6};
   controller.Start();
 
-  while (m_abort_flag == false) std::this_thread::yield();
+  while (m_abort_flag == false && timer::now() < begin + time)
+    std::this_thread::yield();
 
   controller.Stop();
   m_turn = controller.GetTurn();

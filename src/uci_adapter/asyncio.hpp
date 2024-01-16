@@ -61,10 +61,8 @@ class Asyncio
     Asyncio()
         : exit_flag_{0}, cin_thread_(std::bind(&Asyncio::CinThread, this)) {
         log_.open("log.txt", std::ios_base::app);
-    };
-    ~Asyncio(){
-        exit(0);
-    };
+    }
+    ~Asyncio() { exit(0); }
 
     std::optional<Command> GetCommandAsync(){
         std::lock_guard guard(mutex_);
@@ -73,7 +71,7 @@ class Asyncio
         auto front = commands_.front();
         commands_.pop();
         return front;
-    };
+    }
 
 private:
     std::atomic<bool> exit_flag_;
