@@ -72,7 +72,7 @@ class Computer{
  private:
   std::thread *m_thread;
   std::atomic_bool m_abort_flag;
-  Turn m_turn;
+  Turn m_turn{};
 
   BitBoard m_board;
   SearchManager m_manager;

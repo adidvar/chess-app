@@ -75,6 +75,7 @@ struct UCIState {
   void exec() {
     if (working && computer.IsReady()) {
       bestmove(computer.Get());
+      computer.Abort();
       working = false;
     }
     std::cout.flush();

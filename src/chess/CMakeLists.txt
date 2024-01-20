@@ -11,7 +11,7 @@ file(GLOB files
      "*.cpp"
 )
 
-add_executable(Main ${files})
-target_link_libraries(Main chessai chessui chesscore)
+add_executable(Chess ${files})
+target_link_libraries(Chess chessai chessui chesscore)
 
 
