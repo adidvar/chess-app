@@ -4,11 +4,6 @@
 #include <string_view>
 #include <vector>
 
-struct TagsParserError {};
-struct ImpossibleMoveError {};
-struct LexicalParserError {};
-struct UnknownParserError {};
-
 class BitBoard;
 class Match;
 

@@ -24,7 +24,7 @@ class Figure {
 
   bool Valid() const noexcept { return value_ >= kEmpty && value_ <= kKing; }
 
-  constexpr static uint8_t Max() { return 7; };
+  constexpr static uint8_t Max() { return 7; }
 
  private:
   uint8_t value_;

@@ -5,10 +5,20 @@
 
 #include "bitboard.hpp"
 #include "bitboardtuple.hpp"
-#include "chesstreehash.hpp"
 #include "score.hpp"
 #include "search.hpp"
 #include "statistics.hpp"
+
+class ChessTreeHash {
+ public:
+  std::vector<BitBoardTuple> &Get(int depth) {
+    m_turns.resize(depth + 1);
+    return m_turns[depth];
+  }
+
+ private:
+  std::vector<std::vector<BitBoardTuple>> m_turns;
+};
 
 inline void QuiescenceSearchOrdering(const BitBoard &board,
                                      std::vector<BitBoardTuple> &vector) {

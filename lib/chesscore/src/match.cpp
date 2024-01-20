@@ -101,7 +101,8 @@ void Match::LoadFromUCIString(const std::string &line) {
     turns.erase(turns.cbegin());
     for (std::string_view turnstr : turns) {
       auto turn = Turn::FromChessFormat(turnstr);
-      if (!endboard_.ExecuteTurn(turn)) throw LexicalParserError{};
+      if (!endboard_.ExecuteTurn(turn))
+        throw std::runtime_error{"UCI string parsing error"};
     }
   }
 }

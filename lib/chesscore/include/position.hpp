@@ -84,7 +84,7 @@ class Position {
     return index_ < pos.index_;
   }
 
-  constexpr static uint8_t Max() { return kerror_pos_; };
+  constexpr static uint8_t Max() { return kerror_pos_; }
 
  private:
   uint8_t index_;

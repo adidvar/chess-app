@@ -7,32 +7,19 @@
 #include "position.hpp"
 
 /**
- * @brief Визначає звичайний шахматний
- *
- * Ходи бувають одного з 2 типів
- * 1) Звичайних хід
- * 2) Хід пішкою з вибором фігури
+ * @brief Describes a chess turn class
  */
 class Turn {
  public:
   /**
-   * @brief Пустий хід
+   * @brief Invalid turn
    */
   Turn();
   /**
-   * @brief Звичайний хід
-   * @param move задає початкову і кінцеву позицію
+   * @brief Default turn
    */
   Turn(Position from, Position to);
-  /**
-   * @brief Кінцевий хід пішкою
-   * @param pawn_move Початкова кінцева і тип фігури
-   */
   Turn(Position from, Position to, Figure figure);
-  /**
-   * @brief Рокірування
-   * @param direction напрямок рокіровки
-   */
 
   bool operator==(const Turn& turn) const;
   bool operator!=(const Turn& turn) const;

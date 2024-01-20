@@ -5,12 +5,8 @@
 
 class GameStage {
   int stage;
-  // [0 - 100) opening
-  // [100 - 200) middlegame
-  // [200 - 300) endspiel
 
  public:
-  [[nodiscard]] bool IsOpening() const { return false; }
   [[nodiscard]] bool IsMiddleGame() const { return true; }
   [[nodiscard]] bool IsEndSpiel() const { return false; }
   // value [0-100] describes stage of our period
@@ -24,12 +20,10 @@ class SearchSettings {
 
   [[nodiscard]] GameStage GetStage() const { return stage; }
 
-  bool NullMoveEnabled() const { return null_pruning; }
-  bool NullMoveR() const { return null_pruning_r; }
+  bool NullMoveEnabled() const { return stage.IsMiddleGame(); }
+  bool NullMoveR() const { return 2; }
 
  private:
-  bool null_pruning = true;
-  int null_pruning_r = 2;
   GameStage stage;
 };
 
