@@ -1,13 +1,13 @@
-#ifndef SEARCHMANAGER_H
-#define SEARCHMANAGER_H
+#ifndef TIMEMANAGER_H
+#define TIMEMANAGER_H
 
 #include <variant>
 
 #include "figures.hpp"
 
-class SearchManager {
+class TimeManager {
  public:
-  SearchManager() = default;
+  TimeManager() = default;
 
   void SetTime(float w_time, float b_time, float w_increment,
                float b_increment) {
@@ -18,12 +18,11 @@ class SearchManager {
 
   float GetTime(Color color) {
     if (const auto* pval = std::get_if<ClassicTimer>(&m_timer)) {
-      /*
-       * TO DO
       if (color == Color::kWhite) {
+        return pval->w_increment + std::min<float>(pval->w_time / 60, 4);
       } else {
+        return pval->b_increment + std::min<float>(pval->b_time / 60, 4);
       }
-*/
     } else if (const auto* pval = std::get_if<ConstTimer>(&m_timer)) {
       return {pval->time};
     } else if (const auto* pval = std::get_if<InfiniteTimer>(&m_timer)) {

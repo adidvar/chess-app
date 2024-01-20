@@ -6,8 +6,8 @@
 
 #include "itdeepening.hpp"
 #include "score.hpp"
-#include "searchmanager.hpp"
 #include "statistics.hpp"
+#include "timemanager.hpp"
 #include "ttable.hpp"
 
 class ThreadController {
@@ -67,7 +67,7 @@ class Computer{
 
   void Work();
 
-  SearchManager &GetManager();
+  TimeManager &GetManager();
 
  private:
   std::thread *m_thread;
@@ -75,7 +75,7 @@ class Computer{
   Turn m_turn{};
 
   BitBoard m_board;
-  SearchManager m_manager;
+  TimeManager m_manager;
 };
 
 #endif

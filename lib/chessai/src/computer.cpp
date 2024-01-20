@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "searchmanager.hpp"
+#include "timemanager.hpp"
 
 Computer::Computer() { m_thread = nullptr; }
 
@@ -47,4 +47,4 @@ void Computer::Work() {
   m_turn = controller.GetTurn();
 }
 
-SearchManager &Computer::GetManager() { return m_manager; }
+TimeManager &Computer::GetManager() { return m_manager; }
