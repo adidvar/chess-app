@@ -9,8 +9,6 @@ qt_standard_project_setup()
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 
-project(ChessUI)
-
 file(GLOB ui_sources
      ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
      ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
