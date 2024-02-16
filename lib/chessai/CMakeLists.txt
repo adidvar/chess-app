@@ -17,6 +17,11 @@ target_link_libraries(chessai chesscore)
 target_include_directories(chessai PUBLIC include)
 
 install(TARGETS chessai)
+INSTALL(FILES ${ai_headers}
+        DESTINATION include/chessai
+)
+
+install(TARGETS chessai)
 
 if(BUILD_TESTS)
 

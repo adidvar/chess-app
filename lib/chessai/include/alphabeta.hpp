@@ -119,8 +119,6 @@ class AlphaBeta : public QSearch {
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
             depthmax, founded ? hashed->pv : Turn());
-    // BFTableReorderer(tuple.board, moves, m_btable, depthleft, depthmax,
-    //                  founded ? hashed->pv : Turn());
 
     Score bestscore = Score::Min();
     Turn bestturn = Turn();

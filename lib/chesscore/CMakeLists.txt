@@ -16,6 +16,9 @@ add_library(chesscore ${core_headers} ${core_sources})
 target_include_directories(chesscore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 install(TARGETS chesscore)
+INSTALL(FILES ${core_headers}
+        DESTINATION include/chesscore
+)
 
 if(BUILD_TESTS)
 
