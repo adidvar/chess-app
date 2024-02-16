@@ -27,45 +27,10 @@ class Match {
   void SetBoard(const BitBoard &board);
   BitBoard GetStartBoard() const;
   void SetStartBoard(const BitBoard &board);
-
-  bool HaveOpTag(const std::string &name) const;
-  std::string GetOpTagValue(const std::string &name) const;
-  void AddOpTag(const std::string &name, const std::string &value);
-
-  std::string Event() const;
-  void setEvent(const std::string &newEvent);
-
-  std::string Site() const;
-  void setSite(const std::string &newSite);
-
-  std::string Date() const;
-  void setDate(const std::string &newDate);
-
-  std::string Round() const;
-  void setRound(const std::string &newRound);
-
-  std::string White() const;
-  void setWhite(const std::string &newWhite);
-
-  std::string Black() const;
-  void setBlack(const std::string &newBlack);
-
-  Result_t GetResult() const;
-  void SetResult(Result_t value);
-
   void LoadFromUCIString(const std::string &line);
 
  private:
-  std::string event_;
-  std::string site_;
-  std::string date_;
-  std::string round_;
-  std::string white_;
-  std::string black_;
   Result_t result_ = Unknown;
-
-  std::unordered_map<std::string, std::string> optags_;
-
   std::vector<Turn> turns_;
   BitBoard startboard_;
   BitBoard endboard_;

@@ -9,7 +9,6 @@
 #include "ordering.hpp"
 #include "qsearch.hpp"
 #include "search.hpp"
-#include "statistics.hpp"
 #include "ttable.hpp"
 
 class AlphaBeta : public QSearch {
@@ -116,7 +115,7 @@ class AlphaBeta : public QSearch {
       return T::Tie();
     }
 
-    GetStatistics().MainNode();
+    MainNode();
 
     ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
             depthmax, founded ? hashed->pv : Turn());

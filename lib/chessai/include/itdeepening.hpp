@@ -5,7 +5,6 @@
 
 #include "alphabeta.hpp"
 #include "bitboard.hpp"
-#include "statistics.hpp"
 #include "ttable.hpp"
 
 class ItDeepening : public AlphaBeta {

@@ -51,46 +51,6 @@ BitBoard Match::GetStartBoard() const { return startboard_; }
 
 void Match::SetStartBoard(const BitBoard &board) { startboard_ = board; }
 
-bool Match::HaveOpTag(const std::string &name) const {
-  return optags_.count(name) != 0;
-}
-
-std::string Match::GetOpTagValue(const std::string &name) const {
-  return optags_.at(name);
-}
-
-void Match::AddOpTag(const std::string &name, const std::string &value) {
-  optags_[name] = value;
-}
-
-std::string Match::Event() const { return event_; }
-
-void Match::setEvent(const std::string &newEvent) { event_ = newEvent; }
-
-std::string Match::Site() const { return site_; }
-
-void Match::setSite(const std::string &newSite) { site_ = newSite; }
-
-std::string Match::Date() const { return date_; }
-
-void Match::setDate(const std::string &newDate) { date_ = newDate; }
-
-std::string Match::Round() const { return round_; }
-
-void Match::setRound(const std::string &newRound) { round_ = newRound; }
-
-std::string Match::White() const { return white_; }
-
-void Match::setWhite(const std::string &newWhite) { white_ = newWhite; }
-
-std::string Match::Black() const { return black_; }
-
-void Match::setBlack(const std::string &newBlack) { black_ = newBlack; }
-
-Match::Result_t Match::GetResult() const { return result_; }
-
-void Match::SetResult(Result_t value) { result_ = value; }
-
 void Match::LoadFromUCIString(const std::string &line) {
   size_t index = 0;
   LoadFromFen(line, startboard_, index);

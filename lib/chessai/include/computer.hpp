@@ -6,7 +6,6 @@
 
 #include "itdeepening.hpp"
 #include "score.hpp"
-#include "statistics.hpp"
 #include "timemanager.hpp"
 #include "ttable.hpp"
 

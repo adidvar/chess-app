@@ -267,7 +267,7 @@ bitboard_t AttackFrom(bitboard_t sq) {
 }
 
 void InitMagic() {
-  std::mt19937_64 random(3242134123ULL);
+  std::mt19937_64 random(0ULL);
 
   for (size_t i = 0; i < 64; i++) {
     // masks

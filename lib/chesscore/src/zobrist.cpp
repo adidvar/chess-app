@@ -31,7 +31,7 @@ uint64_t GetElpassantHash(Position position) {
 }
 
 void InitZobrist() {
-  std::mt19937_64 random(3242134123ULL);
+  std::mt19937_64 random(0ULL);
 
   for (size_t f = 0; f < Figure::Max(); ++f)
     for (size_t c = 0; c < Color::Max(); ++c)

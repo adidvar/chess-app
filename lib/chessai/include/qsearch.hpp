@@ -7,7 +7,6 @@
 #include "bitboardtuple.hpp"
 #include "score.hpp"
 #include "search.hpp"
-#include "statistics.hpp"
 
 class ChessTreeHash {
  public:
@@ -61,11 +60,11 @@ class QSearch : public Search, private ChessTreeHash {
 
  private:
   T qsearch(const BitBoardTuple &tuple, T alpha, T beta, int depth) {
-    GetStatistics().ExtraNode();
+    ExtraNode();
 
     CheckStopFlag();
 
-    GetStatistics().EndNode();
+    EndNode();
     T stand_pat = T::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
                                     GetSearchSettings().GetStage());
 

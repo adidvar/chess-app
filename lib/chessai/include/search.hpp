@@ -6,7 +6,6 @@
 #include "bitboard.hpp"
 #include "figures.hpp"
 #include "searchsettings.hpp"
-#include "statistics.hpp"
 
 struct SearchExitException {};
 
@@ -23,18 +22,34 @@ class Search {
       throw SearchExitException{};
   }
 
-  [[nodiscard]] Statistics GetStatistics() const { return m_stat; }
   [[nodiscard]] Color GetColor() const { return m_color; }
   [[nodiscard]] BitBoard GetBoard() const { return m_board; }
   [[nodiscard]] SearchSettings GetSearchSettings() const { return m_settings; }
-  [[nodiscard]] Statistics &GetStatistics() { return m_stat; }
+
+  [[nodiscard]] int GetMainNode() const { return generation_count_; }
+  [[nodiscard]] int GetEndNode() const { return approximation_count_; }
+  [[nodiscard]] int GetExtraNode() const { return extra_node_; }
+
+  void ClearStatistics() {
+    generation_count_ = 0;
+    approximation_count_ = 0;
+    extra_node_ = 0;
+  }
+
+ protected:
+  void MainNode() { generation_count_++; }
+  void EndNode() { approximation_count_++; }
+  void ExtraNode() { extra_node_++; }
 
  private:
   std::atomic_bool *m_stop_flag = nullptr;
   SearchSettings m_settings;
-  Statistics m_stat;
   const Color m_color;
   const BitBoard m_board;
+
+  int generation_count_ = 0;
+  int approximation_count_ = 0;
+  int extra_node_ = 0;
 };
 
 #endif
