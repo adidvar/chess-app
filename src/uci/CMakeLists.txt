@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+if(BUILD_UCI)
 
 file(GLOB files
      "*.hpp"
      "*.cpp"
 )
 
-add_executable(UCI ${files})
+add_executable(uci ${files})
 
-target_include_directories(UCI PUBLIC  .)
+target_include_directories(uci PUBLIC  .)
 
-target_link_libraries(UCI chesscore chessai)
+target_link_libraries(uci chesscore chessai)
+
+install(TARGETS uci)
+
+endif()
 
 

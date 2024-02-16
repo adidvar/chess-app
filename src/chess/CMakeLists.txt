@@ -1,15 +1,30 @@
-cmake_minimum_required(VERSION 3.16.3)
+cmake_minimum_required(VERSION 3.25.1)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+if(BUILD_UI)
 
-file(GLOB files
-     "*.hpp"
-     "*.cpp"
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+qt_standard_project_setup()
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+
+file(GLOB ui_sources
+     *.hpp
+     *.h
+     *.cpp
+     *.ui
 )
 
-add_executable(Chess ${files})
-target_link_libraries(Chess chessai chessui chesscore)
+add_executable(chess ${ui_sources})
+target_link_libraries(chess PUBLIC Qt6::Widgets PUBLIC chesscore chessai)
 
+qt_generate_deploy_app_script(
+    TARGET chess
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
 
+install(TARGETS chess)
+
+endif()

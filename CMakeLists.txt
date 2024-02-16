@@ -8,6 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(BUILD_UI "build UI module" OFF)
+option(BUILD_UCI "build UCI module" OFF)
+option(BUILD_TESTS "build tests" OFF)
+option(BUILD_DEBUG_EXECUTABLE "build dev only executable" OFF)
+
 file(GLOB libs LIST_DIRECTORIES TRUE lib/*)
 
 subdirs(${libs})
