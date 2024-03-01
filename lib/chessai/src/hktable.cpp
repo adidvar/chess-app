@@ -30,4 +30,10 @@ size_t HKTable::GetHistoryCount(Turn turn) const {
   return m_history_table.data[turn.from().Value()][turn.to().Value()];
 }
 
-void HKTable::Clear() {}
+void HKTable::Clear() {
+  for (auto &elem : m_killer_table)
+    for (auto &elem_1 : elem.data)
+      for (auto &elem_2 : elem_1) elem_2 = 0;
+  for (auto &elem_1 : m_history_table.data)
+    for (auto &elem_2 : elem_1) elem_2 = 0;
+}

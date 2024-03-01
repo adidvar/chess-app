@@ -9,7 +9,7 @@ file(GLOB ai_headers
 )
 
 file(GLOB ai_tests
-     tests/*.cpp
+     tests/*.test.cpp
 )
 
 add_library(chessai ${ai_headers} ${ai_sources})

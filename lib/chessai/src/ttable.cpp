@@ -12,6 +12,7 @@ TTable::TTable() {
 
 void TTable::Clear() {
   for (int i = 0; i < m_used.size(); i++) m_used[i] = false;
+  for (int i = 0; i < m_used.size(); i++) m_triggered[i] = false;
 }
 
 void TTable::ClearNoTriggered() {
@@ -30,15 +31,13 @@ const TTableItem *TTable::Search(bitboard_hash_t hash, bool &founded) const {
 }
 
 void TTable::Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
-                   Turn pv, int depth, int depthmax) {
-
+                   Turn pv, uint8_t depth) {
   auto index = hash % m_table.size();
   auto used = m_used[index];
   auto triggered = m_triggered[index];
   auto &element = m_table[index];
 
-  if (depth != depthmax)
-    if (used && element.depth > depth) return;
+  if (used && element.depth > depth) return;
 
   if (value <= alpha)
     element.type = TTableItem::FailLow;

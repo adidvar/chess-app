@@ -5,29 +5,58 @@
 
 #include "bitboard.hpp"
 #include "score.hpp"
-
+/**
+ * @brief The TTableItem class element of transposition table
+ */
 struct TTableItem {
-  bitboard_hash_t hash;
+  bitboard_hash_t hash{};  ///< hash of item
 
-  enum Type { PV, FailLow, FailHigh } type;
-  
-  Score value;
-  Turn pv;
+  enum Type { PV, FailLow, FailHigh } type;  ///< node type
 
-  uint8_t depth;
+  Score value;  ///< value of node
+  Turn pv;      ///< pv of node
 
+  uint8_t depth{};  ///< depth of last scan
 };
 
+/**
+ * @brief The TTable class is a transposition table
+ */
 class TTable {
  public:
+  /**
+   * @brief TTable default constructor
+   */
   TTable();
+  /**
+   * @brief Clear clears a table
+   */
   void Clear();
+  /**
+   * @brief ClearNoTriggered clears no triggered elements of ttable
+   */
   void ClearNoTriggered();
 
+  /**
+   * @brief Search search element from table
+   * @param hash hash for search
+   * @param founded [out] is the element founded
+   * @return pointer to ttableitem node
+   */
   const TTableItem *Search(bitboard_hash_t hash, bool &founded) const;
 
+  /**
+   * @brief Write stores node info into ttable
+   * @param hash hash of node
+   * @param alpha alpha
+   * @param beta beta
+   * @param value value
+   * @param pv pv
+   * @param depth depth
+   * @param depthmax depthmax
+   */
   void Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
-             Turn pv, int depth, int depthmax);
+             Turn pv, uint8_t depth);
 
  private:
   std::vector<TTableItem> m_table;
