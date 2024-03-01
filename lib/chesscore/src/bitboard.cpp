@@ -10,7 +10,7 @@
 #include "zobrist.hpp"
 
 const char *const BitBoard::kStartPosition =
-    u8"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const BitBoard BitBoard::kStartBitBoard{BitBoard::kStartPosition};
 
 BitBoard::BitBoard() : BitBoard(kStartBitBoard) {}

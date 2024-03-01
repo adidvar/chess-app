@@ -4,8 +4,8 @@
 #include <atomic>
 #include <iostream>
 
-#include "bftable.hpp"
 #include "bitboard.hpp"
+#include "hktable.hpp"
 #include "ordering.hpp"
 #include "qsearch.hpp"
 #include "search.hpp"
@@ -53,7 +53,7 @@ class AlphaBeta : public QSearch {
   TTable *GetTTable() const { return m_ttable; }
   void SetTTable(TTable *newTtable) { m_ttable = newTtable; }
 
-  BFTable &GetBfTable() { return m_btable; }
+  HKTable &GetBfTable() { return m_btable; }
 
  private:
   Score alphabeta(const BitBoardTuple &tuple, Score alpha, Score beta,
@@ -128,7 +128,7 @@ class AlphaBeta : public QSearch {
       if (score >= beta) {  // beta cutoff
         bestscore = score;
         bestturn = sub.turn;
-        m_btable.Increment(sub.turn, depthleft, depthmax);
+        m_btable.Increment(sub.turn, depthmax - depthleft);
         break;
       }
       if (score > bestscore) {
@@ -136,7 +136,7 @@ class AlphaBeta : public QSearch {
         bestturn = sub.turn;
         if (score > alpha) {
           alpha = score;
-          m_btable.Increment(sub.turn, depthleft, depthmax);
+          m_btable.Increment(sub.turn, depthmax - depthleft);
         };
       }
     }
@@ -150,7 +150,7 @@ class AlphaBeta : public QSearch {
   }
 
   TTable *m_ttable = nullptr;
-  BFTable m_btable;
+  HKTable m_btable;
 
  protected:
   Turn m_last_turn{};

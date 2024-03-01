@@ -3,12 +3,12 @@
 
 #include <algorithm>
 
-#include "bftable.hpp"
+#include "hktable.hpp"
 #include "bitboardtuple.hpp"
 #include "ttable.hpp"
 
 inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
-                    Score a, Score b, const BFTable &bftable,
+                    Score a, Score b, const HKTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {
   constexpr int history_scale = 50;
@@ -47,15 +47,16 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
       elem.priority.type =
           (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
       elem.priority.index = delta_price;
-    } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
+    } else if (bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetKiller(elem.turn, depthleft, depthmax) *
-                                bftable.GetHistory(elem.turn);
+      elem.priority.index =
+          (int)Score::GetFigureScore(from_figure) +
+          bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft) *
+              bftable.GetHistoryCount(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetHistory(elem.turn) * history_scale;
+                            bftable.GetHistoryCount(elem.turn) * history_scale;
     }
   }
   std::sort(vector.rbegin(), vector.rend());
@@ -63,7 +64,7 @@ inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
 
 inline void BFTableReorderer(const BitBoard &board,
                              std::vector<BitBoardTuple> &vector,
-                             const BFTable &bftable, int depthleft,
+                             const HKTable &bftable, int depthleft,
                              int depthmax, Turn pv) {
   constexpr int history_scale = 50;
 
@@ -91,15 +92,16 @@ inline void BFTableReorderer(const BitBoard &board,
       elem.priority.type =
           (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
       elem.priority.index = delta_price;
-    } else if (bftable.GetKiller(elem.turn, depthleft, depthmax)) {
+    } else if (bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft)) {
       elem.priority.type = KillerMoves;
-      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetKiller(elem.turn, depthleft, depthmax) *
-                                bftable.GetHistory(elem.turn);
+      elem.priority.index =
+          (int)Score::GetFigureScore(from_figure) +
+          bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft) *
+              bftable.GetHistoryCount(elem.turn);
     } else {
       elem.priority.type = NormalMoves;
       elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetHistory(elem.turn) * history_scale;
+                            bftable.GetHistoryCount(elem.turn) * history_scale;
     }
   }
   std::sort(vector.rbegin(), vector.rend());
