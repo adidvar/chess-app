@@ -143,7 +143,7 @@ class AlphaBeta : public QSearch {
 
     if (m_ttable != nullptr)
       m_ttable->Write(tuple.hash, oldalpha, beta, bestscore, bestturn,
-                      depthleft, depthmax);
+                      depthleft);
 
     m_last_turn = bestturn;
     return bestscore;

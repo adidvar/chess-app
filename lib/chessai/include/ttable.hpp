@@ -33,9 +33,13 @@ class TTable {
    */
   void Clear();
   /**
-   * @brief ClearNoTriggered clears no triggered elements of ttable
+   * @brief ClearGarbage clears garbage elements of ttable
    */
-  void ClearNoTriggered();
+  void ClearGarbage();
+  /**
+   * @brief ClearGarbageFlag sets all elements garbage flag to true
+   */
+  void SetGarbageFlag();
 
   /**
    * @brief Search search element from table
@@ -59,9 +63,10 @@ class TTable {
              Turn pv, uint8_t depth);
 
  private:
+  size_t m_size;
   std::vector<TTableItem> m_table;
   std::vector<bool> m_used;
-  mutable std::vector<bool> m_triggered;
+  mutable std::vector<bool> m_garbage;
 };
 
 #endif

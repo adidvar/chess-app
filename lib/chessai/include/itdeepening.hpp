@@ -19,7 +19,8 @@ class ItDeepening : public AlphaBeta {
       for (int depth = 1; depth <= max_depth; depth++) {
         result = AlphaBeta::GetValue(depth, a, b);
         turn = AlphaBeta::GetTurn();
-        if (GetTTable() != nullptr) GetTTable()->ClearNoTriggered();
+        //***TODO
+        // if (GetTTable() != nullptr) GetTTable()->ClearNoTriggered();
         m_last_depth = depth;
       }
     } catch (SearchExitException exception) {
