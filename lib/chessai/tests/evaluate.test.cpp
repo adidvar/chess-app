@@ -3,7 +3,7 @@
 
 #include "score.hpp"
 
-TEST_CASE("Evaluate Tests", "[evaluate]", ) {
+TEST_CASE("Evaluator tests", "[evaluate]", ) {
   SECTION("Basic tests") {
     REQUIRE(Score{}.IsValid() == false);
     REQUIRE(Score::Min() < Score::CheckMate(10, 10));
@@ -22,7 +22,7 @@ TEST_CASE("Evaluate Tests", "[evaluate]", ) {
     REQUIRE((-Score::CheckMate(10, 10)).GetTurnsToCheckMate() == 0);
     REQUIRE((-Score::CheckMate(0, 10)).GetTurnsToCheckMate() == 10);
   }
-  SECTION("Evaluator tests") {
+  SECTION("Logic tests") {
     REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},
                                   Color::kWhite, GameStage{}) > Score::Tie());
     REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},

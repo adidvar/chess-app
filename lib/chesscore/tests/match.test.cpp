@@ -2,8 +2,7 @@
 
 #include <match.hpp>
 
-TEST_CASE( "Match from UCI string", "[match]" )
-{
+TEST_CASE("Match tests", "[match]") {
   Match match;
   REQUIRE_NOTHROW(match.LoadFromUCIString("startpos moves e2e4 e7e5"));
   REQUIRE(match.GetStartBoard() == BitBoard());

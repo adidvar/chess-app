@@ -1,7 +1,7 @@
 #include <bitboard.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("BitBoard test", "[bitboard]") {
+TEST_CASE("BitBoard tests", "[bitboard]") {
   SECTION("Test of TestColor GetFigure GetColor") {
     BitBoard board;
     for (uint8_t i = 0; i < 64; i++) {
@@ -223,7 +223,7 @@ TEST_CASE("BitBoard test", "[bitboard]") {
   }
 }
 
-TEST_CASE("BitBoard fen", "[bitboard][fen]") {
+TEST_CASE("BitBoard fen tests", "[bitboard][fen]") {
   REQUIRE(BitBoard("8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 0").Fen() ==
           "8/8/8/8/6pp/3P1ppP/1P3P2/8 w - - 0 0");
   REQUIRE(BitBoard("8/8/1p3P2/8/3B4/4p3/5p2/8 w - - 0 0").Fen() ==
@@ -336,7 +336,7 @@ static size_t MovesCounterTo(Board board, size_t depth, uint64_t maskto = 1) {
   return counter;
 }
 
-TEST_CASE("BitBoard generation test", "[bitboard][generation]") {
+TEST_CASE("BitBoard generation tests", "[bitboard][generation]") {
   REQUIRE(MovesCounterBase(BitBoard(), 1) == 20);
   REQUIRE(MovesCounterTo(BitBoard(), 1) == 20);
   REQUIRE(MovesCounterFrom(BitBoard(), 1) == 20);
@@ -350,7 +350,7 @@ TEST_CASE("BitBoard generation test", "[bitboard][generation]") {
   REQUIRE(MovesCounterFrom(BitBoard(), 3) == 8902);
 }
 
-TEST_CASE("BitBoard generation advanced test", "[bitboard][generation]") {
+TEST_CASE("BitBoard generation advanced tests", "[bitboard][generation]") {
   REQUIRE(MovesCounterBase(BitBoard(), 4) == 197281);
   REQUIRE(MovesCounterTo(BitBoard(), 4) == 197281);
   REQUIRE(MovesCounterFrom(BitBoard(), 4) == 197281);
@@ -561,7 +561,7 @@ void TestTurn(T board) {
   }
 }
 
-TEST_CASE("Boards turns generation test", "[bitboard][generation][turn]") {
+TEST_CASE("BitBoard turns generation tests", "[bitboard][generation][turn]") {
   (TestTurn(BitBoard()));
   (TestTurn(BitBoard("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2")));
   (TestTurn(BitBoard("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3")));

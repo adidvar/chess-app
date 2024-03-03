@@ -3,7 +3,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("HKTable Tests", "[hktable]", ) {
+TEST_CASE("HKTable tests", "[hktable]", ) {
   HKTable table;
   auto turn = Turn::FromChessFormat("e2e4");
   SECTION("Killer counters") {

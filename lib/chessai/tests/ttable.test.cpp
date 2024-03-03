@@ -4,7 +4,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("TTable Tests", "[ttable]", ) {
+TEST_CASE("TTable tests", "[ttable]", ) {
   TTable table;
 
   BitBoard board("startpos");

@@ -99,5 +99,6 @@ class QSearch : public Search, private ChessTreeHash {
 
     return bestscore;
   }
+  friend class QSearchTest;
 };
 #endif
