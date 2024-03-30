@@ -29,7 +29,7 @@ class Score {
   static Score CheckMate(int depthleft, int depthmax);
   static Score Tie();
   static Score GetStaticValue(const BitBoard &board, Color color,
-                              const GameStage &settings);
+                              unsigned stage);
 
   static Score Max();
   static Score Min();

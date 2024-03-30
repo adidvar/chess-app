@@ -48,8 +48,8 @@ Score Score::CheckMate(int depthleft, int depthmax) {
 Score Score::Tie() { return {0}; }
 
 Score Score::GetStaticValue(const BitBoard &board, Color color,
-                            const GameStage &settings) {
-  Evaluator evaluator(board, color, settings);
+                            unsigned int stage) {
+  Evaluator evaluator(board, color, stage);
   return Clamp(evaluator.Evaluate());
 }
 

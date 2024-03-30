@@ -66,7 +66,7 @@ class QSearch : public Search, private ChessTreeHash {
 
     EndNode();
     T stand_pat = T::GetStaticValue(tuple.board, tuple.board.CurrentColor(),
-                                    GetSearchSettings().GetStage());
+                                    GetSearchSettings().GetGameStageSlider());
 
     if (stand_pat >= beta) return stand_pat;
 

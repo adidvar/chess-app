@@ -12,7 +12,7 @@ struct SearchExitException {};
 class Search {
  public:
   Search(const BitBoard &board, Color color)
-      : m_color(color), m_board(board), m_settings(board) {}
+      : m_color(color), m_board(board), m_settings() {}
 
   [[nodiscard]] std::atomic_bool *GetStopFlag() const { return m_stop_flag; }
   void SetStopFlag(std::atomic_bool *stop_flag) { m_stop_flag = stop_flag; }

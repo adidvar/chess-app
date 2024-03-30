@@ -10,14 +10,13 @@ struct S {
   int mg;
   int eg;
 
-  int operator()(const GameStage &settings) const { return mg; }
+  int operator()(unsigned) const { return mg; }
 };
 
-Evaluator::Evaluator(const BitBoard &board, Color color,
-                     const GameStage &settings)
+Evaluator::Evaluator(const BitBoard &board, Color color, unsigned int stage)
     : m_board(board),
       m_color(color),
-      m_settings(settings),
+      m_stage(stage),
       white_mask(board.AttackMask(Color::kWhite) &
                  ~board.GetBitBoard(Color::kWhite, Figure::kQueen)),
       black_mask(board.AttackMask(Color::kBlack) &
@@ -49,7 +48,7 @@ int Evaluator::GetMaterial() {
     white_count[figure] = count_1s(m_board.GetBitBoard(Color::kWhite, figure));
     black_count[figure] = count_1s(m_board.GetBitBoard(Color::kBlack, figure));
 
-    value += kfigure_prices[figure](m_settings) *
+    value += kfigure_prices[figure](m_stage) *
              (white_count[figure] - black_count[figure]);
   }
   white_count[Figure::kEmpty] =
@@ -138,8 +137,8 @@ int Evaluator::GetPawnStructure() {
   }
 
   for (int i = 0; i < 8; i++) {
-    if (file_white[i] > 2) value += S(-80)(m_settings) * file_white[i];
-    if (file_black[i] > 2) value -= S(-80)(m_settings) * file_black[i];
+    if (file_white[i] > 2) value += S(-80)(m_stage) * file_white[i];
+    if (file_black[i] > 2) value -= S(-80)(m_stage) * file_black[i];
   }
 
   return value;
@@ -149,18 +148,18 @@ int Evaluator::GetMobilityCS() {
   int value = 0;
 
   // mobility
-  value += S(3)(m_settings) *
+  value += S(3)(m_stage) *
            (count_1s(white_mask & ~m_board.GetColorBitBoard(Color::kWhite)) -
             count_1s(black_mask & ~m_board.GetColorBitBoard(Color::kBlack)));
 
   // connectivity
-  value += S(13)(m_settings) *
+  value += S(13)(m_stage) *
            (count_1s(white_mask & m_board.GetColorBitBoard(Color::kWhite)) -
             count_1s(black_mask & m_board.GetColorBitBoard(Color::kBlack)));
 
   // space
-  value += S(2)(m_settings) * (count_1s(white_mask & ~black_mask) -
-                               count_1s(black_mask & ~white_mask));
+  value += S(2)(m_stage) * (count_1s(white_mask & ~black_mask) -
+                            count_1s(black_mask & ~white_mask));
 
   return value;
 }

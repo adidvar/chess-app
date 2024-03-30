@@ -7,7 +7,7 @@
 
 class Evaluator {
  public:
-  Evaluator(const BitBoard &board, Color color, const GameStage &settings);
+  Evaluator(const BitBoard &board, Color color, unsigned stage);
 
   Score::ProcessType Evaluate();
 
@@ -24,7 +24,7 @@ class Evaluator {
   const BitBoard &m_board;
   const bitboard_t white_mask;
   const bitboard_t black_mask;
-  const GameStage &m_settings;
+  const unsigned m_stage;
   const Color m_color;
 };
 
