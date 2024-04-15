@@ -19,13 +19,6 @@ add_executable(chess ${ui_sources})
 target_link_libraries(chess PUBLIC Qt6::Widgets PUBLIC chesscore chessai)
 target_include_directories(chess PUBLIC .)
 
-qt_generate_deploy_app_script(
-    TARGET chess
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
-
 install(TARGETS chess)
 
 endif()
