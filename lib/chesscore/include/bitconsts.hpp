@@ -8,8 +8,8 @@ using bitboard_hash_t = uint64_t;
 constexpr static const bitboard_t kzero = 0;
 constexpr static const bitboard_t kall = ~kzero;
 
-constexpr bitboard_t operator""_b(bitboard_t num) {
-  return static_cast<bitboard_t>(1) << num;
+constexpr bitboard_t operator""_b(unsigned long long int value) {
+  return static_cast<bitboard_t>(1) << value;
 }
 
 constexpr bitboard_t PositionToBitMask(bitboard_t num) {
