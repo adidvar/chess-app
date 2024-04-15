@@ -24,8 +24,8 @@ TEST_CASE("Evaluator tests", "[evaluate]", ) {
   }
   SECTION("Logic tests") {
     REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},
-                                  Color::kWhite, GameStage{}) > Score::Tie());
+                                  Color::kWhite, 0) > Score::Tie());
     REQUIRE(Score::GetStaticValue({"7k/8/8/8/8/8/8/1QQQQQ1K w - - 0 1"},
-                                  Color::kBlack, GameStage{}) < Score::Tie());
+                                  Color::kBlack, 0) < Score::Tie());
   }
 }
