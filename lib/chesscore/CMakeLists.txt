@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25.1)
+cmake_minimum_required(VERSION 3.22.1)
 
 file(GLOB core_sources
      ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
