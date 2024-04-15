@@ -1,9 +1,13 @@
 #include "BoardDesign.h"
 
+#include <QMessageBox>
+
 BoardDesign::BoardDesign():
     font_("Times",10,QFont::Bold),
     pixmap_("chessfigures.png")
 {
+  if (pixmap_.isNull())
+    QMessageBox::warning(nullptr, "Warning", "Can't find chessfigures.png");
 }
 
 QColor BoardDesign::GetFront() const
