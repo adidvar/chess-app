@@ -1,5 +1,7 @@
 #include "evaluator.hpp"
 
+#include <cmath>
+
 #include "magic.hpp"
 
 struct S {

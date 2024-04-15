@@ -11,7 +11,8 @@ class ItDeepening : public AlphaBeta {
  public:
   ItDeepening(const BitBoard &board, Color color) : AlphaBeta(board, color) {}
 
-  Score GetValue(int max_depth, Score a = T::Min(), Score b = T::Max()) {
+  Score GetValue(int max_depth, Score a = Score::Min(),
+                 Score b = Score::Max()) {
     m_last_depth = 0;
     Score result{};
     Turn turn{};

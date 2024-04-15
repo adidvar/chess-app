@@ -111,8 +111,8 @@ class AlphaBeta : public QSearch {
 
     if (moves.empty()) {
       m_last_turn = Turn();
-      if (inCheck) return T::CheckMate(depthleft, depthmax);
-      return T::Tie();
+      if (inCheck) return Score::CheckMate(depthleft, depthmax);
+      return Score::Tie();
     }
 
     MainNode();
