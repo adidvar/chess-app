@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_UI "build UI module" OFF)
-option(BUILD_UCI "build UCI module" OFF)
+option(BUILD_UI "build UI module" ON)
+option(BUILD_UCI "build UCI module" ON)
 option(BUILD_TESTS "build tests" OFF)
 option(BUILD_DEBUG_EXECUTABLE "build dev only executable" OFF)
 
