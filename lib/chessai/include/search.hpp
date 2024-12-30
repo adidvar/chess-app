@@ -3,8 +3,8 @@
 
 #include <atomic>
 
-#include "bitboard.hpp"
-#include "figures.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "searchsettings.hpp"
 
 struct SearchExitException {};

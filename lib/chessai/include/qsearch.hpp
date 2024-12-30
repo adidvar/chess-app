@@ -3,7 +3,8 @@
 
 #include <algorithm>
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "bitboardtuple.hpp"
 #include "score.hpp"
 #include "search.hpp"

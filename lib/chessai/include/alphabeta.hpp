@@ -4,7 +4,8 @@
 #include <atomic>
 #include <iostream>
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "hktable.hpp"
 #include "ordering.hpp"
 #include "qsearch.hpp"

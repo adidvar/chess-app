@@ -3,7 +3,7 @@
 
 #include <variant>
 
-#include "figures.hpp"
+#include <chesscore/figures.hpp>
 
 class TimeManager {
  public:

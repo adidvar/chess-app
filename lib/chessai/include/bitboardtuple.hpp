@@ -1,7 +1,8 @@
 #ifndef BITBOARDTUPLE_HPP
 #define BITBOARDTUPLE_HPP
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "score.hpp"
 
 struct BitBoardTuple {

@@ -5,6 +5,9 @@
 # Prerequisites
 *.d
 
+### tests ###
+runsettings.xml
+
 ###BUILD###
 build
 

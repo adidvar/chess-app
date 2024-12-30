@@ -4,7 +4,6 @@
 #include <atomic>
 
 #include "alphabeta.hpp"
-#include "bitboard.hpp"
 #include "ttable.hpp"
 
 class ItDeepening : public AlphaBeta {

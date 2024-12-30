@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
 #include "score.hpp"
 /**
  * @brief The TTableItem class element of transposition table

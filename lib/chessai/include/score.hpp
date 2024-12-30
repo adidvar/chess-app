@@ -3,7 +3,8 @@
 
 #include <string>
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "searchsettings.hpp"
 
 class Score {

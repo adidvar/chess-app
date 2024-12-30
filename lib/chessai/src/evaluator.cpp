@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "magic.hpp"
+#include <chesscore/magic.hpp>
 
 struct S {
   S() : mg(0), eg(0) {}

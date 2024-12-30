@@ -5,7 +5,7 @@
 #include <deque>
 #include <vector>
 
-#include "turn.hpp"
+#include <chesscore/turn.hpp>
 
 /**
  * @brief The BFTable class contains History heuristics and killer moves

@@ -1,7 +1,8 @@
 #ifndef EVALUATOR_H
 #define EVALUATOR_H
 
-#include "bitboard.hpp"
+#include <chesscore/bitboard.hpp>
+
 #include "score.hpp"
 #include "searchsettings.hpp"
 

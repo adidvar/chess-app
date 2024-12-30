@@ -38,6 +38,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(chessaitests ${ai_tests})
+target_include_directories(chessaitests PUBLIC include/chesscore)
 target_link_libraries(chessaitests chessai Catch2::Catch2WithMain)
 add_test(NAME chessaitests COMMAND chesscoretests)
 
