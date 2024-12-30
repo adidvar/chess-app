@@ -9,11 +9,9 @@ file(GLOB files
 
 add_executable(uci ${files})
 
-target_include_directories(uci PUBLIC  .)
+target_include_directories(uci PRIVATE .)
 
 target_link_libraries(uci chesscore chessai)
-
-install(TARGETS uci)
 
 endif()
 

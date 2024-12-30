@@ -19,6 +19,4 @@ add_executable(chess ${ui_sources})
 target_link_libraries(chess PUBLIC Qt6::Widgets PUBLIC chesscore chessai)
 target_include_directories(chess PUBLIC .)
 
-install(TARGETS chess)
-
 endif()

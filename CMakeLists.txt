@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(Chess5 LANGUAGES C CXX VERSION 5.0.0.0)
+project(Chess5 LANGUAGES C CXX VERSION 1.0)
 
 enable_testing()
 
