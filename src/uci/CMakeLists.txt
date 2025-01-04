@@ -7,11 +7,11 @@ file(GLOB files
      "*.cpp"
 )
 
-add_executable(uci ${files})
+#add_executable(uci ${files})
 
-target_include_directories(uci PRIVATE .)
+#target_include_directories(uci PRIVATE .)
 
-target_link_libraries(uci chesscore chessai)
+#target_link_libraries(uci chesscore chessai)
 
 endif()
 

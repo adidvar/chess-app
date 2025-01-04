@@ -1,5 +1,4 @@
-#ifndef POSITION_H
-#define POSITION_H
+#pragma once
 
 #include <cassert>
 #include <cinttypes>
@@ -30,66 +29,65 @@
  */
 class Position {
  public:
-  Position(uint8_t x, uint8_t y) noexcept {
-    if (x > 7 || y > 7)
-      index_ = kerror_pos_;
-    else
-      index_ = y * 8 + x;
-  }
+     constexpr Position(uint8_t x, uint8_t y) noexcept
+     {
+         assert(x < 8);
+         assert(y < 8);
+         m_index = y * 8 + x;
+     }
 
-  constexpr Position() noexcept : index_(kerror_pos_) {}
+     constexpr Position() noexcept
+         : m_index(k_invalid_position)
+     {}
 
-  constexpr Position(uint8_t index) noexcept : index_(index) {}
+     constexpr Position(uint8_t index) noexcept
+         : m_index(index < k_invalid_position ? index : k_invalid_position)
+     {}
+     explicit Position(std::string_view string)
+     {
+         if (string.size() == 2 && string[0] >= 'a' && string[0] <= 'h' && string[1] >= '1'
+             && string[1] <= '8')
+             *this = Position(string[0] - 'a', '8' - string[1]);
+         else
+             *this = {};
+     }
 
-  [[nodiscard]] constexpr bool Valid() const noexcept {
-    return index_ < kerror_pos_;
-  }
+     [[nodiscard]] constexpr bool isValid() const noexcept { return m_index < k_invalid_position; }
 
-  [[nodiscard]] constexpr uint8_t Value() const noexcept { return index_; }
+     [[nodiscard]] constexpr uint8_t index() const noexcept { return m_index; }
 
-  [[nodiscard]] constexpr uint8_t x() const noexcept { return index_ % 8; }
+     [[nodiscard]] constexpr uint8_t x() const noexcept
+     {
+         assert(isValid());
+         return m_index % 8;
+     }
+     [[nodiscard]] constexpr uint8_t y() const noexcept
+     {
+         assert(isValid());
+         return m_index / 8;
+     }
 
-  [[nodiscard]] constexpr uint8_t y() const noexcept { return index_ / 8; }
+     [[nodiscard]] constexpr Position rotate() const noexcept
+     {
+         assert(isValid());
+         return Position(63 - m_index);
+     }
 
-  [[nodiscard]] constexpr Position Rotate() const noexcept {
-    if (Valid())
-      return Position(63 - index_);
-    return {};
-  }
+     [[nodiscard]] std::string toString() const
+     {
+         if (!isValid())
+             return "--";
+         std::string str = "00";
+         str[0] = static_cast<char>('a' + x());
+         str[1] = static_cast<char>('8' - y());
+         return str;
+     }
 
-  [[nodiscard]] std::string ToString() const {
-    std::string str = "00";
-    str[0] = static_cast<char>('a' + x());
-    str[1] = static_cast<char>('8' - y());
-    if (Valid()) return str;
-    return "--";
-  }
-
-  static Position FromString(std::string_view string) noexcept {
-    if (string.size() == 2 && string[0] >= 'a' && string[0] <= 'h' &&
-        string[1] >= '1' && string[1] <= '8')
-      return Position(string[0] - 'a', '8' - string[1]);
-    return {};
-  }
-
-  bool operator==(const Position& pos) const noexcept {
-    return index_ == pos.index_;
-  }
-
-  bool operator!=(const Position& pos) const noexcept {
-    return index_ != pos.index_;
-  }
-
-  bool operator<(const Position& pos) const noexcept {
-    return index_ < pos.index_;
-  }
-
-  constexpr static uint8_t Max() { return kerror_pos_; }
+     bool operator==(const Position& pos) const noexcept { return m_index == pos.m_index; }
+     bool operator!=(const Position& pos) const noexcept { return m_index != pos.m_index; }
+     bool operator<(const Position& pos) const noexcept { return m_index < pos.m_index; }
 
  private:
-  uint8_t index_;
-
-  static constexpr uint8_t kerror_pos_ = 64;
+     static constexpr uint8_t k_invalid_position = 64;
+     uint8_t m_index;
 };
-
-#endif  // POSITION_H

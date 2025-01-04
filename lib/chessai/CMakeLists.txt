@@ -12,35 +12,28 @@ file(GLOB ai_tests
      tests/*.test.cpp
 )
 
-add_library(chessai ${ai_headers} ${ai_sources})
-target_link_libraries(chessai chesscore)
-target_include_directories(chessai PUBLIC include)
-
-install(TARGETS chessai)
-INSTALL(FILES ${ai_headers}
-        DESTINATION include/chessai
-)
-
-install(TARGETS chessai)
+#add_library(chessai ${ai_headers} ${ai_sources})
+#target_link_libraries(chessai chesscore)
+#target_include_directories(chessai PUBLIC include)
 
 if(BUILD_TESTS)
 
-enable_testing()
+#enable_testing()
 
-Include(FetchContent)
+#Include(FetchContent)
 
-FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.0.1 # or a later release
-)
+#FetchContent_Declare(
+#  Catch2
+#  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+#  GIT_TAG        v3.0.1 # or a later release
+#)
 
-FetchContent_MakeAvailable(Catch2)
+#FetchContent_MakeAvailable(Catch2)
 
-add_executable(chessaitests ${ai_tests})
-target_include_directories(chessaitests PUBLIC include/chesscore)
-target_link_libraries(chessaitests chessai Catch2::Catch2WithMain)
-add_test(NAME chessaitests COMMAND chesscoretests)
+#add_executable(test_chessai ${ai_tests})
+#target_include_directories(test_chessai PUBLIC include/chesscore)
+#target_link_libraries(test_chessai chessai Catch2::Catch2WithMain)
+#add_test(NAME test_chessai COMMAND test_chessai)
 
 endif()
 

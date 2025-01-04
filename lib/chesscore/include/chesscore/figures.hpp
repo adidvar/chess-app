@@ -1,52 +1,60 @@
-#ifndef FIGURES_H
-#define FIGURES_H
+#pragma once
 
+#include <cassert>
 #include <cinttypes>
 
-/**
- * @brief The Figure class describes a chess figure
- */
 class Figure {
  public:
-  static constexpr uint8_t kEmpty = 0;   ///< Empty figure
-  static constexpr uint8_t kPawn = 1;    ///< Pawn
-  static constexpr uint8_t kKnight = 2;  ///< Knight
-  static constexpr uint8_t kBishop = 3;  ///< Bishop
-  static constexpr uint8_t kRook = 4;    ///< Rook
-  static constexpr uint8_t kQueen = 5;   ///< Queen
-  static constexpr uint8_t kKing = 6;    ///< King
+     //empty
+     static constexpr int8_t Empty = 0;
+     //base figures
+     static constexpr int8_t Pawn = 1;
+     static constexpr int8_t Knight = 2;
+     static constexpr int8_t Bishop = 3;
+     static constexpr int8_t Rook = 4;
+     static constexpr int8_t Queen = 5;
+     static constexpr int8_t King = 6;
+     //white figures
+     static constexpr int8_t WPawn = 1;
+     static constexpr int8_t WKnight = 2;
+     static constexpr int8_t WBishop = 3;
+     static constexpr int8_t WRook = 4;
+     static constexpr int8_t WQueen = 5;
+     static constexpr int8_t WKing = 6;
+     //black figures
+     static constexpr int8_t BPawn = -1;
+     static constexpr int8_t BKnight = -2;
+     static constexpr int8_t BBishop = -3;
+     static constexpr int8_t BRook = -4;
+     static constexpr int8_t BQueen = -5;
+     static constexpr int8_t BKing = -6;
 
-  Figure(uint8_t value) noexcept : value_(value) {}
+     constexpr Figure(int8_t value) noexcept
+         : m_value(value)
+     {}
 
-  Figure() noexcept : value_(kEmpty) {}
+     constexpr operator int8_t() const noexcept { return m_value; }
 
-  operator uint8_t() const noexcept { return value_; }
+     constexpr bool isValid() const noexcept { return m_value >= BKing && m_value <= WKing; }
+     constexpr bool isEmpty() const noexcept { return m_value == 0; }
+     constexpr bool isWhite() const noexcept { return m_value > 0; }
+     constexpr bool isBlack() const noexcept { return m_value < 0; }
 
-  bool Valid() const noexcept { return value_ >= kEmpty && value_ <= kKing; }
-
-  constexpr static uint8_t Max() { return 7; }
+     constexpr int8_t toIndex() const noexcept { return m_value < 0 ? -m_value : m_value; }
 
  private:
-  uint8_t value_;
+     int8_t m_value;
 };
 
-/**
- * @brief The Color class describes a chess figure color
- */
 class Color {
-  uint8_t value_;
+public:
+    constexpr Color(int8_t value) noexcept
+        : m_value(value)
+    {}
+    static constexpr int8_t White{1};
+    static constexpr int8_t Black{-1};
+    constexpr operator int8_t() const noexcept { return m_value; }
 
- public:
-  static constexpr uint8_t kWhite = 0;  ///< White
-  static constexpr uint8_t kBlack = 1;  ///< Black
-
-  Color(uint8_t value) noexcept : value_(value) {}
-
-  Color() noexcept : value_(kWhite) {}
-
-  operator uint8_t() const noexcept { return value_; }
-
-  constexpr static uint8_t Max() { return 2; };
+private:
+    int8_t m_value;
 };
-
-#endif  // FIGURES_H

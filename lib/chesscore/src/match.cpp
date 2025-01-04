@@ -1,3 +1,4 @@
+/*
 #include "match.hpp"
 
 #include <algorithm>
@@ -30,7 +31,7 @@ bool Match::Push(Turn turn) {
 
 bool Match::Surrender(Color color) {
   if (result_ == Unknown) {
-    if (color == Color::kWhite)
+    if (color == Color::White)
       result_ = BlackWin;
     else
       result_ = WhiteWin;
@@ -53,9 +54,9 @@ void Match::SetStartBoard(const BitBoard &board) { startboard_ = board; }
 
 void Match::LoadFromUCIString(const std::string &line) {
   size_t index = 0;
-  LoadFromFen(line, startboard_, index);
+  loadFromFen(line, startboard_, index);
   auto turnsstr = line.substr(index);
-  auto turns = Split(turnsstr, {' ', '\t', '\n', '\r'});
+  auto turns = splitLine(turnsstr, {' ', '\t', '\n', '\r'});
   endboard_ = startboard_;
   if (turns.size() != 0 && turns.front() == "moves") {
     turns.erase(turns.cbegin());
@@ -66,3 +67,5 @@ void Match::LoadFromUCIString(const std::string &line) {
     }
   }
 }
+
+*/

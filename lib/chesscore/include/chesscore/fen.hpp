@@ -1,22 +1,23 @@
-#ifndef PARSINGTOOLS_HPP
-#define PARSINGTOOLS_HPP
+#pragma once
 
+#include <stdexcept>
+#include <string>
 #include <string_view>
 #include <vector>
-#include <string>
 
 class BitBoard;
-class Match;
 
-void LoadFromFen(std::string_view fen, BitBoard &board, size_t &index);
+class FenParsingError : public std::runtime_error
+{
+public:
+    explicit FenParsingError(const std::string &message)
+        : std::runtime_error("FEN Parsing Error: " + message)
+    {}
 
-std::string SaveToFen(const BitBoard &board);
+    explicit FenParsingError(const char *message)
+        : std::runtime_error(std::string("FEN Parsing Error: ") + message)
+    {}
+};
 
-std::vector<std::string_view> Split(std::string_view data,
-                                    const std::vector<char> &seperators);
-
-std::string_view ReadUntillDelims(std::string_view data,
-                                  const std::vector<char> &seperators,
-                                  size_t &index);
-
-#endif
+void boardFromFen(std::string_view fen, BitBoard &board, size_t &index);
+std::string boardToFen(const BitBoard &board);

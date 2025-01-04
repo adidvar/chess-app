@@ -7,6 +7,7 @@
 #include "bitboard.hpp"
 #include "turn.hpp"
 
+/*
 class Match {
  public:
   enum Result_t { WhiteWin, BlackWin, Tie, Unknown };
@@ -35,5 +36,6 @@ class Match {
   BitBoard startboard_;
   BitBoard endboard_;
 };
+*/
 
 #endif  // MATCH_H

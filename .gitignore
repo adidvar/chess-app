@@ -6,7 +6,8 @@
 *.d
 
 ### tests ###
-runsettings.xml
+.runsettings
+bench_results.txt
 
 ###BUILD###
 build

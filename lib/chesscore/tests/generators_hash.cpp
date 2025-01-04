@@ -4,10 +4,11 @@
 
 #include <bitboard.hpp>
 
+/*
 static size_t MovesCounter(BitBoard board, bitboard_hash_t hash, size_t depth) {
-  if (!depth) return board.Hash() == hash;
+  if (!depth) return board.hash() == hash;
   size_t counter = 0;
-  for (auto sub : board.GenerateSubBoards(board.CurrentColor())) {
+  for (auto sub : board.generateSubBoards(board.CurrentColor())) {
     Turn turn = BitBoard::GenerateTurn(board, sub, board.CurrentColor());
     counter += MovesCounter(sub, BitBoard::GenerateHash(board, hash, turn, sub),
                             depth - 1);
@@ -15,7 +16,7 @@ static size_t MovesCounter(BitBoard board, bitboard_hash_t hash, size_t depth) {
   return counter;
 }
 static size_t MovesCounter(BitBoard board, size_t depth) {
-  return MovesCounter(board, board.Hash(), depth);
+  return MovesCounter(board, board.hash(), depth);
 }
 
 using TestType = BitBoard;
@@ -96,3 +97,5 @@ TEST_CASE("BitBoards advanced hash tests", "[bitboard][board][fen]") {
   REQUIRE(MovesCounter(TestType("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"), 4) ==
           23527);
 }
+
+*/

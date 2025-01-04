@@ -6,95 +6,73 @@
 
 const static Turn white_long_castling(60, 58), black_long_castling(4, 2),
     white_short_castling(60, 62), black_short_castling(4, 6);
-
 const static char codes[7] = {'\0', 'p', 'k', 'b', 'r', 'q', '\0'};
 
-Turn::Turn() : figure_(Figure::kEmpty) {}
+Turn::Turn(std::string_view chess_format)
+{
+    if (chess_format.size() != 5 && chess_format.size() != 4) {
+        *this = {};
+        return;
+    }
 
-Turn::Turn(Position from, Position to)
-    : from_(from), to_(to), figure_(Figure::kEmpty) {}
+    auto pos_from = Position(chess_format.substr(0, 2));
+    auto pos_to = Position(chess_format.substr(2, 2));
 
-Turn::Turn(Position from, Position to, Figure figure)
-    : from_(from), to_(to), figure_(figure) {}
+    if (!pos_from.isValid() || !pos_to.isValid()) {
+        *this = {};
+        return;
+    }
 
-Position Turn::from() const noexcept { return from_; }
+    m_from = pos_from.index();
+    m_to = pos_to.index();
 
-Position Turn::to() const noexcept { return to_; }
-
-Position &Turn::from() noexcept { return from_; }
-
-Position &Turn::to() noexcept { return to_; }
-
-Figure Turn::figure() const noexcept { return figure_; }
-
-Figure &Turn::figure() noexcept { return figure_; }
-
-bool Turn::Valid() const noexcept {
-  return from_.Valid() && to_.Valid() && figure_.Valid() &&
-         figure_ != Figure::kPawn && figure_ != Figure::kKing;
+    if (chess_format.size() == 5) {
+        auto index = std::find(codes, codes + 7, chess_format[4]);
+        if (index == codes + 7) {
+            *this = {};
+            return;
+        }
+        m_figure = index - codes;
+    }
 }
 
-bool Turn::IsCastling() const noexcept {
-  return IsLongCastling() || IsShortCastling();
+std::string Turn::toString() const
+{
+    if (!isValid()) {
+        return "0000";
+    } else if (m_figure == Figure::Empty) {
+        std::stringstream ss;
+        ss << Position(m_from).toString() << Position(m_to).toString();
+        return ss.str();
+    } else {
+        std::stringstream ss;
+        ss << Position(m_from).toString() << Position(m_to).toString() << codes[(size_t) m_figure];
+        return ss.str();
+    }
 }
 
-bool Turn::IsLongCastling() const noexcept {
-  return (*this) == white_long_castling || (*this) == black_long_castling;
+bool Turn::isCastling() const noexcept
+{
+    return isLongCastling() || isShortCastling();
 }
 
-bool Turn::IsShortCastling() const noexcept {
-  return (*this) == white_short_castling || (*this) == black_short_castling;
+bool Turn::isLongCastling() const noexcept
+{
+    return (*this) == white_long_castling || (*this) == black_long_castling;
 }
 
-bool Turn::IsTrasformation() const noexcept {
-  return figure_ != Figure::kEmpty;
+bool Turn::isShortCastling() const noexcept
+{
+    return (*this) == white_short_castling || (*this) == black_short_castling;
 }
 
-std::string Turn::ToChessFormat() const {
-  if (!Valid()) {
-    return "0000";
-  } else if (figure_ == Figure::kEmpty) {
-    std::stringstream ss;
-    ss << from_.ToString() << to_.ToString();
-    return ss.str();
-  } else {
-    std::stringstream ss;
-    ss << from_.ToString() << to_.ToString() << codes[(size_t)figure_];
-    return ss.str();
-  }
+
+Turn Turn::getShortCastling(Color color)
+{
+    return color == Color::White ? white_short_castling : black_short_castling;
 }
 
-Turn Turn::FromChessFormat(std::string_view string) {
-  Turn turn;
-
-  if (string.size() != 5 && string.size() != 4) return turn;
-
-  turn.from_ = Position::FromString(string.substr(0, 2));
-  turn.to_ = Position::FromString(string.substr(2, 2));
-
-  // to do ***
-  if (string.size() == 5) {
-    turn.figure_ = std::find(codes, codes + 7, string[4]) - codes;
-  }
-
-  return turn;
-}
-
-Turn Turn::GetShortCastling(Color color) {
-  return color == Color::kWhite ? white_short_castling : black_short_castling;
-}
-
-Turn Turn::GetLongCastling(Color color) {
-  return color == Color::kWhite ? white_long_castling : black_long_castling;
-}
-
-bool Turn::operator==(const Turn &turn) const {
-  return from_ == turn.from_ && to_ == turn.to_ && figure_ == turn.figure_;
-}
-
-bool Turn::operator!=(const Turn &turn) const { return !(*this == turn); }
-
-bool Turn::operator<(const Turn &turn) const {
-  return std::tie(from_, to_, figure_) <
-         std::tie(turn.from_, turn.to_, turn.figure_);
+Turn Turn::getLongCastling(Color color)
+{
+    return color == Color::White ? white_long_castling : black_long_castling;
 }

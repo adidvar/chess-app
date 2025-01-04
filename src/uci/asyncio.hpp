@@ -31,13 +31,13 @@ class Asyncio
       std::getline(std::cin, line);
 
       size_t index = 0;
-      command.name = ReadUntillDelims(line, del, index);
+      command.name = readUntillDelims(line, del, index);
 
       command.parameters_line = line.substr(index);
 
       while (index != line.size()) {
         command.parameters.push_back({});
-        command.parameters.back() = ReadUntillDelims(line, del, index);
+        command.parameters.back() = readUntillDelims(line, del, index);
       }
 
       log_ << line;

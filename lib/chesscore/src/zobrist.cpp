@@ -2,35 +2,36 @@
 
 #include <random>
 
+/*
 bitboard_t FiguresHash[Figure::Max()][Color::Max()][Position::Max()];
 bitboard_t ShortCastlingFlagHash[Color::Max()];
 bitboard_t LongCastlingFlagHash[Color::Max()];
 bitboard_t CurrentColorHash[Color::Max()];
 bitboard_t ElpassantHash[Position::Max()];
 
-uint64_t GetFigureHash(Figure figure, Color color, Position position) {
-  return FiguresHash[figure][color][position.Value()];
+uint64_t getFigureHash(Figure figure, Color color, Position position) {
+  return FiguresHash[figure][color][position.index()];
 }
 
-uint64_t GetShortCastlingFlagHash(Color color) {
+uint64_t getShortCastlingFlagHash(Color color) {
   return ShortCastlingFlagHash[color];
 }
 
-uint64_t GetLongCastlingFlagHash(Color color) {
+uint64_t getLongCastlingFlagHash(Color color) {
   return LongCastlingFlagHash[color];
 }
 
-uint64_t GetTurnCounterHash(int count) { return 0; }
+uint64_t getTurnCounterHash(int count) { return 0; }
 
-uint64_t GetPassiveCountHash(int count) { return 0; }
+uint64_t getPassiveCountHash(int count) { return 0; }
 
-uint64_t GetCurrentColorHash(Color color) { return CurrentColorHash[color]; }
+uint64_t getCurrentColorHash(Color color) { return CurrentColorHash[color]; }
 
-uint64_t GetElpassantHash(Position position) {
-  return ElpassantHash[position.Value()];
+uint64_t getElpassantHash(Position position) {
+  return ElpassantHash[position.index()];
 }
 
-void InitZobrist() {
+void initZobrist() {
   std::mt19937_64 random(0ULL);
 
   for (size_t f = 0; f < Figure::Max(); ++f)
@@ -45,5 +46,7 @@ void InitZobrist() {
 }
 
 struct StartUp {
-  StartUp() { InitZobrist(); }
+  StartUp() { initZobrist(); }
 } static startup;
+
+*/

@@ -1,259 +1,230 @@
 #include "fen.hpp"
-
-#include <algorithm>
-#include <map>
-#include <sstream>
-#include <stdexcept>
-
 #include "bitboard.hpp"
 
-std::string_view ReadUntillDelims(std::string_view data,
-                                  const std::vector<char> &seperators,
-                                  size_t &index) {
-  auto prefix_size = index;
-  data.remove_prefix(prefix_size);
+#include <array>
+#include <map>
 
-  index = 0;
+constexpr static std::array<char, 3> seperators{' ', '\n', '\t'};
 
-  while (std::find(seperators.begin(), seperators.end(), data[index]) !=
-         seperators.end())
-    index++;
+constexpr const std::string_view start_string = "startpos";
 
-  auto begin = index;
-
-  while (index < data.size() && std::find(seperators.begin(), seperators.end(),
-                                          data[index]) == seperators.end())
-    index++;
-
-  auto end = index;
-
-  while (index < data.size() && std::find(seperators.begin(), seperators.end(),
-                                          data[index]) != seperators.end())
-    index++;
-
-  index += prefix_size;
-
-  return data.substr(begin, end - begin);
+void skipSeperators(std ::string_view data, size_t &index)
+{
+    while (index < data.size()
+           && std::find(seperators.begin(), seperators.end(), data[index]) != seperators.end())
+        index++;
 }
 
-std::vector<std::string_view> Split(std::string_view data,
-                                    const std::vector<char> &seperators) {
-  std::vector<std::string_view> parts;
-
-  size_t index = 0;
-  while (index < data.size())
-    parts.push_back(ReadUntillDelims(data, seperators, index));
-
-  return parts;
+std::string_view readStringPart(std::string_view data, size_t &index)
+{
+    skipSeperators(data, index);
+    auto begin = index;
+    while (index < data.size()
+           && std::find(seperators.begin(), seperators.end(), data[index]) == seperators.end())
+        index++;
+    auto end = index;
+    skipSeperators(data, index);
+    return data.substr(begin, end - begin);
 }
 
-void LoadFromFen(std::string_view fen, BitBoard &board_, size_t &index) {
-  std::string_view start = "startpos";
-  auto miss =
-      std::mismatch(fen.cbegin(), fen.cend(), start.cbegin(), start.cend());
+void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
+{
+    const static std::map<char, Figure> s_to_f{{' ', Figure::Empty},
+                                               {'p', Figure::BPawn},
+                                               {'n', Figure::BKnight},
+                                               {'b', Figure::BBishop},
+                                               {'r', Figure::BRook},
+                                               {'q', Figure::BQueen},
+                                               {'k', Figure::BKing},
+                                               {'P', Figure::WPawn},
+                                               {'N', Figure::WKnight},
+                                               {'B', Figure::WBishop},
+                                               {'R', Figure::WRook},
+                                               {'Q', Figure::WQueen},
+                                               {'K', Figure::WKing}};
 
-  if (miss.second == start.cend()) {
-    board_ = BitBoard();
-    index = miss.second - start.cbegin();
-    return;
-  }
+    skipSeperators(fen, index);
 
-  for (size_t i = 0; i < Position::Max(); i++)
-    board_.Set(i, {Figure::kEmpty, Color::kWhite});
-
-  size_t i = index;
-  size_t position = 0;
-  while (i < fen.size() && position != 64 && fen[i] != ' ') {
-    switch (fen.at(i)) {
-      case 'p':
-        board_.Set(position, {Figure::kPawn, Color::kBlack});
-        position++;
-        break;
-      case 'n':
-        board_.Set(position, {Figure::kKnight, Color::kBlack});
-        position++;
-        break;
-      case 'b':
-        board_.Set(position, {Figure::kBishop, Color::kBlack});
-        position++;
-        break;
-      case 'r':
-        board_.Set(position, {Figure::kRook, Color::kBlack});
-        position++;
-        break;
-      case 'q':
-        board_.Set(position, {Figure::kQueen, Color::kBlack});
-        position++;
-        break;
-      case 'k':
-        board_.Set(position, {Figure::kKing, Color::kBlack});
-        position++;
-        break;
-      case 'P':
-        board_.Set(position, {Figure::kPawn, Color::kWhite});
-        position++;
-        break;
-      case 'N':
-        board_.Set(position, {Figure::kKnight, Color::kWhite});
-        position++;
-        break;
-      case 'B':
-        board_.Set(position, {Figure::kBishop, Color::kWhite});
-        position++;
-        break;
-      case 'R':
-        board_.Set(position, {Figure::kRook, Color::kWhite});
-        position++;
-        break;
-      case 'Q':
-        board_.Set(position, {Figure::kQueen, Color::kWhite});
-        position++;
-        break;
-      case 'K':
-        board_.Set(position, {Figure::kKing, Color::kWhite});
-        position++;
-        break;
-      case '1':
-        position += 1;
-        break;
-      case '2':
-        position += 2;
-        break;
-      case '3':
-        position += 3;
-        break;
-      case '4':
-        position += 4;
-        break;
-      case '5':
-        position += 5;
-        break;
-      case '6':
-        position += 6;
-        break;
-      case '7':
-        position += 7;
-        break;
-      case '8':
-        position += 8;
-        break;
-      case '/':
-        position = ((position - 1) / 8) * 8 + 8;
-        break;
-      case ' ':
-        break;
-      default:
-        throw std::runtime_error("fen invalid format [board]");
-        break;
+    if (fen.substr(index).starts_with(start_string)) {
+        board = BitBoard{};
+        index += start_string.size();
+        return;
     }
-    ++i;
-  }
-  ++i;
 
-  if (position != 64) throw std::runtime_error("fen invalid format [board]");
+    size_t position = 0;
+    for (; index < fen.size() && position != 64; ++index) {
+        const char character = fen.at(index);
 
-  std::string current_move, rooking, pawn;
-  std::string static_move, move_counter;
-
-  current_move = ReadUntillDelims(fen, {' '}, i);
-  rooking = ReadUntillDelims(fen, {' '}, i);
-  pawn = ReadUntillDelims(fen, {' '}, i);
-
-  static_move = ReadUntillDelims(fen, {' '}, i);
-  move_counter = ReadUntillDelims(fen, {' '}, i);
-
-  if (pawn.size() == 2) board_.SetLastPawnMove(Position::FromString(pawn));
-
-  if (current_move.front() == 'w')
-    board_.SetCurrentColor(Color::kWhite);
-  else if (current_move == "b")
-    board_.SetCurrentColor(Color::kBlack);
-  else
-    throw std::runtime_error("fen invalid format [current_move]");
-
-  struct BitBoard::RookingFlagsT rooking_flags_ = {false, false, false, false};
-
-  for (char x : rooking) {
-    switch (x) {
-      case 'K':
-        rooking_flags_.white_oo = true;
-        break;
-      case 'Q':
-        rooking_flags_.white_ooo = true;
-        break;
-      case 'k':
-        rooking_flags_.black_oo = true;
-        break;
-      case 'q':
-        rooking_flags_.black_ooo = true;
-        break;
-      case '-':
-        break;
-      default:
-        throw std::runtime_error("fen invalid format [rooking]");
+        if (character == ' ')
+            ;
+        else if (s_to_f.contains(character)) {
+            board = board.set(Position(position), s_to_f.at(character));
+            position++;
+        } else if (std::isdigit(character)) {
+            if (int digit = character - '0'; digit > 0 && digit < 9)
+                position += digit;
+        } else if (character == '/')
+            position = ((position - 1) / 8) * 8 + 8;
+        else
+            throw FenParsingError("invalid character");
     }
-  }
-  board_.SetRookingFlags(rooking_flags_);
-  index = i;
+    ++index;
+
+    if (position != 64)
+        throw FenParsingError("incompleted fen");
+
+    std::string current_move, rooking, pawn;
+    std::string static_move, move_counter;
+
+    current_move = readStringPart(fen, index);
+
+    if (index == fen.size())
+        throw FenParsingError("incompleted fen");
+
+    rooking = readStringPart(fen, index);
+
+    if (index == fen.size())
+        throw FenParsingError("incompleted fen");
+
+    pawn = readStringPart(fen, index);
+
+    if (index == fen.size())
+        throw FenParsingError("incompleted fen");
+
+    static_move = readStringPart(fen, index);
+
+    if (index == fen.size())
+        throw FenParsingError("incompleted fen");
+
+    move_counter = readStringPart(fen, index);
+
+    BitBoard::Flags flags;
+
+    flags.last_turn_is_pawn = false;
+    flags.white_oo = false;
+    flags.white_ooo = false;
+    flags.black_oo = false;
+    flags.black_ooo = false;
+
+    if (current_move.front() == 'w')
+        flags.side = 0;
+    else if (current_move == "b")
+        flags.side = 1;
+    else
+        throw FenParsingError("incorrect current side");
+
+    if (pawn.size() == 2) {
+        auto position = Position(pawn);
+        if (!position.isValid())
+            throw FenParsingError("incorrect el passant");
+        if (flags.side == 0) {
+            board = board.setTurn(Turn(Position(pawn).index() - 8, Position(pawn).index() + 8));
+        } else {
+            board = board.setTurn(Turn(Position(pawn).index() + 8, Position(pawn).index() - 8));
+        }
+        flags.last_turn_is_pawn = true;
+    }
+
+
+    for (char x : rooking) {
+        switch (x) {
+        case 'K':
+            flags.white_oo = true;
+            break;
+        case 'Q':
+            flags.white_ooo = true;
+            break;
+        case 'k':
+            flags.black_oo = true;
+            break;
+        case 'q':
+            flags.black_ooo = true;
+            break;
+        case '-':
+            break;
+        default:
+            throw FenParsingError("incorrect castling");
+        }
+    }
+    board = board.setFlags(flags);
 }
 
-std::string SaveToFen(const BitBoard &board_) {
-  const char *symbols[2] = {" PNBRQK", " pnbrqk"};
-  char buffer[128] = {0};
-  size_t position = 0;
-  size_t bypass_counter = 0;
-  for (size_t i = 0; i < 64; i++) {
-    if (i % 8 == 0 && i != 0) {
-      if (bypass_counter != 0) {
+std::string boardToFen(const BitBoard &board)
+{
+    const static std::map<Figure, char> f_to_s = {{Figure::Empty, ' '},
+                                                  {Figure::BPawn, 'p'},
+                                                  {Figure::BKnight, 'n'},
+                                                  {Figure::BBishop, 'b'},
+                                                  {Figure::BRook, 'r'},
+                                                  {Figure::BQueen, 'q'},
+                                                  {Figure::BKing, 'k'},
+                                                  {Figure::WPawn, 'P'},
+                                                  {Figure::WKnight, 'N'},
+                                                  {Figure::WBishop, 'B'},
+                                                  {Figure::WRook, 'R'},
+                                                  {Figure::WQueen, 'Q'},
+                                                  {Figure::WKing, 'K'}};
+    char buffer[128] = {0};
+    size_t position = 0;
+    size_t bypass_counter = 0;
+    for (size_t i = 0; i < 64; i++) {
+        if (i % 8 == 0 && i != 0) {
+            if (bypass_counter != 0) {
+                buffer[position] = '0' + bypass_counter;
+                position++;
+                bypass_counter = 0;
+            }
+
+            buffer[position] = '/';
+            position++;
+        }
+        if (board.get(i).isEmpty())
+            bypass_counter++;
+        else {
+            if (bypass_counter != 0) {
+                buffer[position] = '0' + bypass_counter;
+                position++;
+                bypass_counter = 0;
+            }
+            buffer[position] = f_to_s.at(board.get(i));
+            position++;
+        }
+    }
+
+    if (bypass_counter != 0) {
         buffer[position] = '0' + bypass_counter;
         position++;
-        bypass_counter = 0;
-      }
-
-      buffer[position] = '/';
-      position++;
     }
-    if (board_.TestEmp(i))
-      bypass_counter++;
+
+    auto rooking_flags = board.getFlags();
+    std::string string(buffer);
+    string += ' ';
+    string.push_back(rooking_flags.side == 0 ? 'w' : 'b');
+    string += ' ';
+    if (rooking_flags.white_oo == false && rooking_flags.white_ooo == false
+        && rooking_flags.black_oo == false && rooking_flags.black_ooo == false)
+        string.push_back('-');
     else {
-      if (bypass_counter != 0) {
-        buffer[position] = '0' + bypass_counter;
-        position++;
-        bypass_counter = 0;
-      }
-      buffer[position] = symbols[board_.GetColor(i)][board_.GetFigure(i)];
-      position++;
+        if (rooking_flags.white_oo)
+            string += 'K';
+        if (rooking_flags.white_ooo)
+            string += 'Q';
+        if (rooking_flags.black_oo)
+            string += 'k';
+        if (rooking_flags.black_ooo)
+            string += 'q';
     }
-  }
+    string += ' ';
 
-  if (bypass_counter != 0) {
-    buffer[position] = '0' + bypass_counter;
-    position++;
-  }
+    if (rooking_flags.last_turn_is_pawn)
+        string += Position((board.getTurn().from().index() + board.getTurn().to().index()) / 2)
+                      .toString();
+    else
+        string += '-';
 
-  std::string string(buffer);
-  string += ' ';
-  string.push_back(board_.CurrentColor() == Color::kWhite ? 'w' : 'b');
-  string += ' ';
-  auto rooking_flags = board_.RookingFlags();
-  if (rooking_flags.white_oo == false && rooking_flags.white_ooo == false &&
-      rooking_flags.black_oo == false && rooking_flags.black_ooo == false)
-    string.push_back('-');
-  else {
-    if (rooking_flags.white_oo) string += 'K';
-    if (rooking_flags.white_ooo) string += 'Q';
-    if (rooking_flags.black_oo) string += 'k';
-    if (rooking_flags.black_ooo) string += 'q';
-  }
-  string += ' ';
-
-  if (board_.LastPawnMove().Valid())
-    string += board_.LastPawnMove().ToString();
-  else
-    string += '-';
-  string += ' ';
-  string += std::to_string(0);
-  string += ' ';
-  string += std::to_string(0);
-  return string;
+    string += ' ';
+    string += std::to_string(0);
+    string += ' ';
+    string += std::to_string(0);
+    return string;
 }
