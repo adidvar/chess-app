@@ -98,18 +98,12 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
 
     move_counter = readStringPart(fen, index);
 
-    BitBoard::Flags flags;
-
-    flags.last_turn_is_pawn = false;
-    flags.white_oo = false;
-    flags.white_ooo = false;
-    flags.black_oo = false;
-    flags.black_ooo = false;
+    BitBoard::Flags flags = BitBoard::flags_default;
 
     if (current_move.front() == 'w')
-        flags.side = 0;
+        ;
     else if (current_move == "b")
-        flags.side = 1;
+        flags = (BitBoard::Flags)(flags | BitBoard::flags_color);
     else
         throw FenParsingError("incorrect current side");
 
@@ -117,28 +111,27 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
         auto position = Position(pawn);
         if (!position.isValid())
             throw FenParsingError("incorrect el passant");
-        if (flags.side == 0) {
+        if (flags & BitBoard::flags_color == 0) {
             board = board.setTurn(Turn(Position(pawn).index() - 8, Position(pawn).index() + 8));
         } else {
             board = board.setTurn(Turn(Position(pawn).index() + 8, Position(pawn).index() - 8));
         }
-        flags.last_turn_is_pawn = true;
+        flags = (BitBoard::Flags)(flags | BitBoard::flags_el_passant);
     }
-
 
     for (char x : rooking) {
         switch (x) {
         case 'K':
-            flags.white_oo = true;
+            flags = (BitBoard::Flags)(flags | BitBoard::flags_white_oo);
             break;
         case 'Q':
-            flags.white_ooo = true;
+            flags = (BitBoard::Flags)(flags | BitBoard::flags_white_ooo);
             break;
         case 'k':
-            flags.black_oo = true;
+            flags = (BitBoard::Flags)(flags | BitBoard::flags_black_oo);
             break;
         case 'q':
-            flags.black_ooo = true;
+            flags = (BitBoard::Flags)(flags | BitBoard::flags_black_ooo);
             break;
         case '-':
             break;
@@ -199,24 +192,26 @@ std::string boardToFen(const BitBoard &board)
     auto rooking_flags = board.getFlags();
     std::string string(buffer);
     string += ' ';
-    string.push_back(rooking_flags.side == 0 ? 'w' : 'b');
+    string.push_back(rooking_flags & BitBoard::flags_color ? 'b' : 'w');
     string += ' ';
-    if (rooking_flags.white_oo == false && rooking_flags.white_ooo == false
-        && rooking_flags.black_oo == false && rooking_flags.black_ooo == false)
+    if ((rooking_flags
+         & (BitBoard::flags_black_oo | BitBoard::flags_black_ooo | BitBoard::flags_white_oo
+            | BitBoard::flags_white_ooo))
+        == 0)
         string.push_back('-');
     else {
-        if (rooking_flags.white_oo)
+        if (rooking_flags & BitBoard::flags_white_oo)
             string += 'K';
-        if (rooking_flags.white_ooo)
+        if (rooking_flags & BitBoard::flags_white_ooo)
             string += 'Q';
-        if (rooking_flags.black_oo)
+        if (rooking_flags & BitBoard::flags_black_oo)
             string += 'k';
-        if (rooking_flags.black_ooo)
+        if (rooking_flags & BitBoard::flags_black_ooo)
             string += 'q';
     }
     string += ' ';
 
-    if (rooking_flags.last_turn_is_pawn)
+    if (rooking_flags & BitBoard::flags_el_passant)
         string += Position((board.getTurn().from().index() + board.getTurn().to().index()) / 2)
                       .toString();
     else

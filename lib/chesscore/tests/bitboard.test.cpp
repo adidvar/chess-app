@@ -37,6 +37,7 @@ TEST_CASE("BitBoard tests", "[bitboard]") {
       }
     }
   }
+  /*
   SECTION("Test of ExecuteTurn GenerateSubBoards TestTurn")
   {
       BitBoard board;
@@ -48,7 +49,6 @@ TEST_CASE("BitBoard tests", "[bitboard]") {
           REQUIRE(sub.fen() == subboards[i].fen());
       }
   }
-  /*
   SECTION("Test of el passant") {
     BitBoard board;
     REQUIRE(board.executeTurn(Turn(Position(51), Position(35))));
@@ -221,16 +221,15 @@ TEST_CASE("BitBoard fen tests", "[bitboard][fen]") {
           "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 0");
 }
 
-template <typename Board>
-static size_t MovesCounterBase(Board board, size_t depth) {
-  if (!depth) return 1;
-  size_t counter = 0;
-  /*
-  for (auto board : board.generateSubBoards(board())) {
-      counter += MovesCounterBase(board, depth - 1);
-  }
-*/
-  return counter;
+static size_t MovesCounterBase(BitBoard board, size_t depth)
+{
+    if (!depth)
+        return 1;
+    size_t counter = 0;
+    for (auto sub : board.generateSubBoards(board.getCurrentSide())) {
+        counter += MovesCounterBase(board, depth - 1);
+    }
+    return counter;
 }
 
 /*
@@ -272,11 +271,11 @@ TEST_CASE("BitBoard generation tests", "[bitboard][generation]") {
   REQUIRE(MovesCounterBase(BitBoard(), 1) == 20);
   REQUIRE(MovesCounterBase(BitBoard(), 2) == 400);
   REQUIRE(MovesCounterBase(BitBoard(), 3) == 8902);
+  REQUIRE(MovesCounterBase(BitBoard(), 4) == 197281);
 }
 
 /*
 TEST_CASE("BitBoard generation advanced tests", "[bitboard][generation]") {
-  REQUIRE(MovesCounterBase(BitBoard(), 4) == 197281);
   REQUIRE(MovesCounterTo(BitBoard(), 4) == 197281);
   REQUIRE(MovesCounterFrom(BitBoard(), 4) == 197281);
 

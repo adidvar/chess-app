@@ -252,21 +252,6 @@ bitboard find_attacks_from(bitboard sq)
 }
 */
 
-bitboard processRook(bitboard sq, bitboard borders)
-{
-    sq = log2_64(sq);
-    auto a1 = RHash1[sq][(borders & RMask1[sq]) * RMagic1[sq] >> (64 - RShift1[sq])];
-    auto a2 = RHash2[sq][(borders & RMask2[sq]) * RMagic2[sq] >> (64 - RShift2[sq])];
-    return a1 | a2;
-}
-
-bitboard processBishop(bitboard sq, bitboard borders)
-{
-    sq = log2_64(sq);
-    auto a1 = BHash1[sq][(borders & BMask1[sq]) * BMagic1[sq] >> (64 - BShift1[sq])];
-    auto a2 = BHash2[sq][(borders & BMask2[sq]) * BMagic2[sq] >> (64 - BShift2[sq])];
-    return a1 | a2;
-}
 
 bitboard attackFrom(bitboard sq)
 {
@@ -301,3 +286,19 @@ void initMagic() {
 struct StartUp {
   StartUp() { initMagic(); }
 } static startup;
+
+BitBoard::bitboard processRook(Position pos, BitBoard::bitboard borders)
+{
+    int sq = pos.index();
+    auto a1 = RHash1[sq][(borders & RMask1[sq]) * RMagic1[sq] >> (64 - RShift1[sq])];
+    auto a2 = RHash2[sq][(borders & RMask2[sq]) * RMagic2[sq] >> (64 - RShift2[sq])];
+    return a1 | a2;
+}
+
+BitBoard::bitboard processBishop(Position pos, BitBoard::bitboard borders)
+{
+    int sq = pos.index();
+    auto a1 = BHash1[sq][(borders & BMask1[sq]) * BMagic1[sq] >> (64 - BShift1[sq])];
+    auto a2 = BHash2[sq][(borders & BMask2[sq]) * BMagic2[sq] >> (64 - BShift2[sq])];
+    return a1 | a2;
+}

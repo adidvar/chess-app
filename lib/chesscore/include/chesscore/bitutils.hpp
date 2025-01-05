@@ -53,29 +53,20 @@ constexpr static const bb lines[8]{line_1, line_2, line_3, line_4, line_5, line_
 struct BitIterator {
     constexpr BitIterator(bb value)
         : m_value(value)
-        , m_bit{}
-    {
-        operator++();
-    }
+    {}
 
     [[nodiscard]] constexpr bb Value() const { return m_value; }
-    [[nodiscard]] constexpr bb Bit() const { return m_bit; }
+    [[nodiscard]] constexpr bb Bit() const { return m_value & -m_value; }
     constexpr BitIterator& operator=(bb value)
     {
         m_value = value;
-        operator++();
         return *this;
     }
-  constexpr void operator++() {
-      bb mask = (m_value - 1) & m_value;
-      m_bit = m_value ^ mask;
-      m_value = mask;
-  }
-  [[nodiscard]] constexpr bool Valid() const { return m_bit != 0; }
+    constexpr void operator++() { m_value &= (m_value - 1); }
+    [[nodiscard]] constexpr bool Valid() const { return m_value != 0; }
 
-  private:
-  bb m_value;
-  bb m_bit;
+private:
+    bb m_value;
 };
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -105,17 +96,18 @@ constexpr unsigned log2_64(bb value)
 }
 #endif
 
+#ifdef _MSC_VER
+#include <intrin.h>
+inline int popCount(bb b)
+{
+    return __popcnt64(b);
+}
+#else
 constexpr int popCount(bb b)
 {
     return std::popcount(b);
-    /*
-    int r;
-    for (r = 0; b; r++, b &= b - 1)
-        ;
-    return r;
-*/
 }
-
+#endif
 constexpr std::array<BitBoard::bitboard, 64> generateKnightAttacks()
 {
     std::array<BitBoard::bitboard, 64> result;
@@ -138,7 +130,39 @@ constexpr std::array<BitBoard::bitboard, 64> generateKnightAttacks()
 
 constexpr std::array<BitBoard::bitboard, 64> g_knight_attacks = generateKnightAttacks();
 
-BitBoard::bitboard processKnight(Position position)
+constexpr BitBoard::bitboard processKnight(Position position)
 {
     return g_knight_attacks[position.index()];
+}
+
+constexpr std::array<BitBoard::bitboard, 64> generateKingAttacks()
+{
+    std::array<BitBoard::bitboard, 64> result;
+
+    for (int i = 0; i < 64; i++) {
+        BitBoard::bitboard figure = positionToMask(i);
+        BitBoard::bitboard attack = (((figure << 1) & ~row_a) | ((figure << 9) & ~row_a)
+                                     | ((figure >> 7) & ~row_a) | (figure >> 8)
+                                     | ((figure >> 1) & ~row_h) | ((figure >> 9) & ~row_h)
+                                     | ((figure << 7) & ~row_h) | (figure << 8));
+        result[i] = attack;
+    }
+
+    return result;
+}
+
+constexpr std::array<BitBoard::bitboard, 64> g_king_attacks = generateKingAttacks();
+
+constexpr BitBoard::bitboard processKing(Position position)
+{
+    return g_king_attacks[position.index()];
+}
+
+template<typename Lambda>
+constexpr void BitForEach(BitBoard::bitboard bb, Lambda lambda)
+{
+    while (bb) {
+        lambda(bb & -bb);
+        bb &= (bb - 1);
+    }
 }

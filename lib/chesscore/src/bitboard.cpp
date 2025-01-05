@@ -602,7 +602,7 @@ bool BitBoard::testTurn(Turn turn) const {
 }
 */
 
-template<typename Callback, int8_t color, bool rooking, bool el_passant>
+template<typename Callback, BitBoard::Flags flags>
 class BitBoardHelper
 {
     BitBoard board;
@@ -629,42 +629,84 @@ public:
 
     constexpr bitboard getAlies()
     {
-        if constexpr (color == Color::White)
+        if constexpr ((flags & BitBoard::flags_color) == 0)
             return board.getWhites();
         else
             return board.getBlacks();
     }
     constexpr bitboard getEnemies()
     {
-        if constexpr (color != Color::White)
+        if constexpr ((flags & BitBoard::flags_color) != 0)
             return board.getWhites();
         else
             return board.getBlacks();
     }
-    constexpr bitboard getPawns()
+    constexpr bitboard &getPawns(BitBoard &board)
     {
-        if constexpr (color == Color::White)
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return board.m_w_p;
+        else
+            return board.m_b_p;
+    }
+    constexpr bitboard &getEnemyPawns(BitBoard &board)
+    {
+        if constexpr ((flags & BitBoard::flags_color) != 0)
             return board.m_w_p;
         else
             return board.m_b_p;
     }
     constexpr bitboard &getKnights(BitBoard &board)
     {
-        if constexpr (color == Color::White)
+        if constexpr ((flags & BitBoard::flags_color) == 0)
             return board.m_w_n;
         else
             return board.m_b_n;
     }
+    constexpr static int getIntReversed(int value)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return value;
+        else
+            return -value;
+    }
+    constexpr bitboard &getKing(BitBoard &board)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return board.m_w_k;
+        else
+            return board.m_b_k;
+    }
+    constexpr bitboard &getBishops(BitBoard &board)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return board.m_w_b;
+        else
+            return board.m_b_b;
+    }
+    constexpr bitboard &getRooks(BitBoard &board)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return board.m_w_r;
+        else
+            return board.m_b_r;
+    }
+    constexpr bitboard &getQueens(BitBoard &board)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return board.m_w_q;
+        else
+            return board.m_b_q;
+    }
     constexpr void removeEnemies(BitBoard &board, bitboard mask)
     {
-        if constexpr (color == Color::White)
+        if constexpr ((flags & BitBoard::flags_color) == 0)
             return board.removeBlackFigure(mask);
         else
             return board.removeWhiteFigure(mask);
     }
     constexpr void restoreEnemies(BitBoard &board, const BitBoard &from)
     {
-        if constexpr (color == Color::White)
+        if constexpr ((flags & BitBoard::flags_color) == 0)
             return board.copyBlacks(from);
         else
             return board.copyWhites(from);
@@ -673,11 +715,9 @@ public:
     constexpr void generate()
     {
         BitBoard bb(board);
-        bb.m_flags.last_turn_is_pawn = false;
-        if constexpr (color == Color::White)
-            bb.m_flags.side = 1;
-        else
-            bb.m_flags.side = 0;
+        bb.m_flags = BitBoard::flags_default;
+        if constexpr (flags & BitBoard::flags_color)
+            bb.m_flags = (BitBoard::Flags)(bb.m_flags | BitBoard::flags_color);
         bb.m_hash = 0;
 
         bitboard allies = getAlies();
@@ -686,10 +726,10 @@ public:
         bitboard empty = ~all;
 
         {
-            bitboard pawns = getPawns();
+            bitboard pawns = getPawns(board);
             bitboard possible, possible_long, possible_left, possible_right;
 
-            if constexpr (color == Color::White) {
+            if constexpr ((flags & BitBoard::flags_color) == 0) {
                 possible = ((pawns & (~line_7)) >> 8) & empty;
                 possible_long = ((possible & line_3) >> 8) & empty;
                 possible_left = ((pawns & (~line_7)) >> 9) & enemies;
@@ -701,144 +741,105 @@ public:
                 possible_right = ((pawns & (~line_2)) << 7) & enemies;
             }
 
-            for (BitIterator iterator(possible); iterator.Valid(); ++iterator) {
-                if constexpr (color == Color::White) {
-                    bitboard before = iterator.Bit() << 8;
-                    bb.m_w_p = (board.m_w_p & (~before)) | iterator.Bit();
+            BitForEach(possible, [this, &bb](bitboard bit) {
+                bitboard before;
+                if constexpr ((flags & BitBoard::flags_color) == 0) {
+                    before = bit << 8;
                     bb.m_turn = generateTurnDelta<-8>(before);
                 } else {
-                    bitboard before = iterator.Bit() >> 8;
-                    bb.m_b_p = (board.m_b_p & (~before)) | iterator.Bit();
+                    before = bit >> 8;
                     bb.m_turn = generateTurnDelta<8>(before);
                 }
+                getPawns(bb) = (getPawns(board) & (~before)) | bit;
                 cb(bb);
-            }
+            });
 
-            bb.m_flags.last_turn_is_pawn = true;
-            for (BitIterator iterator(possible_long); iterator.Valid(); ++iterator) {
-                if constexpr (color == Color::White) {
-                    bitboard before = iterator.Bit() << 16;
-                    bb.m_w_p = (board.m_w_p & (~before)) | iterator.Bit();
+            bb.m_flags = (BitBoard::Flags)(bb.m_flags | BitBoard::flags_el_passant);
+            BitForEach(possible_long, [this, &bb](bitboard bit) {
+                if constexpr ((flags & BitBoard::flags_color) == 0) {
+                    bitboard before = bit << 16;
+                    getPawns(bb) = (getPawns(board) & (~before)) | bit;
                     bb.m_turn = generateTurnDelta<-16>(before);
                 } else {
-                    bitboard before = iterator.Bit() >> 16;
-                    bb.m_b_p = (board.m_b_p & (~before)) | iterator.Bit();
+                    bitboard before = bit >> 16;
+                    getPawns(bb) = (getPawns(board) & (~before)) | bit;
                     bb.m_turn = generateTurnDelta<16>(before);
                 }
                 cb(bb);
-            }
-            bb.m_flags.last_turn_is_pawn = false;
-
-            if constexpr (color == Color::White)
-                bb.m_w_p = board.m_w_p;
-            else
-                bb.m_b_p = board.m_b_p;
+            });
+            bb.m_flags = (BitBoard::Flags)(bb.m_flags & (~BitBoard::flags_el_passant));
+            getPawns(bb) = getPawns(board);
 
             bitboard before;
             for (BitIterator iterator(possible_left); iterator.Valid(); ++iterator) {
-                if constexpr (color == Color::White) {
+                if constexpr ((flags & BitBoard::flags_color) == 0) {
                     before = iterator.Bit() << 9;
-                    bb.m_w_p &= ~before;
-                    bb.removeBlackFigure(~before);
-                    bb.m_w_p |= iterator.Bit();
                     bb.m_turn = generateTurnDelta<-9>(before);
                 } else {
                     before = iterator.Bit() >> 9;
-                    bb.m_b_p &= ~before;
-                    bb.removeWhiteFigure(~before);
-                    bb.m_b_p |= iterator.Bit();
                     bb.m_turn = generateTurnDelta<9>(before);
                 }
+                removeEnemies(bb, ~before);
+                getPawns(bb) &= ~before;
+                getPawns(bb) |= iterator.Bit();
                 cb(bb);
-                if constexpr (color == Color::White) {
-                    bb.m_w_p |= before;
-                    bb.m_w_p &= ~iterator.Bit();
-                    bb.copyBlacks(board);
-                } else {
-                    bb.m_b_p |= before;
-                    bb.removeWhiteFigure(~before);
-                    bb.m_b_p &= ~iterator.Bit();
-                    bb.copyWhites(board);
-                }
+                restoreEnemies(bb, board);
+                getPawns(bb) |= before;
+                getPawns(bb) &= ~iterator.Bit();
             }
 
             for (BitIterator iterator(possible_right); iterator.Valid(); ++iterator) {
-                if constexpr (color == Color::White) {
+                if constexpr ((flags & BitBoard::flags_color) == 0) {
                     before = iterator.Bit() << 7;
-                    bb.m_w_p &= ~before;
-                    bb.removeBlackFigure(~before);
-                    bb.m_w_p |= iterator.Bit();
                     bb.m_turn = generateTurnDelta<-7>(before);
                 } else {
                     before = iterator.Bit() >> 7;
-                    bb.m_b_p &= ~before;
-                    bb.removeWhiteFigure(~before);
-                    bb.m_b_p |= iterator.Bit();
                     bb.m_turn = generateTurnDelta<7>(before);
                 }
+                removeEnemies(bb, ~before);
+                getPawns(bb) &= ~before;
+                getPawns(bb) |= iterator.Bit();
                 cb(bb);
-                if constexpr (color == Color::White) {
-                    bb.m_w_p |= before;
-                    bb.m_w_p &= ~iterator.Bit();
-                    bb.copyBlacks(board);
-                } else {
-                    bb.m_b_p |= before;
-                    bb.removeWhiteFigure(~before);
-                    bb.m_b_p &= ~iterator.Bit();
-                    bb.copyWhites(board);
-                }
+                restoreEnemies(bb, board);
+                getPawns(bb) |= before;
+                getPawns(bb) &= ~iterator.Bit();
             }
 
-            if constexpr (el_passant == true) {
+            if constexpr (flags & BitBoard::flags_el_passant) {
                 bitboard attack_mask = positionToMask(board.m_turn.to());
                 bitboard to_mask = positionToMask(
                     (board.m_turn.from().index() + board.m_turn.to().index()) / 2);
-                if constexpr (color == Color::White) {
-                    bitboard left_attack = ((pawns >> 9) & to_mask) << 9;
-                    bitboard right_attack = ((pawns >> 7) & to_mask) << 7;
-                    if (left_attack) {
-                        bb.m_w_p &= ~left_attack;
-                        bb.m_b_p &= ~attack_mask;
-                        bb.m_w_p |= to_mask;
-                        bb.m_turn = generateTurnDelta<-9>(left_attack);
-                        cb(bb);
-                        bb.m_w_p = board.m_w_p;
-                        bb.m_b_p = board.m_b_p;
-                    }
-                    if (right_attack) {
-                        bb.m_w_p &= ~right_attack;
-                        bb.m_b_p &= ~attack_mask;
-                        bb.m_w_p |= to_mask;
-                        bb.m_turn = generateTurnDelta<-7>(left_attack);
-                        cb(bb);
-                        bb.m_w_p = board.m_w_p;
-                        bb.m_b_p = board.m_b_p;
-                    }
+                bitboard left_attack, right_attack;
+                if constexpr ((flags & BitBoard::flags_color) == 0) {
+                    left_attack = ((pawns >> 9) & to_mask) << 9;
+                    right_attack = ((pawns >> 7) & to_mask) << 7;
                 } else {
-                    bitboard left_attack = ((pawns << 9) & to_mask) >> 9;
-                    bitboard right_attack = ((pawns << 7) & to_mask) >> 7;
-                    if (left_attack) {
-                        bb.m_b_p &= ~left_attack;
-                        bb.m_w_p &= ~attack_mask;
-                        bb.m_b_p |= to_mask;
-                        bb.m_turn = generateTurnDelta<9>(left_attack);
-                        cb(bb);
-                        bb.m_w_p = board.m_w_p;
-                        bb.m_b_p = board.m_b_p;
-                    }
-                    if (right_attack) {
-                        bb.m_b_p &= ~right_attack;
-                        bb.m_w_p &= ~attack_mask;
-                        bb.m_b_p |= to_mask;
-                        bb.m_turn = generateTurnDelta<7>(left_attack);
-                        cb(bb);
-                        bb.m_w_p = board.m_w_p;
-                        bb.m_b_p = board.m_b_p;
-                    }
+                    left_attack = ((pawns << 9) & to_mask) >> 9;
+                    right_attack = ((pawns << 7) & to_mask) >> 7;
+                }
+                if (left_attack) {
+                    getPawns(bb) &= ~left_attack;
+                    getPawns(bb) |= to_mask;
+                    getEnemyPawns(bb) &= ~attack_mask;
+                    constexpr int delta = getIntReversed(-9);
+                    bb.m_turn = generateTurnDelta<delta>(left_attack);
+                    cb(bb);
+                    getPawns(bb) = getPawns(board);
+                    getEnemyPawns(bb) = getEnemyPawns(board);
+                }
+                if (left_attack) {
+                    getPawns(bb) &= ~left_attack;
+                    getPawns(bb) |= to_mask;
+                    getEnemyPawns(bb) &= ~attack_mask;
+                    constexpr int delta = getIntReversed(-7);
+                    bb.m_turn = generateTurnDelta<delta>(left_attack);
+                    cb(bb);
+                    getPawns(bb) = getPawns(board);
+                    getEnemyPawns(bb) = getEnemyPawns(board);
                 }
             }
 
-            if constexpr (color == Color::White) {
+            if constexpr ((flags & BitBoard::flags_color) == 0) {
                 if (bitboard possible = pawns & line_7; possible) {
                     for (BitIterator iterator(possible); iterator.Valid(); ++iterator) {
                         if (bitboard after = (iterator.Bit() >> 8) & empty; after) {
@@ -969,72 +970,177 @@ public:
                     }
                 }
             }
+            getPawns(bb) = getPawns(board);
         }
+
         {
+            //knight constexpr generated moves
             bitboard knights = getKnights(board);
             for (BitIterator iterator(knights); iterator.Valid(); ++iterator) {
-                Position from = log2_64(iterator.Bit());
+                bitboard bit = iterator.Bit();
+                Position from = log2_64(bit);
                 bitboard possible = processKnight(from);
                 bitboard moves = possible & empty;
                 bitboard attacks = possible & enemies;
 
-                getKnights(bb) &= ~iterator.Bit();
+                getKnights(bb) &= ~bit;
 
                 for (BitIterator it2(moves); it2.Valid(); ++it2) {
-                    Position to = log2_64(it2.Bit());
-                    getKnights(bb) |= it2.Bit();
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getKnights(bb) |= bit2;
                     bb.m_turn = Turn(from, to, false);
                     cb(bb);
-                    getKnights(bb) &= ~it2.Bit();
+                    getKnights(bb) &= ~bit2;
                 }
 
-                /*
                 for (BitIterator it2(attacks); it2.Valid(); ++it2) {
-                    Position to = log2_64(it2.Bit());
-                    getKnights(bb) |= it2.Bit();
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getKnights(bb) |= bit2;
                     bb.m_turn = Turn(from, to, true);
-                    removeEnemies(bb, ~it2.Bit());
+                    removeEnemies(bb, ~bit2);
                     cb(bb);
                     restoreEnemies(bb, board);
-                    getKnights(bb) &= ~it2.Bit();
+                    getKnights(bb) &= ~bit2;
                 }
-*/
 
-                getKnights(bb) |= iterator.Bit();
+                getKnights(bb) |= bit;
+            }
+        }
+        //king constexpr generated moves
+        if (bitboard king = getKing(board); king) {
+            Position from = log2_64(king);
+            bitboard possible = processKing(from);
+            bitboard moves = possible & empty;
+            bitboard attacks = possible & enemies;
+
+            getKing(bb) &= ~king;
+
+            for (BitIterator it2(moves); it2.Valid(); ++it2) {
+                Position to = log2_64(it2.Bit());
+                getKing(bb) |= it2.Bit();
+                bb.m_turn = Turn(from, to, false);
+                cb(bb);
+                getKing(bb) &= ~it2.Bit();
+            }
+
+            for (BitIterator it2(attacks); it2.Valid(); ++it2) {
+                Position to = log2_64(it2.Bit());
+                getKing(bb) |= it2.Bit();
+                bb.m_turn = Turn(from, to, true);
+                removeEnemies(bb, ~it2.Bit());
+                cb(bb);
+                restoreEnemies(bb, board);
+                getKing(bb) &= ~it2.Bit();
+            }
+
+            getKing(bb) |= king;
+        }
+        {
+            //bishops with magic bitboards
+            bitboard bishops = getBishops(board);
+            for (BitIterator iterator(bishops); iterator.Valid(); ++iterator) {
+                bitboard bit = iterator.Bit();
+                Position from = log2_64(bit);
+                bitboard possible = processBishop(from, all);
+                bitboard moves = possible & empty;
+                bitboard attacks = possible & enemies;
+
+                getBishops(bb) &= ~bit;
+
+                for (BitIterator it2(moves); it2.Valid(); ++it2) {
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getBishops(bb) |= bit2;
+                    bb.m_turn = Turn(from, to, false);
+                    cb(bb);
+                    getBishops(bb) &= ~bit2;
+                }
+
+                for (BitIterator it2(attacks); it2.Valid(); ++it2) {
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getBishops(bb) |= bit2;
+                    bb.m_turn = Turn(from, to, true);
+                    removeEnemies(bb, ~bit2);
+                    cb(bb);
+                    restoreEnemies(bb, board);
+                    getBishops(bb) &= ~bit2;
+                }
+
+                getBishops(bb) |= bit;
             }
         }
         {
-            /*
-            bitboard knights = getKnights(board);
-            for (BitIterator iterator(knights); iterator.Valid(); ++iterator) {
-                Position from = log2_64(iterator.Bit());
-                bitboard possible = processKnight(from);
+            //rooks with magic bitboards
+            bitboard rooks = getBishops(board);
+            for (BitIterator iterator(rooks); iterator.Valid(); ++iterator) {
+                bitboard bit = iterator.Bit();
+                Position from = log2_64(bit);
+                bitboard possible = processRook(from, all);
                 bitboard moves = possible & empty;
                 bitboard attacks = possible & enemies;
 
-                getKnights(bb) &= ~iterator.Bit();
+                getRooks(bb) &= ~bit;
 
                 for (BitIterator it2(moves); it2.Valid(); ++it2) {
-                    Position to = log2_64(it2.Bit());
-                    getKnights(bb) |= it2.Bit();
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getRooks(bb) |= bit2;
                     bb.m_turn = Turn(from, to, false);
                     cb(bb);
-                    getKnights(bb) &= ~it2.Bit();
+                    getRooks(bb) &= ~bit2;
                 }
 
                 for (BitIterator it2(attacks); it2.Valid(); ++it2) {
-                    Position to = log2_64(it2.Bit());
-                    getKnights(bb) |= it2.Bit();
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getRooks(bb) |= bit2;
                     bb.m_turn = Turn(from, to, true);
-                    removeEnemies(bb, ~it2.Bit());
+                    removeEnemies(bb, ~bit2);
                     cb(bb);
                     restoreEnemies(bb, board);
-                    getKnights(bb) &= ~it2.Bit();
+                    getRooks(bb) &= ~bit2;
                 }
 
-                getKnights(bb) |= iterator.Bit();
+                getRooks(bb) |= bit;
+            }
         }
-*/
+        {
+            //rooks with magic bitboards
+            bitboard queens = getQueens(board);
+            for (BitIterator iterator(queens); iterator.Valid(); ++iterator) {
+                bitboard bit = iterator.Bit();
+                Position from = log2_64(bit);
+                bitboard possible = processBishop(from, all) | processRook(from, all);
+                bitboard moves = possible & empty;
+                bitboard attacks = possible & enemies;
+
+                getQueens(bb) &= ~bit;
+
+                for (BitIterator it2(moves); it2.Valid(); ++it2) {
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getQueens(bb) |= bit2;
+                    bb.m_turn = Turn(from, to, false);
+                    cb(bb);
+                    getQueens(bb) &= ~bit2;
+                }
+
+                for (BitIterator it2(attacks); it2.Valid(); ++it2) {
+                    bitboard bit2 = it2.Bit();
+                    Position to = log2_64(bit2);
+                    getQueens(bb) |= bit2;
+                    bb.m_turn = Turn(from, to, true);
+                    removeEnemies(bb, ~bit2);
+                    cb(bb);
+                    restoreEnemies(bb, board);
+                    getQueens(bb) &= ~bit2;
+                }
+
+                getQueens(bb) |= bit;
+            }
         }
     }
 };
@@ -1161,7 +1267,7 @@ BitBoard::Flags BitBoard::getFlags() const noexcept
 
 Color BitBoard::getCurrentSide() const noexcept
 {
-    return m_flags.side == 0 ? Color::White : Color::Black;
+    return m_flags & Flags::flags_color ? Color::Black : Color::White;
 }
 
 /* 
@@ -1258,45 +1364,54 @@ inline void BitBoard::processPawns(const BitBoard &parrent,
     }
 }
 */
+
+template<typename Callback, BitBoard::Flags flags>
+constexpr void generateTemplate(Callback callback, const BitBoard &board)
+{
+    BitBoardHelper<Callback, flags>(callback, board).generate();
+}
+
+template<typename Callback, std::size_t... I>
+constexpr auto generatePointerArray(std::index_sequence<I...>)
+{
+    using pointer = void (*)(Callback, const BitBoard &);
+    constexpr std::size_t N = sizeof...(I);
+    return std::array<pointer, N>{{&generateTemplate<Callback, (BitBoard::Flags) I>...}};
+}
+
+template<typename Callback>
+constexpr void generate(Callback callback, const BitBoard &board, BitBoard::Flags flags)
+{
+    constexpr static auto pointers = generatePointerArray<Callback>(
+        std::make_index_sequence<BitBoard::flags_upper_bound>{});
+    pointers[flags](callback, board);
+}
+
 std::vector<BitBoard> BitBoard::generateSubBoards(Color color, bitboard from, bitboard to) const
 {
     std::vector<BitBoard> boards;
     boards.reserve(120);
+    auto flags = m_flags;
+    if (color == Color::White)
+        flags = (Flags) (flags & (~flags_color));
+    else
+        flags = (Flags) (flags | flags_color);
 
-    generateSubBoards(boards, color, from, to);
-
+    generate([&](const BitBoard &board) { boards.emplace_back(board); }, *this, flags);
     return boards;
 }
 
-template<typename Lambda, bool castling>
-void passElPassantHelpter(const BitBoard &board, Lambda l, Color color, bool el_passant)
+int BitBoard::getSubBoardsCounter(Color color, bitboard from, bitboard to) const
 {
-    if (el_passant)
-        passColorHelpter<Lambda, castling, true>(board, l, color);
-    else
-        passColorHelpter<Lambda, castling, false>(board, l, color);
-}
-
-template<typename Lambda, bool castling, bool el_passant>
-void passColorHelpter(const BitBoard &board, Lambda l, Color color)
-{
+    auto flags = m_flags;
     if (color == Color::White)
-        BitBoardHelper<Lambda, Color::White, castling, el_passant>(l, board).generate();
+        flags = (Flags) (flags & (~flags_color));
     else
-        BitBoardHelper<Lambda, Color::Black, castling, el_passant>(l, board).generate();
-}
+        flags = (Flags) (flags | flags_color);
 
-void BitBoard::generateSubBoards(std::vector<BitBoard> &boards,
-                                 Color color,
-                                 bitboard from,
-                                 bitboard to) const
-{
-    boards.clear();
-    boards.reserve(120);
-
-    //auto lambda = [&](const BitBoard &board) { boards.emplace_back(board); };
-    auto lambda = [&](const BitBoard &board) { boards.reserve(board.m_b_b ? 1 : 2); };
-    passElPassantHelpter<decltype(lambda), false>(*this, lambda, color, m_flags.last_turn_is_pawn);
+    int count;
+    generate([&](const BitBoard &board) { count++; }, *this, flags);
+    return count;
 }
 
 BitBoard BitBoard::executeTurn(Turn turn)
@@ -1317,65 +1432,4 @@ BitBoard::BitBoardHash BitBoard::getHash() const
 Turn BitBoard::getTurn() const
 {
     return m_turn;
-}
-
-void BitBoard::removeFigure(bitboard mask)
-{
-    removeBlackFigure(mask);
-    removeWhiteFigure(mask);
-}
-
-void BitBoard::removeBlackFigure(bitboard mask)
-{
-    m_b_p &= mask;
-    m_b_n &= mask;
-    m_b_b &= mask;
-    m_b_r &= mask;
-    m_b_q &= mask;
-    m_b_k &= mask;
-}
-
-void BitBoard::removeWhiteFigure(bitboard mask)
-{
-    m_w_p &= mask;
-    m_w_n &= mask;
-    m_w_b &= mask;
-    m_w_r &= mask;
-    m_w_q &= mask;
-    m_w_k &= mask;
-}
-
-void BitBoard::copyWhites(const BitBoard &other)
-{
-    m_w_p = other.m_w_p;
-    m_w_n = other.m_w_n;
-    m_w_b = other.m_w_b;
-    m_w_r = other.m_w_r;
-    m_w_q = other.m_w_q;
-    m_w_k = other.m_w_k;
-}
-
-void BitBoard::copyBlacks(const BitBoard &other)
-{
-    m_b_p = other.m_b_p;
-    m_b_n = other.m_b_n;
-    m_b_b = other.m_b_b;
-    m_b_r = other.m_b_r;
-    m_b_q = other.m_b_q;
-    m_b_k = other.m_b_k;
-}
-
-BitBoard::bitboard BitBoard::getWhites() const
-{
-    return m_w_p | m_w_n | m_w_b | m_w_r | m_w_q | m_w_k;
-}
-
-BitBoard::bitboard BitBoard::getBlacks() const
-{
-    return m_b_p | m_b_n | m_b_b | m_b_r | m_b_q | m_b_k;
-}
-
-BitBoard::bitboard BitBoard::getAll() const
-{
-    return getWhites() | getBlacks();
 }

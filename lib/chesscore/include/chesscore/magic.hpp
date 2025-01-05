@@ -5,14 +5,14 @@
 
 #include "bitboard.hpp"
 
-BitBoard::bitboard processRook(BitBoard::bitboard sq, BitBoard::bitboard borders);
+BitBoard::bitboard processRook(Position pos, BitBoard::bitboard borders);
 /**
  * @brief processBishop returns a bishop attack bitboard
  * @param sq input figure
  * @param borders borders
  * @return processed attack bitboard
  */
-BitBoard::bitboard processBishop(BitBoard::bitboard sq, BitBoard::bitboard borders);
+BitBoard::bitboard processBishop(Position pos, BitBoard::bitboard borders);
 /**
  * @brief attackFrom generates common attack bitboard for knight bitshop and
  * rook together
