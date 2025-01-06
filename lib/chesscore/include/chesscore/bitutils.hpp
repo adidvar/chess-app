@@ -50,24 +50,13 @@ constexpr static const bb line_1 = line_8 << 56ULL;
 
 constexpr static const bb lines[8]{line_1, line_2, line_3, line_4, line_5, line_6, line_7, line_8};
 
-struct BitIterator {
-    constexpr BitIterator(bb value)
-        : m_value(value)
-    {}
+inline bb takeBit(bb &bitboard)
+{
+    bb bit = bitboard & (-bitboard);
+    bitboard ^= bit;
+    return bit;
+}
 
-    [[nodiscard]] constexpr bb Value() const { return m_value; }
-    [[nodiscard]] constexpr bb Bit() const { return m_value & -m_value; }
-    constexpr BitIterator& operator=(bb value)
-    {
-        m_value = value;
-        return *this;
-    }
-    constexpr void operator++() { m_value &= (m_value - 1); }
-    [[nodiscard]] constexpr bool Valid() const { return m_value != 0; }
-
-private:
-    bb m_value;
-};
 #ifdef _MSC_VER
 #include <intrin.h>
 #pragma intrinsic(_BitScanForward)
@@ -156,13 +145,4 @@ constexpr std::array<BitBoard::bitboard, 64> g_king_attacks = generateKingAttack
 constexpr BitBoard::bitboard processKing(Position position)
 {
     return g_king_attacks[position.index()];
-}
-
-template<typename Lambda>
-constexpr void BitForEach(BitBoard::bitboard bb, Lambda lambda)
-{
-    while (bb) {
-        lambda(bb & -bb);
-        bb &= (bb - 1);
-    }
 }

@@ -111,10 +111,11 @@ int main() {
         auto board = BitBoard(fen);
         PrintBoard(board);
         {
-            auto subs = board.generateSubBoards(Color::White);
-            std::cout << "count: " << subs.size() << std::endl;
-            for (auto e : subs) {
-                PrintBoard(e);
+            Turn turns[200];
+            auto count = board.getTurns(Color::White, turns);
+            std::cout << "count: " << count << std::endl;
+            for (int i = 0; i < count; i++) {
+                std::cout << turns[i].toString() << std::endl;
             }
         }
         /*

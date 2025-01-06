@@ -31,8 +31,6 @@ class Position {
  public:
      constexpr Position(uint8_t x, uint8_t y) noexcept
      {
-         assert(x < 8);
-         assert(y < 8);
          m_index = y * 8 + x;
      }
 
@@ -41,7 +39,7 @@ class Position {
      {}
 
      constexpr Position(uint8_t index) noexcept
-         : m_index(index < k_invalid_position ? index : k_invalid_position)
+         : m_index(index)
      {}
      explicit Position(std::string_view string)
      {

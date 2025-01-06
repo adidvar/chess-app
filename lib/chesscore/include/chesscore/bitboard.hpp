@@ -41,9 +41,7 @@ public:
                                                           bitboard from = 0xFFFFFFFFFFFFFFFF,
                                                           bitboard to = 0xFFFFFFFFFFFFFFFF) const;
 
-    int getSubBoardsCounter(Color color,
-                            bitboard from = 0xFFFFFFFFFFFFFFFF,
-                            bitboard to = 0xFFFFFFFFFFFFFFFF) const;
+    int getTurns(Color color, Turn *out) const;
 
     [[nodiscard]] BitBoard executeTurn(Turn turn);
     [[nodiscard]] bool testTurn(Turn turn) const;
@@ -87,7 +85,7 @@ private:
     // additional state
     Flags m_flags = flags_default;
 
-    template<typename Callback, BitBoard::Flags flags>
+    template<BitBoard::Flags flags>
     friend class BitBoardHelper;
 };
 
