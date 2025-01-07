@@ -512,6 +512,13 @@ int BitBoard::getTurns(Color color, Turn *out) const
 BitBoard BitBoard::executeTurn(Color color, Turn turn)
 {
     BitBoard copy(*this);
+
+    if (color == Color::Black) {
+        copy.m_flags = (Flags) (copy.m_flags & (~Flags::flags_color));
+    } else {
+        copy.m_flags = (Flags) (copy.m_flags | Flags::flags_color);
+    }
+
     bitboard from = positionToMask(turn.from());
     bitboard to = positionToMask(turn.to());
     if (color == Color::White) {
