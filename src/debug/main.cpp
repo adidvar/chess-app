@@ -105,29 +105,43 @@ void PrintBoard(const BitBoard &board)
     cout << endl;
 }
 
-int main() {
-    try {
-        std::string fen = "startpos";
-        auto board = BitBoard(fen);
-        PrintBoard(board);
-        {
-            Turn turns[200];
-            auto count = board.getTurns(Color::White, turns);
-            std::cout << "count: " << count << std::endl;
-            for (int i = 0; i < count; i++) {
-                std::cout << turns[i].toString() << std::endl;
-            }
-        }
-        /*
-        {
-            auto subs = BitBoard(fen).generateSubBoards(Color::Black);
-            std::cout << "count: " << subs.size() << std::endl;
-            for (auto e : subs) {
-                PrintBoard(e);
-            }
-        }
-*/
-    } catch (std::exception e) {
-        std::cout << e.what();
+static size_t Counter(BitBoard board, size_t depth)
+{
+    size_t counter = 0;
+    Turn turns[216];
+    int count = board.getTurns(board.getCurrentSide(), turns);
+    if (depth == 1)
+        return count;
+    for (int i = 0; i < count; i++) {
+        counter += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
     }
+    return counter;
+}
+
+int main() {
+    // try {
+    while (true) {
+        std::string fen;
+        int depth = 0;
+        std::cout << "***************************************************" << std::endl;
+        std::getline(std::cin, fen);
+        std::cin >> depth;
+        auto board = BitBoard(fen);
+        std::getline(std::cin, fen);
+        //PrintBoard(board);
+        Turn turns[216];
+        auto count = board.getTurns(board.getCurrentSide(), turns);
+        int sum = 0;
+        for (int i = 0; i < count; i++) {
+            std::cout << turns[i].toString() << '\t'
+                      << Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1)
+                      << '\t' << board.executeTurn(board.getCurrentSide(), turns[i]).fen()
+                      << std::endl;
+            sum += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
+        }
+        std::cout << "count: " << sum << std::endl;
+    }
+    //  } catch (std::exception e) {
+    //      std::cout << e.what();
+    //  }
 }

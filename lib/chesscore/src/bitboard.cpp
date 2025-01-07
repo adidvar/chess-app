@@ -513,11 +513,10 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn)
 {
     BitBoard copy(*this);
 
-    if (color == Color::Black) {
-        copy.m_flags = (Flags) (copy.m_flags & (~Flags::flags_color));
-    } else {
-        copy.m_flags = (Flags) (copy.m_flags | Flags::flags_color);
-    }
+    if (color != Color::White)
+        copy.m_flags = (Flags) (m_flags & ~flags_color);
+    else
+        copy.m_flags = (Flags) (m_flags | flags_color);
 
     bitboard from = positionToMask(turn.from());
     bitboard to = positionToMask(turn.to());
