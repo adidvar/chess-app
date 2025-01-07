@@ -476,89 +476,52 @@ Color BitBoard::getCurrentSide() const noexcept
     return (m_flags & Flags::flags_color) ? Color::Black : Color::White;
 }
 
-/*
-template<typename Callback, BitBoard::Flags flags>
-constexpr void generateTemplate(Callback callback, const BitBoard &board)
+template<BitBoard::Flags flags>
+constexpr int generateTemplate(const BitBoard &board, Turn *storage)
 {
-    BitBoardHelper<Callback, flags>(callback, board).generate();
+    return BitBoardHelper<flags>(board, storage).generate();
 }
 
-template<typename Callback, std::size_t... I>
+template<std::size_t... I>
 constexpr auto generatePointerArray(std::index_sequence<I...>)
 {
-    using pointer = void (*)(Callback, const BitBoard &);
+    using pointer = int (*)(const BitBoard &, Turn *storage);
     constexpr std::size_t N = sizeof...(I);
-    return std::array<pointer, N>{{&generateTemplate<Callback, (BitBoard::Flags) I>...}};
+    return std::array<pointer, N>{{&generateTemplate<(BitBoard::Flags) I>...}};
 }
 
-template<typename Callback>
-constexpr void generate(Callback callback, const BitBoard &board, BitBoard::Flags flags)
+constexpr int generate(const BitBoard &board, Turn *storage, BitBoard::Flags flags)
 {
-    constexpr static auto pointers = generatePointerArray<Callback>(
+    constexpr auto pointers = generatePointerArray(
         std::make_index_sequence<BitBoard::flags_upper_bound>{});
-    pointers[flags](callback, board);
-}
-*/
-
-std::vector<BitBoard> BitBoard::generateSubBoards(Color color, bitboard from, bitboard to) const
-{
-    /*
-    std::vector<BitBoard> boards;
-    boards.reserve(120);
-    auto flags = m_flags;
-    if (color == Color::White)
-        flags = (Flags) (flags & (~flags_color));
-    else
-        flags = (Flags) (flags | flags_color);
-
-    generate([&](const BitBoard &board) { boards.emplace_back(board); }, *this, flags);
-    return boards;
-*/
-    return {};
+    return pointers[flags](board, storage);
 }
 
 int BitBoard::getTurns(Color color, Turn *out) const
 {
-    return BitBoardHelper<Flags::flags_default>(*this, out).generate();
-}
-
-/*
-int BitBoard::getSubBoardsCounter(Color color, bitboard from, bitboard to) const
-{
     auto flags = m_flags;
     if (color == Color::White)
         flags = (Flags) (flags & (~flags_color));
     else
         flags = (Flags) (flags | flags_color);
 
-    int count = 0;
-    int count2 = 0;
-    generate(
-        [&](const Turn &board) {
-            count++;
-            count2 += board.from().index() + board.to().index();
-        },
-        *this,
-        flags);
-auto lambda = [&](const Turn &board) {
-    count++;
-    count2 += board.from().index();
-};
-
-BitBoardHelper<Flags::flags_default>(*this).generate();
-
-return count2 > 0 ? count : 0;
-}
-*/
-
-BitBoard BitBoard::executeTurn(Turn turn)
-{
-    return {};
+    return generate(*this, out, flags);
+    //return BitBoardHelper<Flags::flags_default>(*this, out).generate();
 }
 
-bool BitBoard::testTurn(Turn turn) const
+BitBoard BitBoard::executeTurn(Color color, Turn turn)
 {
-    return {};
+    BitBoard copy(*this);
+    bitboard from = positionToMask(turn.from());
+    bitboard to = positionToMask(turn.to());
+    if (color == Color::White) {
+        copy.moveFromToWhite(from, to);
+        copy.removeBlackFigure(~to);
+    } else {
+        copy.moveFromToBlack(from, to);
+        copy.removeWhiteFigure(~to);
+    }
+    return copy;
 }
 
 BitBoard::BitBoardHash BitBoard::getHash() const

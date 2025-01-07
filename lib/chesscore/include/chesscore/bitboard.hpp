@@ -37,14 +37,9 @@ public:
     [[nodiscard]] Flags getFlags() const noexcept;
     [[nodiscard]] Color getCurrentSide() const noexcept;
 
-    [[nodiscard]] std::vector<BitBoard> generateSubBoards(Color color,
-                                                          bitboard from = 0xFFFFFFFFFFFFFFFF,
-                                                          bitboard to = 0xFFFFFFFFFFFFFFFF) const;
-
     int getTurns(Color color, Turn *out) const;
 
-    [[nodiscard]] BitBoard executeTurn(Turn turn);
-    [[nodiscard]] bool testTurn(Turn turn) const;
+    [[nodiscard]] BitBoard executeTurn(Color color, Turn turn);
 
     [[nodiscard]] BitBoardHash getHash() const;
     [[nodiscard]] Turn getTurn() const;
@@ -58,6 +53,8 @@ private:
     constexpr void removeWhiteFigure(bitboard mask);
     constexpr void copyWhites(const BitBoard &other);
     constexpr void copyBlacks(const BitBoard &other);
+    constexpr void moveFromToWhite(bitboard from, bitboard to);
+    constexpr void moveFromToBlack(bitboard from, bitboard to);
     constexpr bitboard getWhites() const;
     constexpr bitboard getBlacks() const;
     constexpr bitboard getAll() const;
@@ -148,4 +145,46 @@ constexpr BitBoard::bitboard BitBoard::getBlacks() const
 constexpr BitBoard::bitboard BitBoard::getAll() const
 {
     return getWhites() | getBlacks();
+}
+
+constexpr void BitBoard::moveFromToWhite(bitboard from, bitboard to)
+{
+    m_w_p |= ((m_w_p & from) > 0) * to;
+    m_w_p &= ~from;
+
+    m_w_n |= ((m_w_n & from) > 0) * to;
+    m_w_n &= ~from;
+
+    m_w_b |= ((m_w_b & from) > 0) * to;
+    m_w_b &= ~from;
+
+    m_w_r |= ((m_w_r & from) > 0) * to;
+    m_w_r &= ~from;
+
+    m_w_k |= ((m_w_k & from) > 0) * to;
+    m_w_k &= ~from;
+
+    m_w_q |= ((m_w_q & from) > 0) * to;
+    m_w_q &= ~from;
+}
+
+constexpr void BitBoard::moveFromToBlack(bitboard from, bitboard to)
+{
+    m_b_p |= ((m_b_p & from) > 0) * to;
+    m_b_p &= ~from;
+
+    m_b_n |= ((m_b_n & from) > 0) * to;
+    m_b_n &= ~from;
+
+    m_b_b |= ((m_b_b & from) > 0) * to;
+    m_b_b &= ~from;
+
+    m_b_r |= ((m_b_r & from) > 0) * to;
+    m_b_r &= ~from;
+
+    m_b_k |= ((m_b_k & from) > 0) * to;
+    m_b_k &= ~from;
+
+    m_b_q |= ((m_b_q & from) > 0) * to;
+    m_b_q &= ~from;
 }

@@ -226,9 +226,11 @@ static size_t MovesCounterBase(BitBoard board, size_t depth)
     if (!depth)
         return 1;
     size_t counter = 0;
+    /*
     for (auto sub : board.generateSubBoards(board.getCurrentSide())) {
         counter += MovesCounterBase(board, depth - 1);
     }
+*/
     return counter;
 }
 
