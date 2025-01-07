@@ -2,6 +2,7 @@
 #include <chesscore/bitutils.hpp>
 #include <iostream>
 
+#include <chrono>
 #include <map>
 
 /*
@@ -107,6 +108,8 @@ void PrintBoard(const BitBoard &board)
 
 static size_t Counter(BitBoard board, size_t depth)
 {
+    if (depth == 0)
+        return 1;
     size_t counter = 0;
     Turn turns[216];
     int count = board.getTurns(board.getCurrentSide(), turns);
@@ -131,15 +134,29 @@ int main() {
         //PrintBoard(board);
         Turn turns[216];
         auto count = board.getTurns(board.getCurrentSide(), turns);
-        int sum = 0;
+        long long sum = 0;
+
+        auto start = std::chrono::high_resolution_clock::now();
+
         for (int i = 0; i < count; i++) {
-            std::cout << turns[i].toString() << '\t'
-                      << Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1)
-                      << '\t' << board.executeTurn(board.getCurrentSide(), turns[i]).fen()
+            auto subboard = board.executeTurn(board.getCurrentSide(), turns[i]);
+            auto subcount = Counter(subboard, depth - 1);
+            std::cout << turns[i].toString() << '\t' << subcount << '\t' << subboard.fen()
                       << std::endl;
-            sum += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
+            sum += subcount;
         }
+
+        auto end = std::chrono::high_resolution_clock::now();
+
         std::cout << "count: " << sum << std::endl;
+        std::cout << "nps: "
+                  << (long long int) (sum
+                                      / (std::chrono::duration_cast<
+                                             std::chrono::duration<float, std::ratio<1>>>(end
+                                                                                          - start))
+                                            .count())
+                         / 1000000
+                  << " millions" << std::endl;
     }
     //  } catch (std::exception e) {
     //      std::cout << e.what();
