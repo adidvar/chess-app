@@ -251,9 +251,7 @@ TEST_CASE("BitBoard generation advanced tests", "[bitboard][generation]") {
                     1)
             == 5);
 
-    REQUIRE(Counter(BitBoard("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/"
-                             "PPPBBPPP/R3K2R b KQ - 3 2"),
-                    1)
+    REQUIRE(Counter(BitBoard("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 3 2"), 1)
             == 44);
     REQUIRE(Counter(BitBoard("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9"), 1) == 39);
     REQUIRE(Counter(BitBoard("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4"), 1) == 9);

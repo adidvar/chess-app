@@ -117,7 +117,7 @@ constexpr std::array<BitBoard::bitboard, 64> generateKnightAttacks()
     return result;
 }
 
-constexpr std::array<BitBoard::bitboard, 64> g_knight_attacks = generateKnightAttacks();
+constexpr auto g_knight_attacks = generateKnightAttacks();
 
 constexpr BitBoard::bitboard processKnight(Position position)
 {
@@ -140,9 +140,58 @@ constexpr std::array<BitBoard::bitboard, 64> generateKingAttacks()
     return result;
 }
 
-constexpr std::array<BitBoard::bitboard, 64> g_king_attacks = generateKingAttacks();
+constexpr auto g_king_attacks = generateKingAttacks();
 
 constexpr BitBoard::bitboard processKing(Position position)
 {
     return g_king_attacks[position.index()];
+}
+
+constexpr std::array<std::array<BitBoard::bitboard, 64>, 64> generateWays()
+{
+    std::array<std::array<BitBoard::bitboard, 64>, 64> result{};
+
+    constexpr auto min = [](int a, int b) { return (a < b) ? a : b; };
+    constexpr auto max = [](int a, int b) { return (a > b) ? a : b; };
+    constexpr auto abs = [](int x) { return (x < 0) ? -x : x; };
+
+    constexpr auto computeBetween = [&](int from, int to) {
+        BitBoard::bitboard between = 0;
+        int fromRow = from / 8, fromCol = from % 8;
+        int toRow = to / 8, toCol = to % 8;
+
+        if (fromRow == toRow) { // Same row (horizontal)
+            for (int col = min(fromCol, toCol) + 1; col < max(fromCol, toCol); ++col) {
+                between |= BitBoard::bitboard(1) << (fromRow * 8 + col);
+            }
+        } else if (fromCol == toCol) { // Same column (vertical)
+            for (int row = min(fromRow, toRow) + 1; row < max(fromRow, toRow); ++row) {
+                between |= BitBoard::bitboard(1) << (row * 8 + fromCol);
+            }
+        } else if (abs(fromRow - toRow) == abs(fromCol - toCol)) { // Same diagonal
+            int rowStep = (toRow > fromRow) ? 1 : -1;
+            int colStep = (toCol > fromCol) ? 1 : -1;
+            for (int step = 1; step < abs(toRow - fromRow); ++step) {
+                between |= BitBoard::bitboard(1)
+                           << ((fromRow + step * rowStep) * 8 + (fromCol + step * colStep));
+            }
+        }
+
+        return between;
+    };
+
+    for (int from = 0; from < 64; ++from) {
+        for (int to = 0; to < 64; ++to) {
+            result[from][to] = (from == to) ? 0 : computeBetween(from, to);
+        }
+    }
+
+    return result;
+}
+
+constexpr auto g_ways = generateWays();
+
+constexpr BitBoard::bitboard processWay(Position from, Position to)
+{
+    return g_ways[from.index()][to.index()];
 }
