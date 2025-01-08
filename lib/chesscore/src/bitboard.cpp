@@ -782,7 +782,7 @@ int BitBoard::getTurns(Color color, Turn *out) const
     //return BitBoardHelper<Flags::flags_default>(*this, out).generate();
 }
 
-BitBoard BitBoard::executeTurn(Color color, Turn turn)
+BitBoard BitBoard::executeTurn(Color color, Turn turn) const
 {
     BitBoard copy(*this);
 

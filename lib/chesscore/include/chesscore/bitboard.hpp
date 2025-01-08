@@ -39,7 +39,7 @@ public:
 
     int getTurns(Color color, Turn *out) const;
 
-    [[nodiscard]] BitBoard executeTurn(Color color, Turn turn);
+    [[nodiscard]] BitBoard executeTurn(Color color, Turn turn) const;
 
     [[nodiscard]] BitBoardHash getHash() const;
     [[nodiscard]] Turn getTurn() const;

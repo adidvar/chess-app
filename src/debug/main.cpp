@@ -106,7 +106,7 @@ void PrintBoard(const BitBoard &board)
     cout << endl;
 }
 
-static size_t Counter(BitBoard board, size_t depth)
+static size_t Counter(const BitBoard &board, size_t depth)
 {
     if (depth == 0)
         return 1;
