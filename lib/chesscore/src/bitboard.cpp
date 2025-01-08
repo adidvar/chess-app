@@ -73,6 +73,15 @@ public:
             return {Position(from), Position(from.index() + delta)};
     }
 
+    template<int8_t delta, bool attack, int8_t figure>
+    constexpr Turn generateTurnFigureDeltaFrom(Position from)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return {Position(from), Position(from.index() - delta), (Figure) figure};
+        else
+            return {Position(from), Position(from.index() + delta), (Figure) figure};
+    }
+
     template<int8_t delta, bool attack>
     constexpr Turn generateTurnDelta(bitboard to)
     {
@@ -118,6 +127,31 @@ public:
                 out[counter++] = generateTurnDeltaFrom<9, true>(from_pos);
             if (pawn_right)
                 out[counter++] = generateTurnDeltaFrom<7, true>(from_pos);
+        } else {
+            if (pawn_forward) {
+                out[counter++] = generateTurnFigureDeltaFrom<8, false, Figure::Knight>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<8, false, Figure::Bishop>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<8, false, Figure::Rook>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<8, false, Figure::Queen>(from_pos);
+            }
+            if (pawn_double) {
+                out[counter++] = generateTurnFigureDeltaFrom<16, false, Figure::Knight>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<16, false, Figure::Bishop>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<16, false, Figure::Rook>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<16, false, Figure::Queen>(from_pos);
+            }
+            if (pawn_left) {
+                out[counter++] = generateTurnFigureDeltaFrom<9, true, Figure::Knight>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<9, true, Figure::Bishop>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<9, true, Figure::Rook>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<9, true, Figure::Queen>(from_pos);
+            }
+            if (pawn_right) {
+                out[counter++] = generateTurnFigureDeltaFrom<7, true, Figure::Knight>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<7, true, Figure::Bishop>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<7, true, Figure::Rook>(from_pos);
+                out[counter++] = generateTurnFigureDeltaFrom<7, true, Figure::Queen>(from_pos);
+            }
         }
         return counter;
     }
@@ -527,7 +561,7 @@ public:
                         out[counter++] = generateTurnFigureDelta<8, false, Figure::Queen>(move);
                     }
                 }
-                if constexpr (generate_moves) {
+                if constexpr (generate_attack) {
                     if (left) {
                         out[counter++] = generateTurnFigureDelta<9, true, Figure::Knight>(left);
                         out[counter++] = generateTurnFigureDelta<9, true, Figure::Bishop>(left);
