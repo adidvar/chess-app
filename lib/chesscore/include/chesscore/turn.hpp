@@ -23,6 +23,7 @@ class Turn {
 
      constexpr [[nodiscard]] Position from() const noexcept;
      constexpr [[nodiscard]] Position to() const noexcept;
+     constexpr [[nodiscard]] Figure figure() const noexcept;
 
      constexpr [[nodiscard]] bool isValid() const noexcept;
      [[nodiscard]] bool isCastling() const noexcept;
@@ -95,4 +96,8 @@ constexpr bool Turn::isAttack() const noexcept
 constexpr void Turn::setFigure(Figure figure)
 {
     m_figure = figure;
+}
+constexpr Figure Turn::figure() const noexcept
+{
+    return Figure{(int8_t) m_figure};
 }

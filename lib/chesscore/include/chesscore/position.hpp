@@ -41,7 +41,7 @@ class Position {
      constexpr Position(uint8_t index) noexcept
          : m_index(index)
      {}
-     explicit Position(std::string_view string)
+     constexpr explicit Position(std::string_view string)
      {
          if (string.size() == 2 && string[0] >= 'a' && string[0] <= 'h' && string[1] >= '1'
              && string[1] <= '8')
@@ -89,3 +89,13 @@ class Position {
      static constexpr uint8_t k_invalid_position = 64;
      uint8_t m_index;
 };
+
+constexpr Position operator"" _p(const char* str, std::size_t len)
+{
+    return Position(std::string_view(str, len));
+}
+
+constexpr uint8_t operator"" _pv(const char* str, std::size_t len)
+{
+    return Position(std::string_view(str, len)).index();
+}

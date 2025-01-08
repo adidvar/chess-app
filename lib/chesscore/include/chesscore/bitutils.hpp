@@ -17,6 +17,11 @@ constexpr bb positionToMask(Position position)
     return getBitBoardOne() << position.index();
 }
 
+constexpr bb operator"" _bm(const char *str, std::size_t len)
+{
+    return positionToMask(Position(std::string_view(str, len)));
+}
+
 /*
 constexpr static bb krooking_masks[2][2]{
     {56_b + 58_b + 59_b + 60_b, 60_b + 61_b + 62_b + 63_b},
