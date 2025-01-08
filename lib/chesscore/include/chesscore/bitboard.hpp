@@ -6,11 +6,12 @@
 #include "position.hpp"
 #include "turn.hpp"
 
+using bitboard = uint64_t;
+using BitBoardHash = uint64_t;
+
 class BitBoard
 {
 public:
-    using bitboard = uint64_t;
-    using BitBoardHash = uint64_t;
 
     enum Flags {
         flags_default = 0,
@@ -134,17 +135,17 @@ constexpr void BitBoard::copyBlacks(const BitBoard &other)
     m_b_k = other.m_b_k;
 }
 
-constexpr BitBoard::bitboard BitBoard::getWhites() const
+constexpr bitboard BitBoard::getWhites() const
 {
     return m_w_p | m_w_n | m_w_b | m_w_r | m_w_q | m_w_k;
 }
 
-constexpr BitBoard::bitboard BitBoard::getBlacks() const
+constexpr bitboard BitBoard::getBlacks() const
 {
     return m_b_p | m_b_n | m_b_b | m_b_r | m_b_q | m_b_k;
 }
 
-constexpr BitBoard::bitboard BitBoard::getAll() const
+constexpr bitboard BitBoard::getAll() const
 {
     return getWhites() | getBlacks();
 }

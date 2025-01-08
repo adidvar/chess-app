@@ -7,7 +7,6 @@
 
 #include "bitutils.hpp"
 
-using bitboard = BitBoard::bitboard;
 // all magic in 16 lines
 // masks index - position
 static bitboard RMask1[64];
@@ -287,7 +286,7 @@ struct StartUp {
   StartUp() { initMagic(); }
 } static startup;
 
-BitBoard::bitboard processRook(Position pos, BitBoard::bitboard borders)
+bitboard processRook(Position pos, bitboard borders)
 {
     int sq = pos.index();
     auto a1 = RHash1[sq][(borders & RMask1[sq]) * RMagic1[sq] >> (64 - RShift1[sq])];
@@ -295,7 +294,7 @@ BitBoard::bitboard processRook(Position pos, BitBoard::bitboard borders)
     return a1 | a2;
 }
 
-BitBoard::bitboard processBishop(Position pos, BitBoard::bitboard borders)
+bitboard processBishop(Position pos, bitboard borders)
 {
     int sq = pos.index();
     auto a1 = BHash1[sq][(borders & BMask1[sq]) * BMagic1[sq] >> (64 - BShift1[sq])];

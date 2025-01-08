@@ -30,7 +30,6 @@ class BitBoardHelper
     Turn *storage;
 
 public:
-    using bitboard = BitBoard::bitboard;
 
     constexpr BitBoardHelper(const BitBoard &board, Turn *storage)
         : board(board)
@@ -920,7 +919,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
     return copy;
 }
 
-BitBoard::BitBoardHash BitBoard::getHash() const
+BitBoardHash BitBoard::getHash() const
 {
     return m_hash;
 }
