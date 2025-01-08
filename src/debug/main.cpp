@@ -125,13 +125,13 @@ int main() {
     // try {
     while (true) {
         std::string fen;
-        int depth = 0;
+        int depth = 7;
         std::cout << "***************************************************" << std::endl;
-        std::getline(std::cin, fen);
-        std::cin >> depth;
-        auto board = BitBoard(fen);
-        std::getline(std::cin, fen);
-        //PrintBoard(board);
+        //std::getline(std::cin, fen);
+        //std::cin >> depth;
+        auto board = BitBoard("startpos");
+        //std::getline(std::cin, fen);
+        PrintBoard(board);
         Turn turns[216];
         auto count = board.getTurns(board.getCurrentSide(), turns);
         long long sum = 0;
