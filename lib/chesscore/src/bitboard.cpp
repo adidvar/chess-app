@@ -21,68 +21,6 @@ std::string BitBoard::fen() const
     return boardToFen(*this);
 }
 
-/*
-void BitBoard::generateSubBoards(Color color, std::vector<BitBoard> &boards,
-                                 uint64_t from, uint64_t to) const {
-  boards.clear();
-
-  bitboard empty = board_[color][Figure::Empty];
-  bitboard opponent = all_[!color];
-  bitboard yours = all_[color];
-  bitboard all = ~empty;
-  bitboard attack = AttackMask(!color);
-
-  BitBoard parent(*this);
-  parent.last_pawn_move_ = Position();
-  parent.SkipMove();
-
-  bitboard locked_figures = attack & yours & attackFrom(board_[color][Figure::WKing]);
-
-  // queen
-  ProcessFigure<Queen>(parent, boards, color, ~locked_figures & from, to, all,
-                       yours, opponent);
-  // rook
-  ProcessFigure<Rook>(parent, boards, color, ~locked_figures & from, to, all,
-                      yours, opponent);
-  // knight
-  ProcessFigure<Knight>(parent, boards, color, ~locked_figures & from, to, all,
-                        yours, opponent);
-  // bishop
-  ProcessFigure<Bishop>(parent, boards, color, ~locked_figures & from, to, all,
-                        yours, opponent);
-  // pawns
-  ProcessFigure<Pawn>(parent, boards, color, ~locked_figures & from, to, all,
-                      yours, opponent);
-  // king
-  ProcessFigure<King>(parent, boards, color, ~locked_figures & from,
-                      ~attack & to, all, yours, opponent);
-
-  auto index = boards.size();
-  if ((attack & board_[color][Figure::WKing]) != 0)
-      index = 0;
-
-  // queen
-  ProcessFigure<Queen>(parent, boards, color, locked_figures & from, to, all,
-                       yours, opponent);
-  // rook
-  ProcessFigure<Rook>(parent, boards, color, locked_figures & from, to, all,
-                      yours, opponent);
-  // knight
-  ProcessFigure<Knight>(parent, boards, color, locked_figures & from, to, all,
-                        yours, opponent);
-  // bishop
-  ProcessFigure<Bishop>(parent, boards, color, locked_figures & from, to, all,
-                        yours, opponent);
-  // pawns
-  ProcessFigure<Pawn>(parent, boards, color, locked_figures & from, to, all,
-                      yours, opponent);
-  // king
-  ProcessFigure<King>(parent, boards, color, locked_figures & from,
-                      ~attack & to, all, yours, opponent);
-
-}
-*/
-
 #include <iostream>
 
 template<BitBoard::Flags flags>
@@ -120,8 +58,22 @@ public:
         else
             return mask2;
     }
+    template<int8_t from, int8_t to>
+    constexpr Turn generateCastling()
+    {
+        return {Position(from), Position(to)};
+    }
 
-    template<int8_t delta, bool attack, int8_t figure>
+    template<int8_t delta, bool attack>
+    constexpr Turn generateTurnDeltaFrom(Position from)
+    {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return {Position(from), Position(from.index() - delta)};
+        else
+            return {Position(from), Position(from.index() + delta)};
+    }
+
+    template<int8_t delta, bool attack>
     constexpr Turn generateTurnDelta(bitboard to)
     {
         int8_t pos = log2_64(to);
@@ -131,22 +83,52 @@ public:
             return {Position(pos - delta), Position(pos)};
     }
 
-    template<bool attack, int8_t figure>
+    template<int8_t delta, bool attack, int8_t figure>
+    constexpr Turn generateTurnFigureDelta(bitboard to)
+    {
+        int8_t pos = log2_64(to);
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+            return {Position(pos + delta), Position(pos), (Figure) figure};
+        else
+            return {Position(pos - delta), Position(pos), (Figure) figure};
+    }
+
+    template<bool attack>
     constexpr Turn generateTurn(Position from, Position to)
     {
         return {Position(from), Position(to)};
     }
 
-    constexpr int generateBlockedTurn(
-        bitboard from, bitboard to_mask, bitboard enemy, int counter, Turn *out)
-    { // here we can use generation without magic
+    constexpr int generateBlockedPawn(
+        bitboard from, bitboard move, bitboard enemy, int counter, Turn *out)
+    {
+        Position from_pos = log2_64(from);
+
+        bitboard pawn_forward = (pawnsShift<8>(from) & move);
+        bitboard pawn_double = (pawnsShift<16>(from) & chooseMask(line_4, line_5) & move);
+        bitboard pawn_left = (pawnsShift<9>(from) & enemy);
+        bitboard pawn_right = (pawnsShift<7>(from) & enemy);
+
+        if (from & chooseMask(~line_7, ~line_2)) {
+            if (pawn_forward)
+                out[counter++] = generateTurnDeltaFrom<8, false>(from_pos);
+            if (pawn_double)
+                out[counter++] = generateTurnDeltaFrom<16, false>(from_pos);
+            if (pawn_left)
+                out[counter++] = generateTurnDeltaFrom<9, true>(from_pos);
+            if (pawn_right)
+                out[counter++] = generateTurnDeltaFrom<7, true>(from_pos);
+        }
+        return counter;
+    }
+
+    constexpr int generateBlocked(bitboard from, bitboard to_mask, int counter, Turn *out)
+    {
+        /// @todo here we can use generation without magic
         Position from_position = log2_64(from);
         bitboard figure_move_mask = 0;
-        Figure figure = Figure::Empty;
-        if (from & getPawns(board))
-            figure_move_mask = pawnsShift<8>(from) | pawnsShift<16>(from)
-                               | (pawnsShift<9>(from) & enemy) | (pawnsShift<7>(from) & enemy);
-        else if (from & getKnights(board))
+
+        if (from & getKnights(board))
             return counter;
         else if (from & getBishops(board))
             figure_move_mask = processBishop(from_position, 0);
@@ -263,6 +245,17 @@ public:
     }
     constexpr bitboard getFillBitboard() { return ~((bitboard) 0); }
 
+    constexpr bool isMate(bitboard borders)
+    {
+        Position king_pos = log2_64(getKing(board));
+        bitboard diagonal_enemies = getEnemyBishops(board) | getEnemyQueens(board);
+        bitboard orthogonal_enemies = getEnemyRooks(board) | getEnemyQueens(board);
+        bitboard enemy_attack_mask = 0;
+        enemy_attack_mask |= processBishop(king_pos, borders) & diagonal_enemies;
+        enemy_attack_mask |= processRook(king_pos, borders) & orthogonal_enemies;
+        return enemy_attack_mask > 0;
+    }
+
     constexpr int generate()
     {
         int counter = 0;
@@ -347,7 +340,11 @@ public:
                      bit = takeBit(new_attackers_map)) {
                     bitboard way = processWay(king_position, log2_64(bit));
                     bitboard blocker = way & candidates_to_blockers;
-                    counter = generateBlockedTurn(blocker, way | bit, bit, counter, out);
+                    if (attacks_counter == 0)
+                        if (blocker & getPawns(board))
+                            counter = generateBlockedPawn(blocker, way, bit, counter, out);
+                        else
+                            counter = generateBlocked(blocker, way | bit, counter, out);
                     blockers |= blocker;
                 }
             }
@@ -392,11 +389,45 @@ public:
 
             bitboard moves = attack_mask & empty;
             for (bitboard to_bit = takeBit(moves); to_bit; to_bit = takeBit(moves))
-                out[counter++] = generateTurn<false, Figure::King>(from_position, log2_64(to_bit));
+                out[counter++] = generateTurn<false>(from_position, log2_64(to_bit));
 
             bitboard attacks = attack_mask & enemies;
             for (bitboard to_bit = takeBit(attacks); to_bit; to_bit = takeBit(attacks))
-                out[counter++] = generateTurn<true, Figure::King>(from_position, log2_64(to_bit));
+                out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
+        }
+
+        { /// CASTLING GENERATION
+            if constexpr ((flags & BitBoard::flags_color) == 0) {
+                if constexpr (flags & BitBoard::flags_white_oo) {
+                    constexpr bitboard way = "f1"_bm | "g1"_bm;
+                    constexpr bitboard no_mate = "e1"_bm | "f1"_bm | "g1"_bm;
+                    if ((no_mate & enemy_attack_mask) == 0 && (way & all) == 0) {
+                        out[counter++] = generateCastling<"e1"_pv, "g1"_pv>();
+                    }
+                }
+                if constexpr (flags & BitBoard::flags_white_ooo) {
+                    constexpr bitboard way = "b1"_bm | "c1"_bm | "d1"_bm;
+                    constexpr bitboard no_mate = "c1"_bm | "d1"_bm | "e1"_bm;
+                    if ((no_mate & enemy_attack_mask) == 0 && (way & all) == 0) {
+                        out[counter++] = generateCastling<"e1"_pv, "c1"_pv>();
+                    }
+                }
+            } else {
+                if constexpr (flags & BitBoard::flags_black_oo) {
+                    constexpr bitboard way = "f8"_bm | "g8"_bm;
+                    constexpr bitboard no_mate = "e8"_bm | "f8"_bm | "g8"_bm;
+                    if ((no_mate & enemy_attack_mask) == 0 && (way & all) == 0) {
+                        out[counter++] = generateCastling<"e8"_pv, "g8"_pv>();
+                    }
+                }
+                if constexpr (flags & BitBoard::flags_black_ooo) {
+                    constexpr bitboard way = "b8"_bm | "c8"_bm | "d8"_bm;
+                    constexpr bitboard no_mate = "c8"_bm | "d8"_bm | "e8"_bm;
+                    if ((no_mate & enemy_attack_mask) == 0 && (way & all) == 0) {
+                        out[counter++] = generateCastling<"e8"_pv, "c8"_pv>();
+                    }
+                }
+            }
         }
 
         return counter;
@@ -420,13 +451,18 @@ public:
         bitboard queens = getQueens(board) & from_mask;
 
         { /// PAWNS GENERATION
-            bitboard pawns_possible = pawnsShift<8>(pawns) & empty;
+            bitboard pawns_possible = pawnsShift<8>(pawns) & empty & chooseMask(~line_8, ~line_1);
             bitboard pawns_possible_long = pawnsShift<8>(pawns_possible) & empty & to_move_mask
                                            & chooseMask(line_4, line_5);
             bitboard pawns_possible_left = pawnsShift<9>(pawns) & enemies & to_attack_mask
-                                           & chooseMask(~row_h, ~row_a);
+                                           & chooseMask(~row_h, ~row_a)
+                                           & chooseMask(~line_8, ~line_1);
             bitboard pawns_possible_right = pawnsShift<7>(pawns) & enemies & to_attack_mask
-                                            & chooseMask(~row_a, ~row_h);
+                                            & chooseMask(~row_a, ~row_h)
+                                            & chooseMask(~line_8, ~line_1);
+
+            bitboard pawns_promotion = pawns & chooseMask(line_7, line_2);
+
             pawns_possible &= to_move_mask;
 
             empty &= to_move_mask;
@@ -434,31 +470,76 @@ public:
 
             if constexpr (generate_moves) {
                 for (bitboard bit = takeBit(pawns_possible); bit; bit = takeBit(pawns_possible))
-                    out[counter++] = generateTurnDelta<8, false, Figure::Pawn>(bit);
+                    out[counter++] = generateTurnDelta<8, false>(bit);
 
                 for (bitboard bit = takeBit(pawns_possible_long); bit;
                      bit = takeBit(pawns_possible_long))
-                    out[counter++] = generateTurnDelta<16, false, Figure::Pawn>(bit);
+                    out[counter++] = generateTurnDelta<16, false>(bit);
             }
 
             if constexpr (generate_attack) {
                 for (bitboard bit = takeBit(pawns_possible_left); bit;
                      bit = takeBit(pawns_possible_left))
-                    out[counter++] = generateTurnDelta<9, true, Figure::Pawn>(bit);
+                    out[counter++] = generateTurnDelta<9, true>(bit);
 
                 for (bitboard bit = takeBit(pawns_possible_right); bit;
                      bit = takeBit(pawns_possible_right))
-                    out[counter++] = generateTurnDelta<7, true, Figure::Pawn>(bit);
+                    out[counter++] = generateTurnDelta<7, true>(bit);
 
                 if constexpr (flags & BitBoard::flags_el_passant) {
                     bitboard to_mask = positionToMask(
                         (board.m_turn.from().index() + board.m_turn.to().index()) / 2);
-                    bitboard attack_cell = pawnsShift<-8>(to_mask);
 
-                    if ((pawnsShift<9>(pawns) & to_mask) && (attack_cell & enemies))
-                        out[counter++] = generateTurnDelta<9, true, Figure::Pawn>(to_mask);
-                    if ((pawnsShift<7>(pawns) & to_mask) && (attack_cell & enemies))
-                        out[counter++] = generateTurnDelta<7, true, Figure::Pawn>(to_mask);
+                    bitboard attack_cell = pawnsShift<-8>(to_mask) & getEnemyPawns(board);
+                    bool enabled = (attack_cell & getEnemyPawns(board)) > 0;
+                    bool sub_enabled = false;
+                    // el passant rules when we in mate
+                    if constexpr (generate_attack)
+                        sub_enabled = sub_enabled || ((attack_cell & to_attack_mask) > 0);
+                    if constexpr (generate_moves)
+                        sub_enabled = sub_enabled || ((to_mask & to_move_mask) > 0);
+                    enabled = enabled && sub_enabled;
+
+                    if (((pawnsShift<9>(pawns) & chooseMask(~row_h, ~row_a) & to_mask)) && enabled) {
+                        bitboard new_blockers = all & (~attack_cell) & (~pawnsShift<-9>(to_mask));
+                        if (!isMate(new_blockers))
+                            out[counter++] = generateTurnDelta<9, true>(to_mask);
+                    }
+                    if (((pawnsShift<7>(pawns) & chooseMask(~row_a, ~row_h) & to_mask)) && enabled) {
+                        bitboard new_blockers = all & (~attack_cell) & (~pawnsShift<-7>(to_mask));
+                        if (!isMate(new_blockers))
+                            out[counter++] = generateTurnDelta<7, true>(to_mask);
+                    }
+                }
+            }
+
+            for (bitboard bit = takeBit(pawns_promotion); bit; bit = takeBit(pawns_promotion)) {
+                bitboard move = pawnsShift<8>(bit) & empty & to_move_mask;
+                bitboard left = pawnsShift<9>(bit) & enemies & to_attack_mask
+                                & chooseMask(~row_h, ~row_a);
+                bitboard right = pawnsShift<7>(bit) & enemies & to_attack_mask
+                                 & chooseMask(~row_a, ~row_h);
+                if constexpr (generate_moves) {
+                    if (move) {
+                        out[counter++] = generateTurnFigureDelta<8, false, Figure::Knight>(move);
+                        out[counter++] = generateTurnFigureDelta<8, false, Figure::Bishop>(move);
+                        out[counter++] = generateTurnFigureDelta<8, false, Figure::Rook>(move);
+                        out[counter++] = generateTurnFigureDelta<8, false, Figure::Queen>(move);
+                    }
+                }
+                if constexpr (generate_moves) {
+                    if (left) {
+                        out[counter++] = generateTurnFigureDelta<9, true, Figure::Knight>(left);
+                        out[counter++] = generateTurnFigureDelta<9, true, Figure::Bishop>(left);
+                        out[counter++] = generateTurnFigureDelta<9, true, Figure::Rook>(left);
+                        out[counter++] = generateTurnFigureDelta<9, true, Figure::Queen>(left);
+                    }
+                    if (right) {
+                        out[counter++] = generateTurnFigureDelta<7, true, Figure::Knight>(right);
+                        out[counter++] = generateTurnFigureDelta<7, true, Figure::Bishop>(right);
+                        out[counter++] = generateTurnFigureDelta<7, true, Figure::Rook>(right);
+                        out[counter++] = generateTurnFigureDelta<7, true, Figure::Queen>(right);
+                    }
                 }
             }
         }
@@ -471,15 +552,13 @@ public:
                 if constexpr (generate_moves) {
                     bitboard moves = attack_mask & empty;
                     for (bitboard to_bit = takeBit(moves); to_bit; to_bit = takeBit(moves))
-                        out[counter++] = generateTurn<false, Figure::Knight>(from_position,
-                                                                             log2_64(to_bit));
+                        out[counter++] = generateTurn<false>(from_position, log2_64(to_bit));
                 }
 
                 if constexpr (generate_attack) {
                     bitboard attacks = attack_mask & enemies;
                     for (bitboard to_bit = takeBit(attacks); to_bit; to_bit = takeBit(attacks))
-                        out[counter++] = generateTurn<true, Figure::Knight>(from_position,
-                                                                            log2_64(to_bit));
+                        out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
                 }
             }
         }
@@ -492,15 +571,13 @@ public:
                 if constexpr (generate_moves) {
                     bitboard moves = attack_mask & empty;
                     for (bitboard to_bit = takeBit(moves); to_bit; to_bit = takeBit(moves))
-                        out[counter++] = generateTurn<false, Figure::King>(from_position,
-                                                                           log2_64(to_bit));
+                        out[counter++] = generateTurn<false>(from_position, log2_64(to_bit));
                 }
 
                 if constexpr (generate_attack) {
                     bitboard attacks = attack_mask & enemies;
                     for (bitboard to_bit = takeBit(attacks); to_bit; to_bit = takeBit(attacks))
-                        out[counter++] = generateTurn<true, Figure::King>(from_position,
-                                                                          log2_64(to_bit));
+                        out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
                 }
             }
         }
@@ -513,15 +590,13 @@ public:
                 if constexpr (generate_moves) {
                     bitboard moves = attack_mask & empty;
                     for (bitboard to_bit = takeBit(moves); to_bit; to_bit = takeBit(moves))
-                        out[counter++] = generateTurn<false, Figure::King>(from_position,
-                                                                           log2_64(to_bit));
+                        out[counter++] = generateTurn<false>(from_position, log2_64(to_bit));
                 }
 
                 if constexpr (generate_attack) {
                     bitboard attacks = attack_mask & enemies;
                     for (bitboard to_bit = takeBit(attacks); to_bit; to_bit = takeBit(attacks))
-                        out[counter++] = generateTurn<true, Figure::King>(from_position,
-                                                                          log2_64(to_bit));
+                        out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
                 }
             }
         }
@@ -535,19 +610,16 @@ public:
                 if constexpr (generate_moves) {
                     bitboard moves = attack_mask & empty;
                     for (bitboard to_bit = takeBit(moves); to_bit; to_bit = takeBit(moves))
-                        out[counter++] = generateTurn<false, Figure::King>(from_position,
-                                                                           log2_64(to_bit));
+                        out[counter++] = generateTurn<false>(from_position, log2_64(to_bit));
                 }
 
                 if constexpr (generate_attack) {
                     bitboard attacks = attack_mask & enemies;
                     for (bitboard to_bit = takeBit(attacks); to_bit; to_bit = takeBit(attacks))
-                        out[counter++] = generateTurn<true, Figure::King>(from_position,
-                                                                          log2_64(to_bit));
+                        out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
                 }
             }
         }
-
         return counter;
     }
 };
@@ -714,20 +786,103 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn)
 {
     BitBoard copy(*this);
 
-    if (color != Color::White)
-        copy.m_flags = (Flags) (m_flags & ~flags_color);
-    else
-        copy.m_flags = (Flags) (m_flags | flags_color);
-
     bitboard from = positionToMask(turn.from());
     bitboard to = positionToMask(turn.to());
+
+    if (from & 10448351135499550865) {
+        if (from & 1224979098644774912) // white king and left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
+        if (from & 10376293541461622784) // white king and right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
+        if (from & 17) // black king and left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
+        if (from & 144) // black king and right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    }
+    if (to & 9295429630892703873) {
+        if (to & 72057594037927936) // white left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
+        if (to & 9223372036854775808) // white right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
+        if (to & 1) // black left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
+        if (to & 128) // black right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    }
+
+    if (to & 9295429630892703873) {
+        if (to & 72057594037927936) // white left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
+        if (to & 9223372036854775808) // white right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
+        if (to & 1) // black left rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
+        if (to & 128) // black right rook
+            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    }
+
+    copy.m_flags = (Flags) (copy.m_flags & ~flags_el_passant);
+    if (color == Color::White) {
+        if ((from & m_w_p & line_2) && (to & line_4)) {
+            copy.m_flags = (Flags) (copy.m_flags | flags_el_passant);
+        }
+    } else {
+        if ((from & m_b_p & line_7) && (to & line_5)) {
+            copy.m_flags = (Flags) (copy.m_flags | flags_el_passant);
+        }
+    }
+
+    if (color != Color::White)
+        copy.m_flags = (Flags) (copy.m_flags & ~flags_color);
+    else
+        copy.m_flags = (Flags) (copy.m_flags | flags_color);
+
     if (color == Color::White) {
         copy.moveFromToWhite(from, to);
         copy.removeBlackFigure(~to);
+
+        //for promotion
+        if (from & m_w_p & line_7) {
+            copy.removeWhiteFigure(~to);
+            copy.promoteWhiteFigure(to, turn.figure());
+        }
+
+        //for el_passant
+        if ((from & m_w_p & line_5) && (to & ((from >> 9) | (from >> 7)))) {
+            if (to & ~copy.getBlacks())
+                copy.m_b_p &= ~(to << 8);
+        }
+
+        //rook moving for castling
+        if (from & "e1"_bm)
+            if (to & "g1"_bm)
+                copy.moveFromToWhite("h1"_bm, "f1"_bm);
+            else if (to & "c1"_bm)
+                copy.moveFromToWhite("a1"_bm, "d1"_bm);
     } else {
         copy.moveFromToBlack(from, to);
         copy.removeWhiteFigure(~to);
+
+        //for promotion
+        if (from & m_b_p & line_2) {
+            copy.removeBlackFigure(~to);
+            copy.promoteBlackFigure(to, turn.figure());
+        }
+
+        //for el_passant
+        if ((from & m_b_p & line_4) && (to & ((from << 9) | (from << 7)))) {
+            if (to & ~copy.getWhites())
+                copy.m_w_p &= ~(to >> 8);
+        }
+
+        //rook moving for castling
+        if (from & "e8"_bm)
+            if (to & "g8"_bm)
+                copy.moveFromToBlack("h8"_bm, "f8"_bm);
+            else if (to & "c8"_bm)
+                copy.moveFromToBlack("a8"_bm, "d8"_bm);
     }
+    copy.m_turn = turn;
     return copy;
 }
 

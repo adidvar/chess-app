@@ -55,6 +55,8 @@ private:
     constexpr void copyBlacks(const BitBoard &other);
     constexpr void moveFromToWhite(bitboard from, bitboard to);
     constexpr void moveFromToBlack(bitboard from, bitboard to);
+    constexpr void promoteWhiteFigure(bitboard position, Figure figure);
+    constexpr void promoteBlackFigure(bitboard position, Figure figure);
     constexpr bitboard getWhites() const;
     constexpr bitboard getBlacks() const;
     constexpr bitboard getAll() const;
@@ -187,4 +189,39 @@ constexpr void BitBoard::moveFromToBlack(bitboard from, bitboard to)
 
     m_b_q |= ((m_b_q & from) > 0) * to;
     m_b_q &= ~from;
+}
+
+constexpr void BitBoard::promoteWhiteFigure(bitboard position, Figure figure)
+{
+    switch (figure) {
+    case Figure::Knight:
+        m_w_n |= position;
+        break;
+    case Figure::Bishop:
+        m_w_b |= position;
+        break;
+    case Figure::Rook:
+        m_w_r |= position;
+        break;
+    case Figure::Queen:
+        m_w_q |= position;
+        break;
+    }
+}
+constexpr void BitBoard::promoteBlackFigure(bitboard position, Figure figure)
+{
+    switch (figure) {
+    case Figure::Knight:
+        m_b_n |= position;
+        break;
+    case Figure::Bishop:
+        m_b_b |= position;
+        break;
+    case Figure::Rook:
+        m_b_r |= position;
+        break;
+    case Figure::Queen:
+        m_b_q |= position;
+        break;
+    }
 }
