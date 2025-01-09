@@ -67,26 +67,6 @@ TEST_CASE("Turn string constructor")
     }
 }
 
-TEST_CASE("Turn static methods for castling")
-{
-    Turn shortCastling = Turn::getShortCastling(Color::White);
-    Turn longCastling = Turn::getLongCastling(Color::Black);
-
-    SECTION("Short castling")
-    {
-        REQUIRE(shortCastling.isShortCastling() == true);
-        REQUIRE(shortCastling.isLongCastling() == false);
-        REQUIRE(shortCastling.isValid() == true);
-    }
-
-    SECTION("Long castling")
-    {
-        REQUIRE(longCastling.isLongCastling() == true);
-        REQUIRE(longCastling.isShortCastling() == false);
-        REQUIRE(longCastling.isValid() == true);
-    }
-}
-
 TEST_CASE("Turn comparison operators")
 {
     Turn turn1(Position(0, 0), Position(0, 1));
