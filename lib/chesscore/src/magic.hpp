@@ -7,23 +7,6 @@
 
 using bitboard = uint64_t;
 
-class Xorshift64
-{
-private:
-    uint64_t state;
-
-public:
-    // Constructor initializes the PRNG state
-    constexpr Xorshift64(uint64_t seed)
-        : state(seed)
-    {}
-
-    // Generates a pseudo-random 64-bit number
-    //uint64_t next() { return state(); }
-
-    //bitboard few_bits_next() { return next() & next() & next(); }
-};
-
 constexpr bitboard generateRookMask(bitboard sq)
 {
     bitboard result = 0ULL;
@@ -149,20 +132,6 @@ constexpr bitboard generateFrameLess(uint8_t pos, bitboard board)
     return board;
 }
 
-constexpr bitboard software_pext64(bitboard src, bitboard mask)
-{
-    bitboard result = 0;
-    for (bitboard bit = 1, pos = 0; mask; mask >>= 1, bit <<= 1) {
-        if (mask & 1) {
-            if (src & bit) {
-                result |= 1ULL << pos;
-            }
-            pos++;
-        }
-    }
-    return result;
-}
-
 constexpr uint64_t reverse_pext(uint64_t extracted, uint64_t mask)
 {
     uint64_t result = 0;
@@ -180,7 +149,6 @@ constexpr uint64_t reverse_pext(uint64_t extracted, uint64_t mask)
 
 struct MagicConsts
 {
-    Xorshift64 rand;
     constexpr static std::array<bitboard, 128> precalculated_magic{
         9331458702791954561,  18014690835701760,    72075221663744256,   1188959099868286976,
         4971982784777826560,  5476553077400012816,  900792493384139008,  4935945917447685760,
@@ -220,22 +188,20 @@ struct MagicConsts
         if (index < 128)
             return precalculated_magic[index++];
         else
-            //  return rand.few_bits_next();
             return 0;
     }
 
-    constexpr unsigned processRookIndex(uint8_t pos, bitboard borders) const
+    unsigned processRookIndex(uint8_t pos, bitboard borders) const
     {
         return ((borders & rook_masks[pos]) * rook_magic[pos]) >> rook_shifts[pos];
     }
 
-    constexpr unsigned processBishopIndex(uint8_t pos, bitboard borders) const
+    unsigned processBishopIndex(uint8_t pos, bitboard borders) const
     {
         return ((borders & bishop_masks[pos]) * bishop_magic[pos]) >> bishop_shifts[pos];
     }
 
-    constexpr MagicConsts(uint64_t seed)
-        : rand(seed)
+    constexpr MagicConsts()
     {
         for (int position = 0; position < 64; position++) {
             rook_masks[position] = generateFrameLess(position, generateRookMask(position));
@@ -272,7 +238,6 @@ struct MagicConsts
 
             random_index = 0;
             while (true) {
-                //random
                 bishop_magic[position] = generateMagic(random_index);
                 int tests = 1 << popCount(bishop_masks[position]);
                 //generation
@@ -296,28 +261,6 @@ struct MagicConsts
                 if (correct)
                     break;
             }
-
-            /*
-            //magic generation
-            while (true) {
-                //random
-                bishop_magic[position] = rand.few_bits_next();
-                //generation
-                for (uint64_t borders = 0; borders < 512; borders++) {
-                    bishop_results[position][processBishopIndex(position, borders)]
-                        = generateBishopAttack(position, borders);
-                }
-                //tests
-                int correct = 0;
-                for (uint64_t borders = 0; borders < 512; borders++) {
-                    if (bishop_results[position][processBishopIndex(position, borders)]
-                        == generateBishopAttack(position, borders))
-                        correct++;
-                }
-                if (correct == 512)
-                    break;
-        }
-*/
         }
     }
 
@@ -332,63 +275,7 @@ struct MagicConsts
     std::array<std::array<bitboard, 512>, 64> bishop_results{};
 };
 
-/*
-constexpr MagicConsts generateMagic(uint64_t random_seed)
-{
-    MagicConsts c;
-
-*/
-
-/*
-    using namespace std;
-    size_t n = popcount(mask);
-    size_t c = 1 << n;
-
-    uint64_t input[1024];
-    uint64_t output[1024];
-
-    uint64_t hash[1024];
-
-    // fill associates
-    for (size_t i = 0; i < c; i++) {
-        input[i] = value_to_int64(mask, i);
-        output[i] = attack(sq, input[i]);
-    }
-
-    for (size_t k = 0; k < 10000000; k++) {
-        size_t magic = random_uint64_fewbits(random);
-        bool flag = true;
-        // clear hash map
-        for (size_t i = 0; i < c; i++)
-            hash[i] = 0;
-
-        if (popcount(mask * magic >> (64ULL - n)) < n)
-            continue;
-
-        for (size_t i = 0; i < c; i++) {
-            uint64_t index = input[i] * magic >> (64 - n);
-            // add to hash
-            if (hash[index] == 0)
-                hash[index] = output[i];
-            // hash miss
-            else if (hash[index] != output[i]) {
-                flag = false;
-                break;
-            }
-        }
-        if (flag) {
-            for (size_t i = 0; i < c; i++)
-                hash_ref[sq][i] = hash[i];
-
-            return magic;
-        }
-    }
-    throw std::runtime_error("can't find magic");
-return c;
-}
-*/
-
-const MagicConsts g_magic_consts{0};
+const MagicConsts g_magic_consts{};
 
 inline bitboard processRook(Position pos, bitboard borders)
 {
