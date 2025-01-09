@@ -68,35 +68,8 @@ void print_bitboard(bitboard board)
     std::cout << std::endl;
 }
 
-MagicConsts consts;
-
 int main()
 {
-    uint64_t best_seed = 0;
-    double best_time = std::numeric_limits<double>::max();
-
-    Xorshift64 random(0);
-    //best 12382
-
-    for (size_t i = 0; i < 1000000; ++i) {
-        uint64_t seed = random.next();
-
-        auto start_time = std::chrono::high_resolution_clock::now();
-        consts.init(seed); // Створення об'єкта.
-        auto end_time = std::chrono::high_resolution_clock::now();
-
-        std::chrono::duration<double> elapsed = end_time - start_time;
-        if (elapsed.count() < best_time) {
-            best_time = elapsed.count();
-            best_seed = seed;
-            std::cout << "New best seed found: " << best_seed << " with time: " << best_time
-                      << " seconds.\n";
-        }
-        std::cout << "iteration: " << i << std::endl;
-    }
-
-    std::cout << "Best seed overall: " << best_seed << " with time: " << best_time << " seconds.\n";
-
     /*
     std::cout << "-----------------------" << std::endl;
     print_bitboard(1107298304);
