@@ -3,8 +3,6 @@
 #include <vector>
 
 #include "figures.hpp"
-#include "position.hpp"
-#include "turn.hpp"
 
 using bitboard = uint64_t;
 using BitBoardHash = uint64_t;

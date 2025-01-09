@@ -1,5 +1,4 @@
 #include "bitboard.hpp"
-#include "bitutils.hpp"
 
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/catch_all.hpp>
@@ -25,29 +24,3 @@ TEST_CASE("BitBoard benchmarks", "[benchmark]")
         meter.measure([&] { return board.getTurns(Color::White, turns); });
     };
 }
-
-/*
-TEST_CASE("Bit iterators")
-{
-    BENCHMARK_ADVANCED("bit iterator")(Catch::Benchmark::Chronometer meter)
-    {
-        meter.measure([&] {
-            BitIterator it(0xFF);
-            uint64_t value = 0;
-            while (it.Valid()) {
-                value += it.Bit();
-                ++it;
-            }
-            return value;
-        });
-    };
-    BENCHMARK_ADVANCED("bit cycle")(Catch::Benchmark::Chronometer meter)
-    {
-        meter.measure([&] {
-            uint64_t value = 0;
-            BitForEach(0xFF, [&value](uint64_t bit) { value += bit; });
-            return value;
-        });
-    };
-}
-*/

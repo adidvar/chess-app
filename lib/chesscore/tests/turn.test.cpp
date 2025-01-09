@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <turn.hpp>
+#include <figures.hpp>
 
 TEST_CASE("Turn from string")
 {
@@ -20,7 +20,6 @@ TEST_CASE("Turn default constructor")
     Turn turn;
 
     REQUIRE(turn.isValid() == false);
-    REQUIRE(turn.isCastling() == false);
 }
 
 TEST_CASE("Turn parameterized constructors")
@@ -36,7 +35,6 @@ TEST_CASE("Turn parameterized constructors")
         REQUIRE(turn.from() == from);
         REQUIRE(turn.to() == to);
         REQUIRE(turn.isValid() == true);
-        REQUIRE(turn.isCastling() == false);
     }
 
     SECTION("Constructor with 'from', 'to' and 'figure'")
