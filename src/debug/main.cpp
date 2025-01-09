@@ -54,23 +54,9 @@ void PrintBoard(const BitBoard &board)
     cout << endl;
 }
 
-static size_t Counter(const BitBoard &board, size_t depth)
-{
-    if (depth == 0)
-        return 1;
-    size_t counter = 0;
-    Turn turns[216];
-    int count = board.getTurns(board.getCurrentSide(), turns);
-    if (depth == 1)
-        return count;
-    for (int i = 0; i < count; i++) {
-        counter += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
-    }
-    return counter;
-}
-
 int main() {
     // try {
+    /*
     while (true) {
         std::string fen;
         int depth = 7;
@@ -109,4 +95,7 @@ int main() {
     //  } catch (std::exception e) {
     //      std::cout << e.what();
     //  }
+
+*/
+    return 0;
 }
