@@ -1,9 +1,9 @@
 #pragma once
 
-#include "bitboard.hpp"
 #include <array>
 #include <bit>
 #include <cinttypes>
+#include <type_traits>
 
 constexpr bitboard getBitBoardOne()
 {
@@ -88,19 +88,10 @@ constexpr unsigned log2_64(bb value)
     return tab64[((bb) ((value - (value >> 1)) * 0x07EDD5E59A4E28C2)) >> 58];
 }
 #endif
-
-#ifdef _MSC_VER
-#include <intrin.h>
-inline int popCount(bitboard b)
-{
-    return __popcnt64(b);
-}
-#else
-constexpr int popCount(bb b)
+constexpr int popCount(bitboard b)
 {
     return std::popcount(b);
 }
-#endif
 constexpr std::array<bitboard, 64> generateKnightAttacks()
 {
     std::array<bitboard, 64> result;

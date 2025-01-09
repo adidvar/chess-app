@@ -19,7 +19,7 @@ add_library(chesscore ${core_headers} ${core_sources})
 
 target_include_directories(chesscore INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore)
-target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(chesscore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(BUILD_TESTS)
 enable_testing()
@@ -41,9 +41,9 @@ add_executable(test_chesscore ${core_tests})
 target_include_directories(test_chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore)
 target_link_libraries(test_chesscore chesscore Catch2::Catch2WithMain)
 
-include(CTest)
-include(Catch)
-catch_discover_tests(test_chesscore)
+#include(CTest)
+#include(Catch)
+#catch_discover_tests(test_chesscore)
 
 endif()
 
