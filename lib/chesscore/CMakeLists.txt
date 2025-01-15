@@ -19,7 +19,7 @@ add_library(chesscore ${core_headers} ${core_sources})
 
 target_include_directories(chesscore INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore)
-target_include_directories(chesscore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(BUILD_TESTS)
 enable_testing()

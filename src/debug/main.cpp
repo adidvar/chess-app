@@ -4,8 +4,6 @@
 #include <chrono>
 #include <map>
 
-#include "magic.hpp"
-
 void PrintBoard(const BitBoard &board)
 {
     const static std::map<Figure, char> f_to_s = {{Figure::Empty, ' '},
