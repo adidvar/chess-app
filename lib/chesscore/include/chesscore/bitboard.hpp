@@ -46,7 +46,7 @@ public:
     bool operator==(const BitBoard &board) const = default;
     bool operator!=(const BitBoard &board) const = default;
 
-private:
+protected:
     constexpr void removeFigure(bitboard mask);
     constexpr void removeBlackFigure(bitboard mask);
     constexpr void removeWhiteFigure(bitboard mask);
