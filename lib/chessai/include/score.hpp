@@ -1,5 +1,4 @@
-#ifndef SCORE_H
-#define SCORE_H
+#pragma once
 
 #include <string>
 
@@ -51,5 +50,3 @@ class Score {
 
   ScoreType m_value;
 };
-
-#endif

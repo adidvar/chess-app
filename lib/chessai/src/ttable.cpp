@@ -25,35 +25,37 @@ void TTable::SetGarbageFlag() {
   for (auto &&i : m_garbage) i = true;
 }
 
-const TTableItem *TTable::Search(bitboard_hash_t hash, bool &founded) const {
-  auto index = hash % m_table.size();
-  const TTableItem *element = &m_table[index];
-  founded = (m_used[index] && element->hash == hash);
-  m_garbage[index] = m_garbage[index] & !founded;
-  return element;
+const TTableItem *TTable::Search(BitBoardHash hash, bool &founded) const
+{
+    auto index = hash % m_table.size();
+    const TTableItem *element = &m_table[index];
+    founded = (m_used[index] && element->hash == hash);
+    m_garbage[index] = m_garbage[index] & !founded;
+    return element;
 }
 
-void TTable::Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
-                   Turn pv, uint8_t depth) {
-  auto index = hash % m_table.size();
-  auto used = m_used[index];
-  auto triggered = m_garbage[index];
-  auto &element = m_table[index];
+void TTable::Write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth)
+{
+    auto index = hash % m_table.size();
+    auto used = m_used[index];
+    auto triggered = m_garbage[index];
+    auto &element = m_table[index];
 
-  if (used && element.depth > depth) return;
+    if (used && element.depth > depth)
+        return;
 
-  if (value <= alpha)
-    element.type = TTableItem::FailLow;
-  else if (value >= beta)
-    element.type = TTableItem::FailHigh;
-  else
-    element.type = TTableItem::PV;
+    if (value <= alpha)
+        element.type = TTableItem::FailLow;
+    else if (value >= beta)
+        element.type = TTableItem::FailHigh;
+    else
+        element.type = TTableItem::PV;
 
-  element.value = value;
-  element.depth = depth;
-  element.hash = hash;
-  element.pv = pv;
+    element.value = value;
+    element.depth = depth;
+    element.hash = hash;
+    element.pv = pv;
 
-  m_garbage[index] = false;
-  m_used[index] = true;
+    m_garbage[index] = false;
+    m_used[index] = true;
 }

@@ -1,5 +1,4 @@
-#ifndef ITDEEPENING_HPP
-#define ITDEEPENING_HPP
+#pragma once
 
 #include <atomic>
 
@@ -31,5 +30,3 @@ class ItDeepening : public AlphaBeta {
 
   int GetLastDepth() const { return m_last_depth; }
 };
-
-#endif

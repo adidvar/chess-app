@@ -1,11 +1,9 @@
-#ifndef QSEARCH_HPP
-#define QSEARCH_HPP
+#pragma once
 
 #include <algorithm>
 
 #include <chesscore/bitboard.hpp>
 
-#include "bitboardtuple.hpp"
 #include "score.hpp"
 #include "search.hpp"
 
@@ -102,4 +100,3 @@ class QSearch : public Search, private ChessTreeHash {
   }
   friend class QSearchTest;
 };
-#endif

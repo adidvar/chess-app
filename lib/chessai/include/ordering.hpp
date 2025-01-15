@@ -1,10 +1,8 @@
-#ifndef ORDERING_HPP
-#define ORDERING_HPP
+#pragma once
 
 #include <algorithm>
 
 #include "hktable.hpp"
-#include "bitboardtuple.hpp"
 #include "ttable.hpp"
 
 inline void ReOrder(const BitBoard &board, std::vector<BitBoardTuple> &vector,
@@ -106,4 +104,3 @@ inline void BFTableReorderer(const BitBoard &board,
   }
   std::sort(vector.rbegin(), vector.rend());
 }
-#endif
