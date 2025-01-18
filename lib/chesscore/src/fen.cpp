@@ -1,8 +1,10 @@
 #include "fen.hpp"
-#include "bitboard.hpp"
 
+#include <algorithm>
 #include <array>
 #include <map>
+
+#include "bitboard.hpp"
 
 constexpr static std::array<char, 3> seperators{' ', '\n', '\t'};
 
@@ -111,10 +113,12 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
         auto position = Position(pawn);
         if (!position.isValid())
             throw FenParsingError("incorrect el passant");
-        if (flags & BitBoard::flags_color == 0) {
-            board = board.setTurn(Turn(Position(pawn).index() - 8, Position(pawn).index() + 8));
+        if ((flags & BitBoard::flags_color) == 0) {
+          board = board.setTurn(
+              Turn(Position(pawn).index() - 8, Position(pawn).index() + 8));
         } else {
-            board = board.setTurn(Turn(Position(pawn).index() + 8, Position(pawn).index() - 8));
+          board = board.setTurn(
+              Turn(Position(pawn).index() + 8, Position(pawn).index() - 8));
         }
         flags = (BitBoard::Flags)(flags | BitBoard::flags_el_passant);
     }
