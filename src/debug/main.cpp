@@ -66,25 +66,30 @@ void print_bitboard(bitboard board)
     std::cout << std::endl;
 }
 
+static size_t Counter(const BitBoard &board, size_t depth) {
+  if (depth == 0) return 1;
+  size_t counter = 0;
+  Turn turns[216];
+  int count = board.getTurns(board.getCurrentSide(), turns);
+  if (depth == 1) return count;
+  for (int i = 0; i < count; i++) {
+    counter +=
+        Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
+  }
+  return counter;
+}
+
 int main()
 {
-    /*
-    std::cout << "-----------------------" << std::endl;
-    print_bitboard(1107298304);
-    print_bitboard(processRook(27, 1107298304));
-    print_bitboard(generateRookAttack(27, 1107298304));
-*/
-
     // try {
-    /*
     while (true) {
         std::string fen;
         int depth = 7;
         std::cout << "***************************************************" << std::endl;
-        //std::getline(std::cin, fen);
-        //std::cin >> depth;
-        auto board = BitBoard("startpos");
-        //std::getline(std::cin, fen);
+        std::getline(std::cin, fen);
+        std::cin >> depth;
+        auto board = BitBoard(fen);
+        std::getline(std::cin, fen);
         PrintBoard(board);
         Turn turns[216];
         auto count = board.getTurns(board.getCurrentSide(), turns);
@@ -112,10 +117,5 @@ int main()
                          / 1000000
                   << " millions" << std::endl;
     }
-    //  } catch (std::exception e) {
-    //      std::cout << e.what();
-    //  }
-
-*/
     return 0;
 }

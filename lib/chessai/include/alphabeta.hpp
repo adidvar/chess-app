@@ -1,5 +1,4 @@
-#ifndef ALPHABETA_HPP
-#define ALPHABETA_HPP
+#pragma once
 
 #include <atomic>
 #include <iostream>
@@ -157,4 +156,3 @@ class AlphaBeta : public QSearch {
   Turn m_last_turn{};
   int m_last_depth = 0;
 };
-#endif

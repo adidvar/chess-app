@@ -1,11 +1,10 @@
-#ifndef HKTABLE_H
-#define HKTABLE_H
+#pragma once
 
 #include <array>
 #include <deque>
 #include <vector>
 
-#include <chesscore/turn.hpp>
+#include <chesscore/figures.hpp>
 
 /**
  * @brief The BFTable class contains History heuristics and killer moves
@@ -47,5 +46,3 @@ class HKTable {
   Data m_killer_table;
   Frame m_history_table;
 };
-
-#endif

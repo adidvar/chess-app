@@ -1,5 +1,4 @@
-#ifndef STATISTICS_HPP
-#define STATISTICS_HPP
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -17,5 +16,3 @@ class Statistics {
   size_t m_transposition_search_calls;
   size_t m_transposition_success_search_calls;
 };
-
-#elif

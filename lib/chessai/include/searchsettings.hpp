@@ -1,5 +1,4 @@
-#ifndef SEARCHSETTINGS_HPP
-#define SEARCHSETTINGS_HPP
+#pragma once
 
 class SearchSettings {
  public:
@@ -159,5 +158,3 @@ inline unsigned int SearchSettings::GetGameStageSlider() const {
 inline void SearchSettings::SetGameStageSlider(unsigned int Game_stage_slider) {
   m_game_stage_slider = Game_stage_slider;
 }
-
-#endif

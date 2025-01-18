@@ -1,5 +1,4 @@
-#ifndef EVALUATOR_H
-#define EVALUATOR_H
+#pragma once
 
 #include <chesscore/bitboard.hpp>
 
@@ -28,5 +27,3 @@ class Evaluator {
   const unsigned m_stage;
   const Color m_color;
 };
-
-#endif

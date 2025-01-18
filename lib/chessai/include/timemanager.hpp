@@ -1,5 +1,4 @@
-#ifndef TIMEMANAGER_H
-#define TIMEMANAGER_H
+#pragma once
 
 #include <variant>
 
@@ -45,5 +44,3 @@ class TimeManager {
   std::variant<ClassicTimer, ConstTimer, InfiniteTimer> m_timer =
       InfiniteTimer{};
 };
-
-#endif

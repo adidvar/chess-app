@@ -8,14 +8,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -funroll-loops -fprefetch-loop-arrays")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2 /Oi /Gy /GF /EHsc")
 endif()
 
-option(BUILD_UI "build UI module" ON)
+option(BUILD_UI "build UI module" OFF)
 option(BUILD_UCI "build UCI module" ON)
 option(BUILD_TESTS "build tests" OFF)
-option(BUILD_DEBUG_EXECUTABLE "build dev only executable" OFF)
+option(BUILD_DEBUG_EXECUTABLE "build dev only executable" ON)
 
 file(GLOB libs LIST_DIRECTORIES TRUE lib/*)
 

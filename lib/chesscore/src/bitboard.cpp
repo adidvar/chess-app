@@ -21,8 +21,6 @@ std::string BitBoard::fen() const
     return boardToFen(*this);
 }
 
-#include <iostream>
-
 template<BitBoard::Flags flags>
 class BitBoardHelper
 {
@@ -822,36 +820,36 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
     bitboard from = positionToMask(turn.from());
     bitboard to = positionToMask(turn.to());
 
-    if (from & 10448351135499550865) {
-        if (from & 1224979098644774912) // white king and left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
-        if (from & 10376293541461622784) // white king and right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
-        if (from & 17) // black king and left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
-        if (from & 144) // black king and right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    if (from & 10448351135499550865ull) {
+      if (from & 1224979098644774912)  // white king and left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_ooo);
+      if (from & 10376293541461622784ull)  // white king and right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_oo);
+      if (from & 17)  // black king and left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_ooo);
+      if (from & 144)  // black king and right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_oo);
     }
-    if (to & 9295429630892703873) {
-        if (to & 72057594037927936) // white left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
-        if (to & 9223372036854775808) // white right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
-        if (to & 1) // black left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
-        if (to & 128) // black right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    if (to & 9295429630892703873ull) {
+      if (to & 72057594037927936)  // white left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_ooo);
+      if (to & 9223372036854775808ull)  // white right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_oo);
+      if (to & 1)  // black left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_ooo);
+      if (to & 128)  // black right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_oo);
     }
 
-    if (to & 9295429630892703873) {
-        if (to & 72057594037927936) // white left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_ooo);
-        if (to & 9223372036854775808) // white right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_white_oo);
-        if (to & 1) // black left rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_ooo);
-        if (to & 128) // black right rook
-            copy.m_flags = (Flags) (copy.m_flags & ~flags_black_oo);
+    if (to & 9295429630892703873ull) {
+      if (to & 72057594037927936)  // white left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_ooo);
+      if (to & 9223372036854775808ull)  // white right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_white_oo);
+      if (to & 1)  // black left rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_ooo);
+      if (to & 128)  // black right rook
+        copy.m_flags = (Flags)(copy.m_flags & ~flags_black_oo);
     }
 
     copy.m_flags = (Flags) (copy.m_flags & ~flags_el_passant);

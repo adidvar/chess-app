@@ -1,10 +1,12 @@
 #pragma once
 
-#include "bitasm.hpp"
-
 #include <array>
 #include <bit>
 #include <cinttypes>
+#include <string_view>
+
+#include "bitasm.hpp"
+#include "figures.hpp"
 
 constexpr bitboard getBitBoardOne()
 {

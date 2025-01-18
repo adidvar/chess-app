@@ -1,5 +1,4 @@
-#ifndef COMPUTER_HPP
-#define COMPUTER_HPP
+#pragma once
 
 #include <atomic>
 #include <thread>
@@ -76,5 +75,3 @@ class Computer{
   BitBoard m_board;
   TimeManager m_manager;
 };
-
-#endif

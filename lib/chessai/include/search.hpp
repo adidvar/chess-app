@@ -1,5 +1,4 @@
-#ifndef SEARCH_HPP
-#define SEARCH_HPP
+#pragma once
 
 #include <atomic>
 
@@ -51,5 +50,3 @@ class Search {
   int approximation_count_ = 0;
   int extra_node_ = 0;
 };
-
-#endif

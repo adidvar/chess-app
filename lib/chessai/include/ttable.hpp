@@ -1,5 +1,4 @@
-#ifndef TTABLE_HPP
-#define TTABLE_HPP
+#pragma once
 
 #include <vector>
 
@@ -9,14 +8,14 @@
  * @brief The TTableItem class element of transposition table
  */
 struct TTableItem {
-  bitboard_hash_t hash{};  ///< hash of item
+    BitBoardHash hash{}; ///< hash of item
 
-  enum Type { PV, FailLow, FailHigh } type;  ///< node type
+    enum Type { PV, FailLow, FailHigh } type; ///< node type
 
-  Score value;  ///< value of node
-  Turn pv;      ///< pv of node
+    Score value; ///< value of node
+    Turn pv;     ///< pv of node
 
-  uint8_t depth{};  ///< depth of last scan
+    uint8_t depth{}; ///< depth of last scan
 };
 
 /**
@@ -47,7 +46,7 @@ class TTable {
    * @param founded [out] is the element founded
    * @return pointer to ttableitem node
    */
-  const TTableItem *Search(bitboard_hash_t hash, bool &founded) const;
+  const TTableItem *Search(BitBoardHash hash, bool &founded) const;
 
   /**
    * @brief Write stores node info into ttable
@@ -59,14 +58,11 @@ class TTable {
    * @param depth depth
    * @param depthmax depthmax
    */
-  void Write(bitboard_hash_t hash, Score alpha, Score beta, Score value,
-             Turn pv, uint8_t depth);
+  void Write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth);
 
- private:
+  private:
   size_t m_size;
   std::vector<TTableItem> m_table;
   std::vector<bool> m_used;
   mutable std::vector<bool> m_garbage;
 };
-
-#endif
