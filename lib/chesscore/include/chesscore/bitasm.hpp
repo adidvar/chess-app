@@ -15,7 +15,9 @@ inline unsigned log2_64(bitboard value)
     _BitScanForward64(&result, value);
     return result;
 }
-
+#elif defined(__GNUC__) && \
+    (defined(__x86_64__) || defined(__i386__) || defined(__x86__))
+inline unsigned log2_64(bitboard value) { return __builtin_ctzll(value); }
 #else
 
 constexpr const int tab64[64] = {63, 0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,
@@ -23,7 +25,7 @@ constexpr const int tab64[64] = {63, 0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27,
                                  62, 57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21,
                                  56, 45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5};
 
-constexpr unsigned log2_64(bb value)
+constexpr unsigned log2_64(bitboard value)
 {
     value |= value >> 1;
     value |= value >> 2;
@@ -31,6 +33,6 @@ constexpr unsigned log2_64(bb value)
     value |= value >> 8;
     value |= value >> 16;
     value |= value >> 32;
-    return tab64[((bb) ((value - (value >> 1)) * 0x07EDD5E59A4E28C2)) >> 58];
+    return tab64[((bitboard) ((value - (value >> 1)) * 0x07EDD5E59A4E28C2)) >> 58];
 }
 #endif

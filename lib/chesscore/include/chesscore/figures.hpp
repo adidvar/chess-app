@@ -158,13 +158,13 @@ public:
 
     constexpr Turn& operator=(const Turn& other) = default;
 
-    constexpr [[nodiscard]] Position from() const noexcept;
-    constexpr [[nodiscard]] Position to() const noexcept;
-    constexpr [[nodiscard]] Figure figure() const noexcept;
+    [[nodiscard]] constexpr  Position from() const noexcept;
+   [[nodiscard]] constexpr  Position to() const noexcept;
+   [[nodiscard]] constexpr  Figure figure() const noexcept;
 
-    constexpr [[nodiscard]] bool isValid() const noexcept;
-    constexpr [[nodiscard]] bool isTrasformation() const noexcept;
-    constexpr [[nodiscard]] bool isAttack() const noexcept;
+   [[nodiscard]] constexpr bool isValid() const noexcept;
+    [[nodiscard]] constexpr  bool isTrasformation() const noexcept;
+    [[nodiscard]] constexpr bool isAttack() const noexcept;
 
     constexpr void setFigure(Figure figure);
 
