@@ -15,7 +15,7 @@ struct S {
   int operator()(unsigned) const { return mg; }
 };
 
-Evaluator::Evaluator(const BitBoard &board, Color color, unsigned int stage)
+EvaluatedBitBoard::EvaluatedBitBoard(const BitBoard &board, Color color, unsigned int stage)
     : m_board(board),
       m_color(color),
       m_stage(stage),
@@ -24,23 +24,23 @@ Evaluator::Evaluator(const BitBoard &board, Color color, unsigned int stage)
       black_mask(board.AttackMask(Color::kBlack) &
                  ~board.GetBitBoard(Color::kBlack, Figure::kQueen)) {}
 
-Score::ProcessType Evaluator::Evaluate() {
+Score::ProcessType EvaluatedBitBoard::evaluate() {
   return (m_color == Color::kWhite ? 1 : -1) *
          (GetMaterial() + GetTables() + GetPawnStructure() + GetMobilityCS());
 }
 
-float Evaluator::Normalize(int value) {
+float EvaluatedBitBoard::toCentiPawns(int value) {
   return 20.0 / (1.0 + pow(3.0, -value / 1260.0)) - 10;
 }
 
 S kfigure_prices[]{S(),         S(126, 208),   S(781, 854),
                    S(825, 915), S(1276, 1380), S(2538, 2682)};
 
-Score::ProcessType Evaluator::GetFigurePrice(Figure figure) {
+Score::ProcessType EvaluatedBitBoard::getFigurePrice(Figure figure) {
   return kfigure_prices[figure].mg;
 }
 
-int Evaluator::GetMaterial() {
+int EvaluatedBitBoard::GetMaterial() {
   int value = 0;
 
   int white_count[6];
@@ -102,7 +102,7 @@ constexpr static int tables[7][64]{
      -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
      0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20}};
 
-int Evaluator::GetTables() {
+int EvaluatedBitBoard::GetTables() {
   int value = 0;
 
   for (int figure = Figure::kPawn; figure <= Figure::kKing; ++figure) {
@@ -120,7 +120,7 @@ int Evaluator::GetTables() {
   return 2 * value;
 }
 
-int Evaluator::GetPawnStructure() {
+int EvaluatedBitBoard::GetPawnStructure() {
   int value = 0;
 
   int line_white[8]{0};
@@ -146,7 +146,7 @@ int Evaluator::GetPawnStructure() {
   return value;
 }
 
-int Evaluator::GetMobilityCS() {
+int EvaluatedBitBoard::GetMobilityCS() {
   int value = 0;
 
   // mobility

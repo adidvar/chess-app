@@ -65,13 +65,10 @@ class Computer{
 
   void Work();
 
-  TimeManager &GetManager();
-
  private:
   std::thread *m_thread;
   std::atomic_bool m_abort_flag;
   Turn m_turn{};
 
   BitBoard m_board;
-  TimeManager m_manager;
 };

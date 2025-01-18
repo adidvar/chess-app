@@ -4,63 +4,28 @@
 
 #include <chesscore/bitboard.hpp>
 #include "score.hpp"
-/**
- * @brief The TTableItem class element of transposition table
- */
+
 struct TTableItem {
     BitBoardHash hash{}; ///< hash of item
-
-    enum Type { PV, FailLow, FailHigh } type; ///< node type
-
-    Score value; ///< value of node
+    Score value;         ///< value of node
     Turn pv;     ///< pv of node
-
     uint8_t depth{}; ///< depth of last scan
+    enum struct Type : uint8_t { PV, FailLow, FailHigh } type;  ///< node type
 };
 
-/**
- * @brief The TTable class is a transposition table
- */
 class TTable {
  public:
-  /**
-   * @brief TTable default constructor
-   */
   TTable();
-  /**
-   * @brief Clear clears a table
-   */
-  void Clear();
-  /**
-   * @brief ClearGarbage clears garbage elements of ttable
-   */
-  void ClearGarbage();
-  /**
-   * @brief ClearGarbageFlag sets all elements garbage flag to true
-   */
-  void SetGarbageFlag();
 
-  /**
-   * @brief Search search element from table
-   * @param hash hash for search
-   * @param founded [out] is the element founded
-   * @return pointer to ttableitem node
-   */
-  const TTableItem *Search(BitBoardHash hash, bool &founded) const;
+  void clear();
+  void clearGarbage();
+  void setGarbageFlag();
 
-  /**
-   * @brief Write stores node info into ttable
-   * @param hash hash of node
-   * @param alpha alpha
-   * @param beta beta
-   * @param value value
-   * @param pv pv
-   * @param depth depth
-   * @param depthmax depthmax
-   */
-  void Write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth);
+  const TTableItem *search(BitBoardHash hash, bool &founded) const;
+  void write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv,
+             uint8_t depth);
 
-  private:
+ private:
   size_t m_size;
   std::vector<TTableItem> m_table;
   std::vector<bool> m_used;

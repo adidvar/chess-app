@@ -1,16 +1,13 @@
 #pragma once
 
-#include <atomic>
-
 #include "alphabeta.hpp"
-#include "ttable.hpp"
 
 class ItDeepening : public AlphaBeta {
  public:
   ItDeepening(const BitBoard &board, Color color) : AlphaBeta(board, color) {}
 
-  Score GetValue(int max_depth, Score a = Score::Min(),
-                 Score b = Score::Max()) {
+  Score GetValue(int max_depth, Score a = Score::min(),
+                 Score b = Score::max()) {
     m_last_depth = 0;
     Score result{};
     Turn turn{};

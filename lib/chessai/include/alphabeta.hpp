@@ -11,11 +11,11 @@
 #include "search.hpp"
 #include "ttable.hpp"
 
-class AlphaBeta : public QSearch {
+class AlphaBeta : public Search {
  public:
   AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
 
-  Score GetValue(int depth, Score a = Score::Min(), Score b = Score::Max()) {
+  Score GetValue(int depth, Score a = Score::min(), Score b = Score::max()) {
     try {
       m_last_depth = depth;
       BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
@@ -74,7 +74,7 @@ class AlphaBeta : public QSearch {
 
     bool founded = false;
     const TTableItem *hashed = nullptr;
-    if (m_ttable) hashed = m_ttable->Search(tuple.hash, founded);
+    if (m_ttable) hashed = m_ttable->search(tuple.hash, founded);
 
     if (founded) {
       if (hashed->depth == depthleft) {
@@ -111,16 +111,16 @@ class AlphaBeta : public QSearch {
 
     if (moves.empty()) {
       m_last_turn = Turn();
-      if (inCheck) return Score::CheckMate(depthleft, depthmax);
-      return Score::Tie();
+      if (inCheck) return Score::checkMate(depthleft, depthmax);
+      return Score::tie();
     }
 
     MainNode();
 
-    ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-            depthmax, founded ? hashed->pv : Turn());
+    //  ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
+    //          depthmax, founded ? hashed->pv : Turn());
 
-    Score bestscore = Score::Min();
+    Score bestscore = Score::min();
     Turn bestturn = Turn();
     for (auto &sub : moves) {
       auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
@@ -142,7 +142,7 @@ class AlphaBeta : public QSearch {
     }
 
     if (m_ttable != nullptr)
-      m_ttable->Write(tuple.hash, oldalpha, beta, bestscore, bestturn,
+      m_ttable->write(tuple.hash, oldalpha, beta, bestscore, bestturn,
                       depthleft);
 
     m_last_turn = bestturn;

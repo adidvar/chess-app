@@ -11,21 +11,21 @@ TTable::TTable() {
   m_garbage.resize(m_size, true);
 }
 
-void TTable::Clear() {
+void TTable::clear() {
   for (auto &&i : m_used) i = false;
   for (auto &&i : m_garbage) i = true;
 }
 
-void TTable::ClearGarbage() {
+void TTable::clearGarbage() {
   for (int i = 0; i < m_garbage.size(); i++)
     if (m_garbage[i]) m_used[i] = false;
 }
 
-void TTable::SetGarbageFlag() {
+void TTable::setGarbageFlag() {
   for (auto &&i : m_garbage) i = true;
 }
 
-const TTableItem *TTable::Search(BitBoardHash hash, bool &founded) const
+const TTableItem *TTable::search(BitBoardHash hash, bool &founded) const
 {
     auto index = hash % m_table.size();
     const TTableItem *element = &m_table[index];
@@ -34,7 +34,7 @@ const TTableItem *TTable::Search(BitBoardHash hash, bool &founded) const
     return element;
 }
 
-void TTable::Write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth)
+void TTable::write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth)
 {
     auto index = hash % m_table.size();
     auto used = m_used[index];

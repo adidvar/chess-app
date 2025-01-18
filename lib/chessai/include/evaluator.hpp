@@ -2,28 +2,14 @@
 
 #include <chesscore/bitboard.hpp>
 
-#include "score.hpp"
-#include "searchsettings.hpp"
-
-class Evaluator {
+class EvaluatedBitBoard : public BitBoard {
  public:
-  Evaluator(const BitBoard &board, Color color, unsigned stage);
+  using ScoreType = int;
 
-  Score::ProcessType Evaluate();
+  explicit EvaluatedBitBoard(const BitBoard &board) : BitBoard(board) {}
 
-  static float Normalize(int value);
-  static Score::ProcessType GetFigurePrice(Figure figure);
+  static float toCentiPawns(int value);
+  static ScoreType getFigurePrice(Figure figure);
 
- private:
-  int GetMaterial();
-  int GetTables();
-  int GetPawnStructure();
-  int GetMobilityCS();
-
- private:
-  const BitBoard &m_board;
-  const bitboard_t white_mask;
-  const bitboard_t black_mask;
-  const unsigned m_stage;
-  const Color m_color;
+  ScoreType evaluate() const;
 };

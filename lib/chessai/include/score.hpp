@@ -1,52 +1,139 @@
 #pragma once
 
-#include <string>
-
 #include <chesscore/bitboard.hpp>
+#include <numeric>
 
-#include "searchsettings.hpp"
+#include "evaluator.hpp"
 
 class Score {
  public:
-  using ScoreType = int;
-  using ProcessType = long int;
+  using ScoreType = EvaluatedBitBoard::ScoreType;
 
-  Score();
-  [[deprecated]] Score(ProcessType type);
+  constexpr Score();
+  constexpr Score(ScoreType type);
 
-  bool operator<(Score value) const;
-  bool operator>(Score value) const;
-  bool operator<=(Score value) const;
-  bool operator>=(Score value) const;
-  bool operator==(Score value) const;
-  bool operator!=(Score value) const;
+  constexpr bool operator<(Score value) const;
+  constexpr bool operator>(Score value) const;
+  constexpr bool operator<=(Score value) const;
+  constexpr bool operator>=(Score value) const;
+  constexpr bool operator==(Score value) const;
+  constexpr bool operator!=(Score value) const;
 
-  Score operator-() const;
-  Score operator-(Score value) const;
-  Score operator+(Score value) const;
-  Score operator*(int value) const;
+  constexpr Score operator-() const;
+  constexpr Score operator-(Score value) const;
+  constexpr Score operator+(Score value) const;
+  constexpr Score operator*(int value) const;
 
-  static Score CheckMate(int depthleft, int depthmax);
-  static Score Tie();
-  static Score GetStaticValue(const BitBoard &board, Color color,
-                              unsigned stage);
+  constexpr static Score checkMate(int depthleft, int depthmax);
+  constexpr static Score tie();
+  static Score getStaticValue(const BitBoard &board);
 
-  static Score Max();
-  static Score Min();
+  constexpr static Score max();
+  constexpr static Score min();
 
-  [[nodiscard]] bool IsValid() const;
-  [[nodiscard]] bool IsCheckMate() const;
+  [[nodiscard]] constexpr bool isValid() const;
+  [[nodiscard]] constexpr bool isCheckMate() const;
 
-  int GetTurnsToCheckMate() const;
+  constexpr int getTurnsToCheckMate() const;
 
-  static Score GetFigureScore(Figure figure);
+  static Score getFigureScore(Figure figure);
 
-  [[nodiscard]] std::string ToCentiPawns() const;
+  //[[nodiscard]] constexpr std::string toCentiPawns() const;
 
-  operator ProcessType();
+  constexpr operator ScoreType();
 
  private:
-  static ScoreType Clamp(ProcessType);
+  constexpr static ScoreType clamp(ScoreType);
 
   ScoreType m_value;
 };
+
+constexpr unsigned k_max_depth = 100;
+constexpr Score::ScoreType k_invalid = {};
+constexpr Score::ScoreType k_min = -((k_invalid - 4) / 2);
+constexpr Score::ScoreType k_checkmate_0 = k_min + 1;
+constexpr Score::ScoreType k_checkmate_max = k_checkmate_0 + k_max_depth;
+
+constexpr Score::Score()
+    : Score(std::numeric_limits<Score::ScoreType>::min()) {}
+
+constexpr Score::Score(ScoreType type) : m_value(type) {}
+
+constexpr bool Score::operator<(Score value) const {
+  return m_value < value.m_value;
+}
+
+constexpr bool Score::operator>(Score value) const {
+  return m_value > value.m_value;
+}
+
+constexpr bool Score::operator<=(Score value) const {
+  return m_value <= value.m_value;
+}
+
+constexpr bool Score::operator>=(Score value) const {
+  return m_value >= value.m_value;
+}
+
+constexpr bool Score::operator==(Score value) const {
+  return m_value == value.m_value;
+}
+
+constexpr bool Score::operator!=(Score value) const {
+  return m_value != value.m_value;
+}
+
+constexpr Score Score::operator-() const { return -this->m_value; }
+
+constexpr Score Score::operator-(Score value) const {
+  return clamp(this->m_value - value.m_value);
+}
+
+constexpr Score Score::operator+(Score value) const {
+  return clamp(this->m_value + value.m_value);
+}
+
+constexpr Score Score::operator*(int value) const {
+  return clamp(this->m_value * value);
+}
+
+constexpr Score Score::checkMate(int depthleft, int depthmax) {
+  Score::ScoreType value{k_checkmate_0 + depthmax - depthleft};
+  return std::min<Score::ScoreType>(k_checkmate_max, value);
+}
+
+constexpr Score Score::tie() { return {0}; }
+
+inline Score Score::getStaticValue(const BitBoard &board) {
+  EvaluatedBitBoard evaluator(board);
+  return clamp(evaluator.evaluate());
+}
+
+constexpr Score Score::max() { return -k_min; }
+
+constexpr Score Score::min() { return k_min; }
+
+constexpr bool Score::isValid() const { return *this != k_invalid; }
+
+constexpr bool Score::isCheckMate() const {
+  return m_value <= k_checkmate_max || m_value >= -k_checkmate_max;
+}
+
+constexpr int Score::getTurnsToCheckMate() const {
+  if (m_value < 0)
+    return m_value - k_checkmate_0;
+  else
+    return -m_value - k_checkmate_0;
+}
+
+inline Score Score::getFigureScore(Figure figure) {
+  return EvaluatedBitBoard::getFigurePrice(figure);
+}
+
+constexpr Score::operator ScoreType() { return m_value; }
+
+constexpr Score::ScoreType Score::clamp(ScoreType value) {
+  if (value <= k_checkmate_max) return k_checkmate_max + 1;
+  if (value >= -k_checkmate_max) return -k_checkmate_max - 1;
+  return value;
+}

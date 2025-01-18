@@ -4,6 +4,7 @@
 
 #include <chesscore/figures.hpp>
 
+/*
 class TimeManager {
  public:
   TimeManager() = default;
@@ -44,3 +45,4 @@ class TimeManager {
   std::variant<ClassicTimer, ConstTimer, InfiniteTimer> m_timer =
       InfiniteTimer{};
 };
+*/
