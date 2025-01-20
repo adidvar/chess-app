@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "figures.hpp"
 
 using bitboard = uint64_t;
@@ -24,6 +22,7 @@ public:
 
     BitBoard();
     BitBoard(std::string_view fen_line);
+    BitBoard(const BitBoard &board, Turn turn);
     [[nodiscard]] std::string fen() const;
 
     [[nodiscard]] BitBoard set(Position position, Figure figure) const;
@@ -36,7 +35,7 @@ public:
     [[nodiscard]] Flags getFlags() const noexcept;
     [[nodiscard]] Color getCurrentSide() const noexcept;
 
-    int getTurns(Color color, Turn *out) const;
+    int getTurns(Color color, Turn *out, bool &in_check) const;
 
     [[nodiscard]] BitBoard executeTurn(Color color, Turn turn) const;
 
@@ -224,3 +223,6 @@ constexpr void BitBoard::promoteBlackFigure(bitboard position, Figure figure)
         break;
     }
 }
+
+inline BitBoard::BitBoard(const BitBoard &board, Turn turn)
+    : BitBoard(board.executeTurn(board.getCurrentSide(), turn)) {}

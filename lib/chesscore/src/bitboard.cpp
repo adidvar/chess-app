@@ -26,27 +26,25 @@ class BitBoardHelper
 {
     BitBoard board;
     Turn *storage;
+    bool &in_check;
 
-public:
-
-    constexpr BitBoardHelper(const BitBoard &board, Turn *storage)
-        : board(board)
-        , storage(storage)
-    {}
-    template<int8_t shift>
-    constexpr bitboard pawnsShift(bitboard in)
-    {
-        if constexpr (shift > 0) {
-            if constexpr ((flags & BitBoard::flags_color) == 0)
-                return in >> shift;
-            else
-                return in << shift;
-        } else {
-            if constexpr ((flags & BitBoard::flags_color) == 0)
-                return in << -shift;
-            else
-                return in >> -shift;
-        }
+   public:
+    constexpr BitBoardHelper(const BitBoard &board, Turn *storage,
+                             bool &in_check)
+        : board(board), storage(storage), in_check(in_check) {}
+    template <int8_t shift>
+    constexpr bitboard pawnsShift(bitboard in) {
+      if constexpr (shift > 0) {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+          return in >> shift;
+        else
+          return in << shift;
+      } else {
+        if constexpr ((flags & BitBoard::flags_color) == 0)
+          return in << -shift;
+        else
+          return in >> -shift;
+      }
     }
     constexpr bitboard chooseMask(bitboard mask1, bitboard mask2)
     {
@@ -380,36 +378,26 @@ public:
                 }
             }
 
-            if (attacks_counter == 0)
-                //no mate generation
-                counter = generateFigures<true>(counter,
-                                                empty,
-                                                enemies,
-                                                all,
-                                                ~blockers,
-                                                getFillBitboard(),
-                                                getFillBitboard());
-            else if (attacks_counter == 1) {
-                bitboard short_attacks = knights_attack | (all_attack & k_attack_mask);
-                int short_attacks_counter = popCount(short_attacks);
-                if (short_attacks_counter == 0)
-                    // single long mate
-                    counter = generateFigures<true>(counter,
-                                                    empty,
-                                                    enemies,
-                                                    all,
-                                                    ~blockers,
-                                                    processWay(king_position, log2_64(all_attack)),
-                                                    all_attack);
-                else
-                    //single short mate
-                    counter = generateFigures<false>(counter,
-                                                     empty,
-                                                     enemies,
-                                                     all,
-                                                     ~blockers,
-                                                     0,
-                                                     all_attack);
+            in_check = true;
+            if (attacks_counter == 0) {
+              // no mate generation
+              counter =
+                  generateFigures<true>(counter, empty, enemies, all, ~blockers,
+                                        getFillBitboard(), getFillBitboard());
+              in_check = false;
+            } else if (attacks_counter == 1) {
+              bitboard short_attacks =
+                  knights_attack | (all_attack & k_attack_mask);
+              int short_attacks_counter = popCount(short_attacks);
+              if (short_attacks_counter == 0)
+                // single long mate
+                counter = generateFigures<true>(
+                    counter, empty, enemies, all, ~blockers,
+                    processWay(king_position, log2_64(all_attack)), all_attack);
+              else
+                // single short mate
+                counter = generateFigures<false>(counter, empty, enemies, all,
+                                                 ~blockers, 0, all_attack);
             }
         }
         bitboard king = getKing(board);
@@ -780,37 +768,36 @@ Color BitBoard::getCurrentSide() const noexcept
     return (m_flags & Flags::flags_color) ? Color::Black : Color::White;
 }
 
-template<BitBoard::Flags flags>
-constexpr int generateTemplate(const BitBoard &board, Turn *storage)
-{
-    return BitBoardHelper<flags>(board, storage).generate();
+template <BitBoard::Flags flags>
+constexpr int generateTemplate(const BitBoard &board, Turn *storage,
+                               bool &in_check) {
+  return BitBoardHelper<flags>(board, storage, in_check).generate();
 }
 
 template<std::size_t... I>
 constexpr auto generatePointerArray(std::index_sequence<I...>)
 {
-    using pointer = int (*)(const BitBoard &, Turn *storage);
-    constexpr std::size_t N = sizeof...(I);
-    return std::array<pointer, N>{{&generateTemplate<(BitBoard::Flags) I>...}};
+  using pointer = int (*)(const BitBoard &, Turn *storage, bool &in_check);
+  constexpr std::size_t N = sizeof...(I);
+  return std::array<pointer, N>{{&generateTemplate<(BitBoard::Flags)I>...}};
 }
 
-constexpr int generate(const BitBoard &board, Turn *storage, BitBoard::Flags flags)
-{
-    constexpr auto pointers = generatePointerArray(
-        std::make_index_sequence<BitBoard::flags_upper_bound>{});
-    return pointers[flags](board, storage);
+constexpr int generate(const BitBoard &board, Turn *storage,
+                       BitBoard::Flags flags, bool &in_check) {
+  constexpr auto pointers = generatePointerArray(
+      std::make_index_sequence<BitBoard::flags_upper_bound>{});
+  return pointers[flags](board, storage, in_check);
 }
 
-int BitBoard::getTurns(Color color, Turn *out) const
-{
-    auto flags = m_flags;
-    if (color == Color::White)
-        flags = (Flags) (flags & (~flags_color));
-    else
-        flags = (Flags) (flags | flags_color);
+int BitBoard::getTurns(Color color, Turn *out, bool &in_check) const {
+  auto flags = m_flags;
+  if (color == Color::White)
+    flags = (Flags)(flags & (~flags_color));
+  else
+    flags = (Flags)(flags | flags_color);
 
-    return generate(*this, out, flags);
-    //return BitBoardHelper<Flags::flags_default>(*this, out).generate();
+  return generate(*this, out, flags, in_check);
+  // return BitBoardHelper<Flags::flags_default>(*this, out).generate();
 }
 
 BitBoard BitBoard::executeTurn(Color color, Turn turn) const

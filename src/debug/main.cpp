@@ -70,7 +70,8 @@ static size_t Counter(const BitBoard &board, size_t depth) {
   if (depth == 0) return 1;
   size_t counter = 0;
   Turn turns[216];
-  int count = board.getTurns(board.getCurrentSide(), turns);
+  bool is_mate;
+  int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
   if (depth == 1) return count;
   for (int i = 0; i < count; i++) {
     counter +=
@@ -91,8 +92,9 @@ int main()
         auto board = BitBoard(fen);
         std::getline(std::cin, fen);
         PrintBoard(board);
+        bool is_mate;
         Turn turns[216];
-        auto count = board.getTurns(board.getCurrentSide(), turns);
+        auto count = board.getTurns(board.getCurrentSide(), turns, is_mate);
         long long sum = 0;
 
         auto start = std::chrono::high_resolution_clock::now();

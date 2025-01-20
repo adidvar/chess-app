@@ -227,7 +227,8 @@ static size_t Counter(BitBoard board, size_t depth)
         return 1;
     size_t counter = 0;
     Turn turns[216];
-    int count = board.getTurns(board.getCurrentSide(), turns);
+    bool is_mate;
+    int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
     for (int i = 0; i < count; i++) {
         counter += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
     }
