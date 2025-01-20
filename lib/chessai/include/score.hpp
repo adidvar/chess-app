@@ -1,7 +1,8 @@
 #pragma once
 
 #include <chesscore/bitboard.hpp>
-#include <numeric>
+#include <cmath>
+#include <limits>
 
 #include "evaluator.hpp"
 
@@ -24,9 +25,10 @@ class Score {
   constexpr Score operator+(Score value) const;
   constexpr Score operator*(int value) const;
 
-  constexpr static Score checkMate(int depthleft, int depthmax);
+  constexpr static Score checkMate(int depth);
   constexpr static Score tie();
   static Score getStaticValue(const BitBoard &board);
+  float toCentiPawns() const;
 
   constexpr static Score max();
   constexpr static Score min();
@@ -35,8 +37,6 @@ class Score {
   [[nodiscard]] constexpr bool isCheckMate() const;
 
   constexpr int getTurnsToCheckMate() const;
-
-  static Score getFigureScore(Figure figure);
 
   //[[nodiscard]] constexpr std::string toCentiPawns() const;
 
@@ -49,13 +49,13 @@ class Score {
 };
 
 constexpr unsigned k_max_depth = 100;
-constexpr Score::ScoreType k_invalid = {};
-constexpr Score::ScoreType k_min = -((k_invalid - 4) / 2);
+constexpr Score::ScoreType k_invalid =
+    std::numeric_limits<Score::ScoreType>::min();
+constexpr Score::ScoreType k_min = k_invalid + 1;
 constexpr Score::ScoreType k_checkmate_0 = k_min + 1;
 constexpr Score::ScoreType k_checkmate_max = k_checkmate_0 + k_max_depth;
 
-constexpr Score::Score()
-    : Score(std::numeric_limits<Score::ScoreType>::min()) {}
+constexpr Score::Score() : Score(k_invalid) {}
 
 constexpr Score::Score(ScoreType type) : m_value(type) {}
 
@@ -97,8 +97,9 @@ constexpr Score Score::operator*(int value) const {
   return clamp(this->m_value * value);
 }
 
-constexpr Score Score::checkMate(int depthleft, int depthmax) {
-  Score::ScoreType value{k_checkmate_0 + depthmax - depthleft};
+constexpr Score Score::checkMate(int depth) {
+  Score::ScoreType value{
+      static_cast<ScoreType>(k_checkmate_0 + (k_max_depth - depth))};
   return std::min<Score::ScoreType>(k_checkmate_max, value);
 }
 
@@ -108,6 +109,8 @@ inline Score Score::getStaticValue(const BitBoard &board) {
   EvaluatedBitBoard evaluator(board);
   return clamp(evaluator.evaluate());
 }
+
+inline float Score::toCentiPawns() const { return m_value / 126.0; }
 
 constexpr Score Score::max() { return -k_min; }
 
@@ -124,10 +127,6 @@ constexpr int Score::getTurnsToCheckMate() const {
     return m_value - k_checkmate_0;
   else
     return -m_value - k_checkmate_0;
-}
-
-inline Score Score::getFigureScore(Figure figure) {
-  return EvaluatedBitBoard::getFigurePrice(figure);
 }
 
 constexpr Score::operator ScoreType() { return m_value; }

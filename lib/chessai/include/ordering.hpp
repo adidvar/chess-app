@@ -1,11 +1,7 @@
 #pragma once
 
-#include "hktable.hpp"
-#include "score.hpp"
-#include "ttable.hpp"
-
 /*
-inline void ReOrder(const BitBoard &board, std::vector<BitBoard> &vector,
+inline void sortMoves(const BitBoard &board, std::vector<BitBoard> &vector,
                     Score a, Score b, const HKTable &bftable,
                     const TTable *const ttable, int depthleft, int depthmax,
                     Turn pv) {

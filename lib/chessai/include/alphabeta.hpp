@@ -1,158 +1,107 @@
 #pragma once
 
-#include <atomic>
-#include <iostream>
-
 #include <chesscore/bitboard.hpp>
+#include <chrono>
+#include <score.hpp>
 
-#include "hktable.hpp"
-#include "ordering.hpp"
-#include "qsearch.hpp"
 #include "search.hpp"
-#include "ttable.hpp"
 
 class AlphaBeta : public Search {
  public:
-  AlphaBeta(const BitBoard &board, Color color) : QSearch(board, color) {}
+  AlphaBeta(const BitBoard &board, Color color, SearchSettings settings = {})
+      : Search(board, color, settings) {}
 
-  Score GetValue(int depth, Score a = Score::min(), Score b = Score::max()) {
-    try {
-      m_last_depth = depth;
-      BitBoardTuple tuple{GetBoard(), GetBoard().Hash(), Turn()};
-      return alphabeta(tuple, a, b, depth, depth);
-    } catch (...) {
-      m_last_turn = Turn();
-      throw;
+  void iterativeSearch(Score a = Score::min(), Score b = Score::max()) {
+    std::pair<Score, Turn> result = {{}, {}};
+    int depth = 1;
+
+    using clock = std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+
+    auto begin = clock::now();
+
+    for (int depth = 1; depth <= m_settings.serch_depth; depth++) {
+      auto temp_result = search(depth);
+
+      // if (!temp_result.first.isValid() || !temp_result.first.isValid())
+      // break;
+
+      result = temp_result;
+      m_feedback->sendDepth(depth);
+      m_feedback->sendScore(temp_result.first.toCentiPawns());
+      m_feedback->sendTurn(temp_result.second);
+      m_feedback->sendNodesSearched(m_counter.getPosition());
+      m_feedback->sendTimeElapsed(
+          duration_cast<milliseconds>(clock::now() - begin).count());
     }
+    m_feedback->sendBestMove(result.second);
   }
-
-  Turn GetTurn() { return m_last_turn; }
-
-  std::vector<Turn> FindPV() {
-    auto last_turn = m_last_turn;
-    BitBoard board = GetBoard();
-    int depth = m_last_depth;
-
-    std::vector<Turn> pv;
-    int i = 0;
-    do {
-      BitBoardTuple tuple(board, board.Hash(), Turn());
-      alphabeta(tuple, Score::Min(), Score::Max(), depth - i, depth);
-      auto turn = GetTurn();
-      if (!turn.Valid()) break;
-      pv.push_back(turn);
-      board.ExecuteTurn(turn);
-      i++;
-    } while (pv.back().Valid() && depth != i);
-
-    // restore state
-    m_last_turn = last_turn;
-    return pv;
-  }
-
-  TTable *GetTTable() const { return m_ttable; }
-  void SetTTable(TTable *newTtable) { m_ttable = newTtable; }
-
-  HKTable &GetBfTable() { return m_btable; }
 
  private:
-  Score alphabeta(const BitBoardTuple &tuple, Score alpha, Score beta,
-                  int depthleft, int depthmax) {
-    auto oldalpha = alpha;
+  std::vector<Turn> searchPV() {}
 
-    CheckStopFlag();
+  std::pair<Score, Turn> search(int depth, Score a = Score::min(),
+                                Score b = Score::max()) {
+    m_boards_stack.push(m_board);
+    Score score;
+    if (m_board.getCurrentSide() == Color::White)
+      score = alphabeta<true, true>(a, b, depth);
+    else
+      score = alphabeta<false, true>(a, b, depth);
+    m_boards_stack.pop();
 
-    if (depthleft == 0) {
-      auto value = QuiescenceSearch(tuple.board, alpha, beta);
-      return value;
+    return {score, m_turn};
+  }
 
-      /*
-      auto value = T::Value(tuple.board, m_color);
-      return tuple.board.CurrentColor() == m_color ? value : -value;
-*/
-    }
+  template <bool min_max, bool save_turn>
+  Score alphabeta(Score alpha, Score beta, int depth) {
+    m_counter.newPosition();
 
-    bool founded = false;
-    const TTableItem *hashed = nullptr;
-    if (m_ttable) hashed = m_ttable->search(tuple.hash, founded);
+    if (m_stop_flag) return Score{};
 
-    if (founded) {
-      if (hashed->depth == depthleft) {
-        if (hashed->type == TTableItem::PV) {
-          m_last_turn = hashed->pv;
-          return hashed->value;
-        } else if (hashed->type == TTableItem::FailHigh &&
-                   hashed->value >= beta) {
-          m_last_turn = hashed->pv;
-          return hashed->value;
-        } else if (hashed->type == TTableItem::FailHigh)
-          alpha = std::max(alpha, hashed->value);
-      } else if (hashed->depth > depthleft) {
-        if (hashed->type == TTableItem::PV) {
-          // m_last_turn = hashed->pv;
-          // return hashed->value;
-        }
-      }
-    }
-    bool inCheck = tuple.board.Checkmate();
-    /*
+    if (depth == 0) return Score::getStaticValue(top());
 
-    if (GetSearchSettings().NullMoveEnabled() && depthleft >= 3 &&
-        inCheck == false) {
-      auto copy = tuple;
-      copy.board.SkipMove();
-      auto score = -alphabeta(copy, -beta, -beta + Score{1}, depthleft - 1 - 2,
-                              depthmax);
-      if (score >= beta) return beta;
-    }
-*/
+    Turn turns[216];  // turn storage
 
-    auto moves = tuple.GenerateTuplesFast(tuple, tuple.board.CurrentColor());
+    bool in_check;
+    int turns_size = top().getTurns(top().getCurrentSide(), turns,
+                                    in_check);  // generate turns
 
-    if (moves.empty()) {
-      m_last_turn = Turn();
-      if (inCheck) return Score::checkMate(depthleft, depthmax);
+    if (turns_size == 0) {
+      if (in_check) return Score::checkMate(depth);
       return Score::tie();
     }
 
-    MainNode();
+    Score best_score = min_max ? Score::min() : Score::max();
+    Turn best_turn = {};
 
-    //  ReOrder(tuple.board, moves, alpha, beta, m_btable, m_ttable, depthleft,
-    //          depthmax, founded ? hashed->pv : Turn());
+    for (int i = 0; i < turns_size; ++i) {
+      applyTurn(turns[i]);
+      Score score = alphabeta<!min_max, false>(alpha, beta, depth - 1);
+      undoTurn();
 
-    Score bestscore = Score::min();
-    Turn bestturn = Turn();
-    for (auto &sub : moves) {
-      auto score = -alphabeta(sub, -beta, -alpha, depthleft - 1, depthmax);
-
-      if (score >= beta) {  // beta cutoff
-        bestscore = score;
-        bestturn = sub.turn;
-        m_btable.Increment(sub.turn, depthmax - depthleft);
-        break;
+      if constexpr (min_max) {
+        if (score > best_score) {
+          best_score = score;
+          best_turn = turns[i];
+          if (alpha < score) alpha = score;
+        }
+      } else {
+        if (score < best_score) {
+          best_score = score;
+          best_turn = turns[i];
+          if (beta > score) beta = score;
+        }
       }
-      if (score > bestscore) {
-        bestscore = score;
-        bestturn = sub.turn;
-        if (score > alpha) {
-          alpha = score;
-          m_btable.Increment(sub.turn, depthmax - depthleft);
-        };
-      }
+      if (beta <= alpha) break;
     }
 
-    if (m_ttable != nullptr)
-      m_ttable->write(tuple.hash, oldalpha, beta, bestscore, bestturn,
-                      depthleft);
+    if constexpr (save_turn) m_turn = best_turn;
 
-    m_last_turn = bestturn;
-    return bestscore;
+    return best_score;
   }
 
-  TTable *m_ttable = nullptr;
-  HKTable m_btable;
-
- protected:
-  Turn m_last_turn{};
-  int m_last_depth = 0;
+ private:
+  Turn m_turn;
 };

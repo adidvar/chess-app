@@ -9,7 +9,10 @@ class EvaluatedBitBoard : public BitBoard {
   explicit EvaluatedBitBoard(const BitBoard &board) : BitBoard(board) {}
 
   static float toCentiPawns(int value);
-  static ScoreType getFigurePrice(Figure figure);
 
   ScoreType evaluate() const;
+
+ protected:
+  int getMaterial() const;
+  int getTables() const;
 };

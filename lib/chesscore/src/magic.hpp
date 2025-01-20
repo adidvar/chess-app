@@ -1,7 +1,6 @@
 #pragma once
 
-#include <bit>
-#include <random>
+#include <array>
 
 #include "bitutils.hpp"
 #include "figures.hpp"

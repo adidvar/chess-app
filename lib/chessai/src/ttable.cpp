@@ -1,5 +1,6 @@
 #include "ttable.hpp"
 
+/*
 constexpr size_t mb = 4;
 
 TTable::TTable() {
@@ -34,7 +35,8 @@ const TTableItem *TTable::search(BitBoardHash hash, bool &founded) const
     return element;
 }
 
-void TTable::write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn pv, uint8_t depth)
+void TTable::write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn
+pv, uint8_t depth)
 {
     auto index = hash % m_table.size();
     auto used = m_used[index];
@@ -59,3 +61,4 @@ void TTable::write(BitBoardHash hash, Score alpha, Score beta, Score value, Turn
     m_garbage[index] = false;
     m_used[index] = true;
 }
+*/
