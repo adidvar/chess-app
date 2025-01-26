@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <chesscore/bitboard.hpp>
 #include <cmath>
 #include <limits>
@@ -47,6 +48,8 @@ class Score {
 
   ScoreType m_value;
 };
+
+using atomic_score = std::atomic<int>;
 
 constexpr unsigned k_max_depth = 100;
 constexpr Score::ScoreType k_invalid =

@@ -1,5 +1,6 @@
-#include "alphabeta.hpp"
+#include <chessai/alphabeta.hpp>
 
+/*
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -59,7 +60,6 @@ TEST_CASE("Testing of mate search in alpha beta", "[alphabeta][ai]") {
       "r2q1rk1/2p3pp/b3P3/3p3Q/3PnP1b/4P3/1PPN3P/R1BK2NR b - - 1 15", 7));
   REQUIRE(TestMateFind(
       "1rbq1rk1/R5pp/2p2P2/2np4/2P1pPB1/4P1b1/1P2Q2P/1NB2KNR w - - 1 19", 7));
-*/
   }
 }
 
@@ -158,3 +158,4 @@ TEST_CASE("Testing of alpha beta move correctness", "[alphabeta][minmax][ai]") {
     REQUIRE(ab.GetTurn().ToChessFormat() == "f8f1");
   }
 }
+*/

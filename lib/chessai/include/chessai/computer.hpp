@@ -1,9 +1,8 @@
 #pragma once
 
+#include <chessai/alphabeta.hpp>
 #include <chesscore/figures.hpp>
 #include <thread>
-
-#include "search.hpp"
 
 class Computer{
  public:
@@ -16,4 +15,6 @@ class Computer{
   void Abort();
  private:
   BitBoard m_board;
+  std::unique_ptr<Search> m_search;
+  std::unique_ptr<std::thread> m_thread;
 };

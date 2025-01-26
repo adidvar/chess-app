@@ -13,7 +13,7 @@ constexpr bitboard getBitBoardOne()
 
 constexpr bitboard positionToMask(Position position)
 {
-    return getBitBoardOne() << position.index();
+  return getBitBoardOne() << position.index();
 }
 
 constexpr bitboard operator"" _bm(const char *str, std::size_t len)

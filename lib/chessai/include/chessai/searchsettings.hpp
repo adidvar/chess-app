@@ -1,5 +1,5 @@
 #pragma once
 
 struct SearchSettings {
-  int serch_depth = 10;
+  int serch_depth = 8;
 };
