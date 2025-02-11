@@ -7,9 +7,9 @@
 #include "reader.hpp"
 #include "writter.hpp"
 
-class Parser : public Reader {
+class Parser : public Reader, public Writter {
  public:
-  void parse() {
+  void loop() {
     std::string line;
     while (std::getline(std::cin, line)) {
       std::istringstream stream(line);
@@ -38,9 +38,9 @@ class Parser : public Reader {
         ponderHit();
       } else if (command == "quit") {
         quit();
-        break;  
+        break;
       } else {
-        Writter::warning("unknown command '" + command + "'");
+        sendWarning("unknown command '" + command + "'");
       }
     }
   }
@@ -50,7 +50,7 @@ class Parser : public Reader {
     std::string name, nameValue, value, valueValue;
     stream >> name >> nameValue;
     if (name != "name") {
-      Writter::warning("invalid setoption command format");
+      sendWarning("invalid setoption command format");
       return;
     }
 
@@ -80,7 +80,7 @@ class Parser : public Reader {
         stream.ignore(index - stream.tellg());
         stream >> token;
       } else {
-        Writter::warning("invalid position command format");
+        sendWarning("invalid position command format");
         return;
       }
 
@@ -90,7 +90,7 @@ class Parser : public Reader {
       }
       position(fen, moves);
     } catch (const FenParsingError& error) {
-      Writter::warning(error.what());
+      sendWarning(error.what());
     }
   }
 

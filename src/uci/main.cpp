@@ -3,9 +3,9 @@
 int main() {
   try {
     UCI uci;
-    uci.parse();
+    uci.loop();
   } catch (std::exception &e) {
-    Writter::critical(e.what());
+    sendCritical(e.what());
   }
   return 0;
 }
