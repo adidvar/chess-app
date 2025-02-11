@@ -127,7 +127,6 @@ class Search : public SearchContext {
 
     Score best_score = min_max ? Score::min() : Score::max();
     Turn best_turn = {};
-    std::mutex mutex;
 
     for (int i = 0; i < turns_size; ++i) {
       auto score = searchThread<!min_max>(turns[i], alpha, beta, depth - 1);
