@@ -53,6 +53,9 @@ constexpr bitboard processKing(Position position)
     return g_king_attacks[position.index()];
 }
 
+// because std::abs isn't constexpr on msvc
+constexpr int ce_abs(int value) { return value < 0 ? -value : value; }
+
 constexpr std::array<std::array<bitboard, 64>, 64> generateWays()
 {
     std::array<std::array<bitboard, 64>, 64> result{};
@@ -72,11 +75,11 @@ constexpr std::array<std::array<bitboard, 64>, 64> generateWays()
                row < std::max(fromRow, toRow); ++row) {
             between |= bitboard(1) << (row * 8 + fromCol);
           }
-        } else if (std::abs(fromRow - toRow) ==
-                   std::abs(fromCol - toCol)) {  // Same diagonal
+        } else if (ce_abs(fromRow - toRow) ==
+                   ce_abs(fromCol - toCol)) {  // Same diagonal
           int rowStep = (toRow > fromRow) ? 1 : -1;
           int colStep = (toCol > fromCol) ? 1 : -1;
-          for (int step = 1; step < abs(toRow - fromRow); ++step) {
+          for (int step = 1; step < ce_abs(toRow - fromRow); ++step) {
             between |= bitboard(1) << ((fromRow + step * rowStep) * 8 +
                                        (fromCol + step * colStep));
           }
