@@ -23,7 +23,6 @@ target_include_directories(chesscore PRIVATE src)
 
 if(BUILD_TESTS)
 enable_testing()
-
 find_package(Catch2 3 QUIET)
 
 if (NOT Catch2_FOUND)
@@ -40,10 +39,6 @@ endif()
 add_executable(test_chesscore ${core_tests})
 target_include_directories(test_chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore)
 target_link_libraries(test_chesscore chesscore Catch2::Catch2WithMain)
-
-#include(CTest)
-#include(Catch)
-#catch_discover_tests(test_chesscore)
-
+add_test(NAME test_chesscore COMMAND test_chesscore)
 endif()
 

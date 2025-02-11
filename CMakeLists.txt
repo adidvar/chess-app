@@ -27,3 +27,7 @@ subdirs(${libs})
 file(GLOB bins LIST_DIRECTORIES TRUE src/*)
 
 subdirs(${bins})
+
+if(BUILD_TESTS)
+    include(CTest)
+endif()

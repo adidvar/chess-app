@@ -23,7 +23,6 @@ target_include_directories(chessai PRIVATE include/chessai)
 
 if(BUILD_TESTS)
 enable_testing()
-
 find_package(Catch2 3 QUIET)
 
 if (NOT Catch2_FOUND)
@@ -40,9 +39,5 @@ endif()
 add_executable(test_chessai ${ai_tests})
 target_include_directories(test_chessai PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_link_libraries(test_chessai chessai Catch2::Catch2WithMain)
-
-#include(CTest)
-#include(Catch)
-#catch_discover_tests(test_chesscore)
-
+add_test(NAME test_chessai COMMAND test_chessai)
 endif()

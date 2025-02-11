@@ -1,0 +1,36 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        with:
+          source-dir: .
+          build-dir: build
+          options: |
+            BUILD_TESTS=ON
+            BUILD_UCI=ON
+            CMAKE_BUILD_TYPE=Release
+
+      - name: Test Project
+        uses: threeal/ctest-action@v1.1.0
