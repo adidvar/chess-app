@@ -31,26 +31,21 @@ std::string_view readStringPart(std::string_view data, size_t &index)
 
 void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
 {
-    const static std::map<char, Figure> s_to_f{{' ', Figure::Empty},
-                                               {'p', Figure::BPawn},
-                                               {'n', Figure::BKnight},
-                                               {'b', Figure::BBishop},
-                                               {'r', Figure::BRook},
-                                               {'q', Figure::BQueen},
-                                               {'k', Figure::BKing},
-                                               {'P', Figure::WPawn},
-                                               {'N', Figure::WKnight},
-                                               {'B', Figure::WBishop},
-                                               {'R', Figure::WRook},
-                                               {'Q', Figure::WQueen},
-                                               {'K', Figure::WKing}};
+  board = BitBoard{nullptr};
 
-    skipSeperators(fen, index);
+  const static std::map<char, Figure> s_to_f{
+      {' ', Figure::Empty},   {'p', Figure::BPawn}, {'n', Figure::BKnight},
+      {'b', Figure::BBishop}, {'r', Figure::BRook}, {'q', Figure::BQueen},
+      {'k', Figure::BKing},   {'P', Figure::WPawn}, {'N', Figure::WKnight},
+      {'B', Figure::WBishop}, {'R', Figure::WRook}, {'Q', Figure::WQueen},
+      {'K', Figure::WKing}};
 
-    if (fen.substr(index).starts_with(start_string)) {
-        board = BitBoard{};
-        index += start_string.size();
-        return;
+  skipSeperators(fen, index);
+
+  if (fen.substr(index).starts_with(start_string)) {
+    board = BitBoard{};
+    index += start_string.size();
+    return;
     }
 
     size_t position = 0;
@@ -72,21 +67,18 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
     }
     ++index;
 
-    if (position != 64)
-        throw FenParsingError("incompleted fen");
+    if (position != 64) throw FenParsingError("incompleted fen board");
 
     std::string current_move, rooking, pawn;
     std::string static_move, move_counter;
 
     current_move = readStringPart(fen, index);
 
-    if (index == fen.size())
-        throw FenParsingError("incompleted fen");
+    if (index == fen.size()) throw FenParsingError("incompleted fen");
 
     rooking = readStringPart(fen, index);
 
-    if (index == fen.size())
-        throw FenParsingError("incompleted fen");
+    if (index == fen.size()) throw FenParsingError("incompleted fen");
 
     pawn = readStringPart(fen, index);
 

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <array>
 #include <bit>
-#include <cinttypes>
 #include <string_view>
 
 #include "bitasm.hpp"
@@ -15,7 +13,7 @@ constexpr bitboard getBitBoardOne()
 
 constexpr bitboard positionToMask(Position position)
 {
-    return getBitBoardOne() << position.index();
+  return getBitBoardOne() << position.index();
 }
 
 constexpr bitboard operator"" _bm(const char *str, std::size_t len)

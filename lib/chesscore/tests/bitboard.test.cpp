@@ -227,11 +227,20 @@ static size_t Counter(BitBoard board, size_t depth)
         return 1;
     size_t counter = 0;
     Turn turns[216];
-    int count = board.getTurns(board.getCurrentSide(), turns);
+    bool is_mate;
+    int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
     for (int i = 0; i < count; i++) {
         counter += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
     }
     return counter;
+}
+
+static bool MateTest(BitBoard board) {
+  Turn turns[216];
+  bool is_mate;
+  int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
+
+  return is_mate && count == 0;
 }
 
 TEST_CASE("BitBoard generation tests", "[bitboard][generation]") {
@@ -239,6 +248,9 @@ TEST_CASE("BitBoard generation tests", "[bitboard][generation]") {
     REQUIRE(Counter(BitBoard(), 2) == 400);
     REQUIRE(Counter(BitBoard(), 3) == 8902);
     REQUIRE(Counter(BitBoard(), 4) == 197281);
+
+    REQUIRE(MateTest(BitBoard{"Q3k3/Q7/8/8/8/8/8/3K4 b - - 1 1"}) == true);
+    REQUIRE(MateTest(BitBoard{"4k3/Q7/8/8/8/8/8/3K3Q b - - 1 1"}) == false);
 }
 
 TEST_CASE("BitBoard generation advanced tests", "[bitboard][generation]") {

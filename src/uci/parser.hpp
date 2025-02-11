@@ -1,12 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <sstream>
 #include <vector>
-#include <string>
-#include <algorithm>
 
+#include "chesscore/fen.hpp"
 #include "reader.hpp"
+#include "writter.hpp"
 
 class Parser : public Reader {
  public:
@@ -41,7 +40,7 @@ class Parser : public Reader {
         quit();
         break;  
       } else {
-        std::cerr << "Unknown command: " << command << std::endl;
+        Writter::warning("unknown command '" + command + "'");
       }
     }
   }
@@ -51,7 +50,7 @@ class Parser : public Reader {
     std::string name, nameValue, value, valueValue;
     stream >> name >> nameValue;
     if (name != "name") {
-      std::cerr << "Invalid setoption command format" << std::endl;
+      Writter::warning("invalid setoption command format");
       return;
     }
 
@@ -67,23 +66,32 @@ class Parser : public Reader {
   }
 
   void parsePosition(std::istringstream& stream) {
-    std::string token, fen;
-    stream >> token;
-    if (token == "startpos") {
-      fen = "startpos";
-      stream >> token; 
-    } else if (token == "fen") {
-      std::getline(stream, fen, ' ');
-    } else {
-      std::cerr << "Invalid position command format" << std::endl;
-      return;
-    }
+    try {
+      std::string token;
+      stream >> token;
 
-    std::vector<std::string> moves;
-    while (stream >> token) {
-      moves.push_back(token);
+      BitBoard fen;
+      if (token == "startpos") {
+        fen = {"startpos"};
+        stream >> token;
+      } else if (token == "fen") {
+        size_t index = stream.tellg();
+        boardFromFen(stream.str(), fen, index);
+        stream.ignore(index - stream.tellg());
+        stream >> token;
+      } else {
+        Writter::warning("invalid position command format");
+        return;
+      }
+
+      std::vector<Turn> moves;
+      while (stream >> token) {
+        moves.push_back(Turn(token));
+      }
+      position(fen, moves);
+    } catch (const FenParsingError& error) {
+      Writter::warning(error.what());
     }
-    position(fen, moves);
   }
 
   void parseGo(std::istringstream& stream) {
