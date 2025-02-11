@@ -235,7 +235,7 @@ static size_t Counter(BitBoard board, size_t depth)
     return counter;
 }
 
-static size_t MateTest(BitBoard board) {
+static bool MateTest(BitBoard board) {
   Turn turns[216];
   bool is_mate;
   int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
