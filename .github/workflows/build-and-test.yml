@@ -31,6 +31,7 @@ jobs:
             BUILD_TESTS=ON
             BUILD_UCI=ON
             CMAKE_BUILD_TYPE=Release
+          args: --config Release
           build-args: --config Release
 
       - name: Test Project
