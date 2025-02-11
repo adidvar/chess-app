@@ -31,11 +31,9 @@ jobs:
             BUILD_TESTS=ON
             BUILD_UCI=ON
             CMAKE_BUILD_TYPE=Release
-          args: --config Release
           build-args: --config Release
 
       - name: Test Project
         uses: threeal/ctest-action@v1.1.0
         with:
           build-config: Release
-          args: -C Release
