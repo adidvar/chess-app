@@ -1,11 +1,19 @@
-#include <iostream>
 #include <string>
 #include <vector>
 
-/*
+#include "chessai/computer.hpp"
+#include "parser.hpp"
+#include "writter.hpp"
+
 class UCI : public Parser {
  public:
-  UCI() : working(false) {}
+  UCI() {
+    feedback.reset(new UCIFeedBack());
+    settings.feedback = std::dynamic_pointer_cast<IFeedBack>(feedback);
+    settings.depth = 7;
+  }
+
+  virtual void debug(bool enable) override { feedback->setDebugMode(enable); }
 
   void uci() override {
     id();
@@ -13,10 +21,7 @@ class UCI : public Parser {
   }
 
   void stop() override {
-    if (working) {
-      computer.Abort();
-      working = false;
-    }
+    if (feedback->getReadyFlag() == false) computer.Abort();
   }
 
   void quit() override {
@@ -30,56 +35,37 @@ class UCI : public Parser {
   void ponderHit() override {
   }
 
-  void uciNewGame() override {
-    if (!working) {
-      computer.Reset();
-    }
-  }
+  void uciNewGame() override { stop(); }
 
   void setOption(const std::string& name, const std::string& value) override {
-    computer.SetOption(name, value);
   }
 
-  void position(const std::string& fen, const std::vector<std::string>& moves) override {
-    if (!working) {
-      Match match;
-      if (fen == "startpos") {
-        match.LoadFromStartPosition();
-      } else {
-        match.LoadFromFEN(fen);
-      }
+  void position(const BitBoard& fen, const std::vector<Turn>& moves) override {
+    BitBoard board(fen);
+    for (auto turn : moves) {
+      if (!turn.isValid()) throw std::runtime_error("Invalid turn");
+      if (!board.testTurn(turn)) throw std::runtime_error("Invalid turn");
 
-      for (const auto& move : moves) {
-        match.MakeMove(move);
-      }
-
-      computer.SetBoard(match.GetBoard());
+      board = board.executeTurn(board.getCurrentSide(), turn);
     }
+    settings.board = board;
   }
 
   void go(const std::string& parameters) override {
-    if (!working) {
-      computer.Start(parameters);
-      working = true;
+    if (feedback->getReadyFlag() == true) {
+      computer.Start(settings);
+      feedback->resetReadyFlag();
     }
-  }
-
-  void exec() {
-    if (working && computer.IsReady()) {
-      bestMove(computer.Get());
-      computer.Abort();
-      working = false;
-    }
-    std::cout.flush();
   }
 
  private:
   Computer computer;
-  bool working;
+  SearchSettings settings;
+  std::shared_ptr<UCIFeedBack> feedback;
 
   void id() {
-    Writter::idName("MyChessEngine");
-    Writter::idAuthor("AuthorName");
+    Writter::idName("chess-app");
+    Writter::idAuthor("adidvar");
   }
 
   void uciOk() {
@@ -94,4 +80,3 @@ class UCI : public Parser {
     Writter::bestMove(move, ponder);
   }
 };
-*/

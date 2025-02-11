@@ -1,5 +1,7 @@
 #include "bitboard.hpp"
 
+#include <algorithm>
+
 #include "bitutils.hpp"
 #include "fen.hpp"
 #include "magic.hpp"
@@ -904,6 +906,15 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
     return copy;
 }
 
+bool BitBoard::testTurn(Turn turn) const {
+  Turn turns[BitBoard::MaxTurns];
+
+  bool mate;
+  getTurns(getCurrentSide(), turns, mate);
+
+  return std::find(std::begin(turns), std::end(turns), turn) != std::end(turns);
+}
+
 BitBoardHash BitBoard::getHash() const
 {
     return m_hash;
@@ -913,3 +924,5 @@ Turn BitBoard::getTurn() const
 {
     return m_turn;
 }
+
+BitBoard::BitBoard(std::nullptr_t) {}

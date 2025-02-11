@@ -11,10 +11,10 @@ class Computer{
 
   void SetBoard(const BitBoard &board);
 
-  void Start();
+  void Start(SearchSettings settings);
   void Abort();
+
  private:
-  BitBoard m_board;
   std::unique_ptr<Search> m_search;
   std::unique_ptr<std::thread> m_thread;
 };

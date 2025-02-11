@@ -26,10 +26,11 @@ class Score {
   constexpr Score operator+(Score value) const;
   constexpr Score operator*(int value) const;
 
-  constexpr static Score checkMate(int depth);
+  constexpr static Score checkMate(Color color, int depth);
+
   constexpr static Score tie();
   static Score getStaticValue(const BitBoard &board);
-  float toCentiPawns() const;
+  std::string toString(int depth) const;
 
   constexpr static Score max();
   constexpr static Score min();
@@ -37,7 +38,7 @@ class Score {
   [[nodiscard]] constexpr bool isValid() const;
   [[nodiscard]] constexpr bool isCheckMate() const;
 
-  constexpr int getTurnsToCheckMate() const;
+  constexpr int getTurnsToCheckMate(int depth) const;
 
   //[[nodiscard]] constexpr std::string toCentiPawns() const;
 
@@ -51,12 +52,13 @@ class Score {
 
 using atomic_score = std::atomic<int>;
 
-constexpr unsigned k_max_depth = 100;
+constexpr Score::ScoreType k_max_depth = 100;
 constexpr Score::ScoreType k_invalid =
     std::numeric_limits<Score::ScoreType>::min();
 constexpr Score::ScoreType k_min = k_invalid + 1;
 constexpr Score::ScoreType k_checkmate_0 = k_min + 1;
 constexpr Score::ScoreType k_checkmate_max = k_checkmate_0 + k_max_depth;
+// mate range [k_checkmate_0; k_checkmate_max];
 
 constexpr Score::Score() : Score(k_invalid) {}
 
@@ -100,10 +102,11 @@ constexpr Score Score::operator*(int value) const {
   return clamp(this->m_value * value);
 }
 
-constexpr Score Score::checkMate(int depth) {
-  Score::ScoreType value{
-      static_cast<ScoreType>(k_checkmate_0 + (k_max_depth - depth))};
-  return std::min<Score::ScoreType>(k_checkmate_max, value);
+constexpr Score Score::checkMate(Color color, int depth) {
+  if (color == Color::White)
+    return (k_checkmate_max - depth);
+  else
+    return -(k_checkmate_max - depth);
 }
 
 constexpr Score Score::tie() { return {0}; }
@@ -113,7 +116,13 @@ inline Score Score::getStaticValue(const BitBoard &board) {
   return clamp(evaluator.evaluate());
 }
 
-inline float Score::toCentiPawns() const { return m_value / 126.0; }
+inline std::string Score::toString(int depth) const {
+  if (m_value > k_checkmate_max && m_value < -k_checkmate_max)
+    return std::string("cp ") + std::to_string(m_value / 126.0);
+  else {
+    return std::string("mate ") + std::to_string(getTurnsToCheckMate(depth));
+  }
+}
 
 constexpr Score Score::max() { return -k_min; }
 
@@ -125,11 +134,11 @@ constexpr bool Score::isCheckMate() const {
   return m_value <= k_checkmate_max || m_value >= -k_checkmate_max;
 }
 
-constexpr int Score::getTurnsToCheckMate() const {
+constexpr int Score::getTurnsToCheckMate(int depth) const {
   if (m_value < 0)
-    return m_value - k_checkmate_0;
+    return depth + m_value - k_checkmate_max;
   else
-    return -m_value - k_checkmate_0;
+    return depth - m_value - k_checkmate_max;
 }
 
 constexpr Score::operator ScoreType() { return m_value; }

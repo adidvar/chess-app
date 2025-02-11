@@ -8,82 +8,85 @@ using BitBoardHash = uint64_t;
 class BitBoard
 {
 public:
+ static constexpr auto MaxTurns = 216;
 
-    enum Flags {
-        flags_default = 0,
-        flags_color = 1,
-        flags_el_passant = 2,
-        flags_white_oo = 4,
-        flags_white_ooo = 8,
-        flags_black_oo = 16,
-        flags_black_ooo = 32,
-        flags_upper_bound = 64 //upper bound for branch-less generator
-    };
+ enum Flags {
+   flags_default = 0,
+   flags_color = 1,
+   flags_el_passant = 2,
+   flags_white_oo = 4,
+   flags_white_ooo = 8,
+   flags_black_oo = 16,
+   flags_black_ooo = 32,
+   flags_upper_bound = 64  // upper bound for branch-less generator
+ };
 
-    BitBoard();
-    BitBoard(std::string_view fen_line);
-    BitBoard(const BitBoard &board, Turn turn);
-    [[nodiscard]] std::string fen() const;
+ BitBoard();  ///< chess start position
+ BitBoard(std::string_view fen_line);
+ BitBoard(const BitBoard &board, Turn turn);
+ [[nodiscard]] std::string fen() const;
 
-    [[nodiscard]] BitBoard set(Position position, Figure figure) const;
-    [[nodiscard]] BitBoard setFlags(Flags flags) const;
-    [[nodiscard]] BitBoard setTurn(Turn turn) const;
+ [[nodiscard]] BitBoard set(Position position, Figure figure) const;
+ [[nodiscard]] BitBoard setFlags(Flags flags) const;
+ [[nodiscard]] BitBoard setTurn(Turn turn) const;
 
-    [[nodiscard]] BitBoard swap(Position p1, Position p2) const;
+ [[nodiscard]] BitBoard swap(Position p1, Position p2) const;
 
-    [[nodiscard]] Figure get(Position position) const noexcept;
-    [[nodiscard]] Flags getFlags() const noexcept;
-    [[nodiscard]] Color getCurrentSide() const noexcept;
+ [[nodiscard]] Figure get(Position position) const noexcept;
+ [[nodiscard]] Flags getFlags() const noexcept;
+ [[nodiscard]] Color getCurrentSide() const noexcept;
 
-    int getTurns(Color color, Turn *out, bool &in_check) const;
+ int getTurns(Color color, Turn *out, bool &in_check) const;
 
-    [[nodiscard]] BitBoard executeTurn(Color color, Turn turn) const;
+ [[nodiscard]] BitBoard executeTurn(Color color, Turn turn) const;
+ [[nodiscard]] bool testTurn(Turn turn) const;
 
-    [[nodiscard]] BitBoardHash getHash() const;
-    [[nodiscard]] Turn getTurn() const;
+ [[nodiscard]] BitBoardHash getHash() const;
+ [[nodiscard]] Turn getTurn() const;
 
-    bool operator==(const BitBoard &board) const = default;
-    bool operator!=(const BitBoard &board) const = default;
+ bool operator==(const BitBoard &board) const = default;
+ bool operator!=(const BitBoard &board) const = default;
 
+ BitBoard(std::nullptr_t);  ///< empty board
 protected:
-    constexpr void removeFigure(bitboard mask);
-    constexpr void removeBlackFigure(bitboard mask);
-    constexpr void removeWhiteFigure(bitboard mask);
-    constexpr void copyWhites(const BitBoard &other);
-    constexpr void copyBlacks(const BitBoard &other);
-    constexpr void moveFromToWhite(bitboard from, bitboard to);
-    constexpr void moveFromToBlack(bitboard from, bitboard to);
-    constexpr void promoteWhiteFigure(bitboard position, Figure figure);
-    constexpr void promoteBlackFigure(bitboard position, Figure figure);
-    constexpr bitboard getWhites() const;
-    constexpr bitboard getBlacks() const;
-    constexpr bitboard getAll() const;
+ constexpr void removeFigure(bitboard mask);
+ constexpr void removeBlackFigure(bitboard mask);
+ constexpr void removeWhiteFigure(bitboard mask);
+ constexpr void copyWhites(const BitBoard &other);
+ constexpr void copyBlacks(const BitBoard &other);
+ constexpr void moveFromToWhite(bitboard from, bitboard to);
+ constexpr void moveFromToBlack(bitboard from, bitboard to);
+ constexpr void promoteWhiteFigure(bitboard position, Figure figure);
+ constexpr void promoteBlackFigure(bitboard position, Figure figure);
+ constexpr bitboard getWhites() const;
+ constexpr bitboard getBlacks() const;
+ constexpr bitboard getAll() const;
 
-    static const char *const kStartPosition;
-    static const BitBoard kStartBitBoard;
+ static const char *const kStartPosition;
+ static const BitBoard kStartBitBoard;
 
-    // bitboards white
-    bitboard m_w_p = 0;
-    bitboard m_w_n = 0;
-    bitboard m_w_b = 0;
-    bitboard m_w_r = 0;
-    bitboard m_w_q = 0;
-    bitboard m_w_k = 0;
-    // bitboards blackk
-    bitboard m_b_p = 0;
-    bitboard m_b_n = 0;
-    bitboard m_b_b = 0;
-    bitboard m_b_r = 0;
-    bitboard m_b_q = 0;
-    bitboard m_b_k = 0;
-    // state init
-    BitBoardHash m_hash = 0;
-    Turn m_turn{};
-    // additional state
-    Flags m_flags = flags_default;
+ // bitboards white
+ bitboard m_w_p = 0;
+ bitboard m_w_n = 0;
+ bitboard m_w_b = 0;
+ bitboard m_w_r = 0;
+ bitboard m_w_q = 0;
+ bitboard m_w_k = 0;
+ // bitboards blackk
+ bitboard m_b_p = 0;
+ bitboard m_b_n = 0;
+ bitboard m_b_b = 0;
+ bitboard m_b_r = 0;
+ bitboard m_b_q = 0;
+ bitboard m_b_k = 0;
+ // state init
+ BitBoardHash m_hash = 0;
+ Turn m_turn{};
+ // additional state
+ Flags m_flags = flags_default;
 
-    template<BitBoard::Flags flags>
-    friend class BitBoardHelper;
+ template <BitBoard::Flags flags>
+ friend class BitBoardHelper;
 };
 
 constexpr void BitBoard::removeFigure(bitboard mask)

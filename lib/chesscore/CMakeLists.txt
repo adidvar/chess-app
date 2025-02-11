@@ -5,21 +5,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB core_sources
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+     src/*.hpp
+     src/*.cpp
 )
 file(GLOB core_headers
-     ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore/*.hpp
+     include/chesscore/*.hpp
 )
 file(GLOB core_tests
-     ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
+     tests/*.cpp
 )
 
 add_library(chesscore ${core_headers} ${core_sources})
 
-target_include_directories(chesscore INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/chesscore)
-target_include_directories(chesscore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(chesscore INTERFACE include)
+target_include_directories(chesscore PRIVATE include/chesscore)
+target_include_directories(chesscore PRIVATE src)
 
 if(BUILD_TESTS)
 enable_testing()

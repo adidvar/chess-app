@@ -8,8 +8,7 @@
 
 class Search : public SearchContext {
  public:
-  Search(const BitBoard &board, Color color, SearchSettings settings = {})
-      : SearchContext(board, color, settings) {}
+  Search(SearchSettings settings) : SearchContext(settings) {}
 
   void iterativeSearch(Score a = Score::min(), Score b = Score::max()) {
     std::pair<Score, Turn> result = {{}, {}};
@@ -21,9 +20,9 @@ class Search : public SearchContext {
 
     auto begin = clock::now();
 
-    for (int depth = 1; depth <= m_settings.serch_depth; depth++) {
+    for (int depth = 1; depth <= m_settings.depth; depth++) {
       std::pair<Score, Turn> temp_result;
-      if (m_color == Color::White)
+      if (m_settings.board.getCurrentSide() == Color::White)
         temp_result = searchTurn<true>(depth);
       else
         temp_result = searchTurn<false>(depth);
@@ -31,14 +30,14 @@ class Search : public SearchContext {
       if (!temp_result.first.isValid() || !temp_result.first.isValid()) break;
 
       result = temp_result;
-      m_feedback->sendDepth(depth);
-      m_feedback->sendScore(temp_result.first.toCentiPawns());
-      m_feedback->sendTurn(temp_result.second);
-      m_feedback->sendNodesSearched(m_counter.getPosition());
-      m_feedback->sendTimeElapsed(
+      m_settings.feedback->sendDepth(depth);
+      m_settings.feedback->sendScore(temp_result.first.toString(depth));
+      m_settings.feedback->sendTurn(temp_result.second);
+      m_settings.feedback->sendNodesSearched(m_counter.getPosition());
+      m_settings.feedback->sendTimeElapsed(
           duration_cast<milliseconds>(clock::now() - begin).count());
     }
-    m_feedback->sendBestMove(result.second);
+    m_settings.feedback->sendBestMove(result.second);
   }
 
  private:
@@ -60,7 +59,8 @@ class Search : public SearchContext {
                                 in_check);  // generate turns
 
     if (turns_size == 0) {
-      if (in_check) return Score::checkMate(depth);
+      if (in_check)
+        return Score::checkMate(context->top().getCurrentSide(), depth);
       return Score::tie();
     }
 
@@ -93,7 +93,7 @@ class Search : public SearchContext {
   template <bool min_max>
   Score searchThread(Turn turn, Score alpha, Score beta, int depth) {
     auto context = &m_pool[std::this_thread::get_id()];
-    context->m_boards_stack.emplace(m_board, turn);
+    context->m_boards_stack.emplace(m_settings.board, turn);
     return search<min_max>(context, alpha, beta, depth);
     context->undoTurn();
   }
@@ -104,11 +104,21 @@ class Search : public SearchContext {
 
     Turn turns[216];  // turn storage
 
-    bool in_check;
-    int turns_size = m_board.getTurns(m_board.getCurrentSide(), turns,
-                                      in_check);  // generate turns
+    bool in_check = false;
+    int turns_size =
+        m_settings.board.getTurns(m_settings.board.getCurrentSide(), turns,
+                                  in_check);  // generate turns
+
+    this->m_settings.feedback->sendDebug(m_settings.board.fen());
+    for (int i = 0; i < turns_size; i++) {
+      this->m_settings.feedback->sendDebug(std::to_string(i) + " " +
+                                           turns[i].toString());
+    }
+
     if (turns_size == 0) {
-      if (in_check) return {Score::checkMate(depth), Turn()};
+      if (in_check)
+        return {Score::checkMate(m_settings.board.getCurrentSide(), depth),
+                Turn()};
       return {Score::tie(), Turn()};
     }
 
@@ -121,6 +131,13 @@ class Search : public SearchContext {
 
     for (int i = 0; i < turns_size; ++i) {
       auto score = searchThread<!min_max>(turns[i], alpha, beta, depth - 1);
+      // auto score = searchThread<!min_max>(turns[i], Score::min(),
+      // Score::max(),
+      //                                    depth - 1);
+      // turns contains trash, wtf
+      this->m_settings.feedback->sendDebug(std::to_string(i) + " " +
+                                           turns[i].toString() + " " +
+                                           std::to_string(score));
 
       if constexpr (min_max) {
         if (score > best_score) {
