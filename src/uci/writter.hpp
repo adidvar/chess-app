@@ -73,19 +73,20 @@ class Writter : public IFeedBack {
 
   virtual void sendDebug(const std::string& message) override {
     if (debug_enabled.load())
-      std::cout << "info string debug: " << message << std::endl;
+      std::cout << "info string" << message << std::endl;
   }
 
   virtual void sendInfo(const std::string& message) override {
-    std::cout << "info string info: " << message << std::endl;
+    std::cout << "info string" << message << std::endl;
   }
 
   virtual void sendWarning(const std::string& message) override {
-    std::cout << "info string warning: " << message << std::endl;
+    std::cout << "info string warning " << message << std::endl;
   }
 
   virtual void sendError(const std::string& message) override {
-    std::cout << "info string error: " << message << std::endl;
+    debug_enabled.store(true);
+    std::cout << "info string error " << message << std::endl;
   }
 
   void setDebugMode(bool enabled) {

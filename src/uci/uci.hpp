@@ -3,6 +3,7 @@
 
 #include "chessai/computer.hpp"
 #include "parser.hpp"
+#include "tools.hpp"
 #include "writter.hpp"
 
 class UCI : public Parser {
@@ -45,31 +46,50 @@ class UCI : public Parser {
     readyOk();
   }
 
-  void ponderHit() override {}
-
   void uciNewGame() override {
     stop();
   }
 
   void setOption(const std::string &name, const std::string &value) override {}
 
-  void position(const BitBoard &fen, const std::vector<Turn> &moves) override {
-    BitBoard board(fen);
-    for (auto turn : moves) {
-      if (!turn.isValid()) throw std::runtime_error("Invalid turn");
-      if (!board.testTurn(turn)) throw std::runtime_error("Invalid turn");
-
-      board = board.executeTurn(board.getCurrentSide(), turn);
-    }
-    settings.board = board;
+  void position(const BitBoard &fen) override {
+    settings.board = fen;
   }
 
-  void go(const std::string &parameters) override {
+  void go() override {
     if (getReadyFlag() == true) {
       computer.Start(settings);
       resetReadyFlag();
     }
   }
+
+  void goPerft(int depth) override {
+    perft(settings.board, depth);
+  }
+
+  virtual void goMate(int depth) override {
+    sendInfo("mate search");
+  }
+
+  virtual void goTimeControl(int wsec, int bsec, int winc, int binc) override {
+    sendInfo("time controll: auto");
+  };
+  virtual void goTime(int msec) override {
+    sendInfo("time controll: time");
+  };
+  virtual void goDepth(int depth) override {
+    sendInfo("depth controll: enabled");
+  };
+  virtual void goNodes(long nodes) override {
+    sendInfo("nodes controll: enabled");
+  };
+  virtual void goMoves(std::vector<Turn> turns) override {
+    sendInfo("nodes moves: enabled");
+  };
+  virtual void goInfinite() override {
+    sendInfo("time controll: infinite");
+  };
+  virtual void goMovesToGo(int moves) override {};
 
  private:
   Computer computer;

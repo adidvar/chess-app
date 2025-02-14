@@ -63,32 +63,32 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
         } else if (character == '/')
             position = ((position - 1) / 8) * 8 + 8;
         else
-            throw FenParsingError("invalid character");
+            throw FenError("invalid character");
     }
     ++index;
 
-    if (position != 64) throw FenParsingError("incompleted fen board");
+    if (position != 64) throw FenError("incompleted fen board");
 
     std::string current_move, rooking, pawn;
     std::string static_move, move_counter;
 
     current_move = readStringPart(fen, index);
 
-    if (index == fen.size()) throw FenParsingError("incompleted fen");
+    if (index == fen.size()) throw FenError("incompleted fen");
 
     rooking = readStringPart(fen, index);
 
-    if (index == fen.size()) throw FenParsingError("incompleted fen");
+    if (index == fen.size()) throw FenError("incompleted fen");
 
     pawn = readStringPart(fen, index);
 
     if (index == fen.size())
-        throw FenParsingError("incompleted fen");
+        throw FenError("incompleted fen");
 
     static_move = readStringPart(fen, index);
 
     if (index == fen.size())
-        throw FenParsingError("incompleted fen");
+        throw FenError("incompleted fen");
 
     move_counter = readStringPart(fen, index);
 
@@ -99,12 +99,12 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
     else if (current_move == "b")
         flags = (BitBoard::Flags)(flags | BitBoard::flags_color);
     else
-        throw FenParsingError("incorrect current side");
+        throw FenError("incorrect current side");
 
     if (pawn.size() == 2) {
         auto position = Position(pawn);
         if (!position.isValid())
-            throw FenParsingError("incorrect el passant");
+            throw FenError("incorrect el passant");
         if ((flags & BitBoard::flags_color) == 0) {
           board = board.setTurn(
               Turn(Position(pawn).index() - 8, Position(pawn).index() + 8));
@@ -132,7 +132,7 @@ void boardFromFen(std::string_view fen, BitBoard &board, size_t &index)
         case '-':
             break;
         default:
-            throw FenParsingError("incorrect castling");
+            throw FenError("incorrect castling");
         }
     }
     board = board.setFlags(flags);
