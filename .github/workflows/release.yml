@@ -1,0 +1,40 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created] # Runs when a new release is created
+
+jobs:
+  build:
+    name: Build and Package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest] # Platforms to build on
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        with:
+          source-dir: .
+          build-dir: build
+          options: |
+            BUILD_TESTS=OFF
+            BUILD_UCI=ON
+            CMAKE_BUILD_TYPE=Release
+          build-args: --config Release
+
+      - name: Package with CPack
+        run: |
+          cd build
+          cpack
+
+      - name: Upload Release Artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: package/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

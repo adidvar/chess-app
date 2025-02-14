@@ -13,6 +13,8 @@ target_include_directories(uci PRIVATE .)
 
 target_link_libraries(uci chessai)
 
+install(TARGETS uci RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 endif()
 
 
