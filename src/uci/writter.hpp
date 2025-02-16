@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <format>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,19 +11,19 @@
 
 class Writter : public IFeedBack {
  public:
-  void idName(const std::string& name) {
+  static void idName(const std::string& name) {
     std::cout << "id name " << name << std::endl;
   }
 
-  void idAuthor(const std::string& author) {
+  static void idAuthor(const std::string& author) {
     std::cout << "id author " << author << std::endl;
   }
 
-  void uciOk() {
+  static void uciOk() {
     std::cout << "uciok" << std::endl;
   }
 
-  void readyOk() {
+  static void readyOk() {
     std::cout << "readyok" << std::endl;
   }
 
@@ -43,41 +44,42 @@ class Writter : public IFeedBack {
     ready_flag.store(true);
   }
 
-  virtual void sendDepth(int depth) override {
-    std::cout << "info depth " << depth << std::endl;
+  virtual void setDepth(int depth) override {
+    this->depth = depth;
   }
-
-  virtual void sendScore(const std::string& score) override {
-    std::cout << "info score " << score << std::endl;
+  virtual void setSelDepth(int depth) override {
+    this->seldepth = depth;
   }
-
-  virtual void sendTurn(Turn turn) override {
-    std::cout << "info turn " << turn.toString() << std::endl;
+  virtual void setTimeElapsed(int milliseconds) override {
+    this->time = milliseconds;
   }
-
-  virtual void sendNodesSearched(size_t nodes) override {
-    std::cout << "info nodes " << nodes << std::endl;
+  virtual void setNodesSearched(size_t nodes) override {
+    this->nodes = nodes;
   }
-
-  virtual void sendTimeElapsed(int milliseconds) override {
-    std::cout << "info time " << milliseconds << std::endl;
+  virtual void setNPS(size_t nodes) override {
+    this->nps = nodes;
   }
-
-  virtual void sendPVLine(const std::vector<Turn>& pvLine) override {
-    std::cout << "info pv";
-    for (const auto& move : pvLine) {
-      std::cout << " " << move.toString();
-    }
+  virtual void setScore(const std::string& score) override {
+    this->score = score;
+  }
+  virtual void setPVLine(const std::vector<Turn>& pvLine) override {
+    this->pv = pvLine;
+  }
+  virtual void flush() override {
+    std::cout << std::format(
+        "depth {} seldepth {} score {} nodes {} nps {} time {} pv ", depth,
+        seldepth, score, nodes, nps, time);
+    for (auto turn : pv) std::cout << turn.toString() << " ";
     std::cout << std::endl;
-  }
+  };
 
   virtual void sendDebug(const std::string& message) override {
     if (debug_enabled.load())
-      std::cout << "info string" << message << std::endl;
+      std::cout << "info string " << message << std::endl;
   }
 
   virtual void sendInfo(const std::string& message) override {
-    std::cout << "info string" << message << std::endl;
+    std::cout << "info string " << message << std::endl;
   }
 
   virtual void sendWarning(const std::string& message) override {
@@ -102,11 +104,21 @@ class Writter : public IFeedBack {
   virtual ~Writter() = default;
 
  private:
+  // buffer
+  int depth;
+  int seldepth;
+  long time;
+  size_t nodes;
+  int nps;
+  std::string score;
+  std::vector<Turn> pv;
+
+  // control
   std::atomic_bool debug_enabled = false;
   std::atomic_bool ready_flag = true;
 };
 
 void sendCritical(const std::string& message) {
-  std::cerr << "critical error:  " << message << std::endl;
+  std::cerr << "critical error: " << message << std::endl;
   exit(-1);
 }

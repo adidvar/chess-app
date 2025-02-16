@@ -3,6 +3,7 @@
 #include <atomic>
 #include <chesscore/bitboard.hpp>
 #include <cmath>
+#include <format>
 #include <limits>
 
 #include "evaluator.hpp"
@@ -118,9 +119,9 @@ inline Score Score::getStaticValue(const BitBoard &board) {
 
 inline std::string Score::toString(int depth) const {
   if (m_value > k_checkmate_max && m_value < -k_checkmate_max)
-    return std::string("cp ") + std::to_string(m_value / 126.0);
+    return std::format("cp {:.2f}", m_value / 126.0);
   else {
-    return std::string("mate ") + std::to_string(getTurnsToCheckMate(depth));
+    return std::format("mate {}", getTurnsToCheckMate(depth));
   }
 }
 

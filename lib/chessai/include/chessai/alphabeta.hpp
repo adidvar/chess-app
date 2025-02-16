@@ -10,7 +10,8 @@ class Search : public SearchContext {
  public:
   Search(SearchSettings settings) : SearchContext(settings) {}
 
-  void iterativeSearch(Score a = Score::min(), Score b = Score::max()) {
+  void iterativeSearch() {
+    Score a = Score::min(), b = Score::max();
     std::pair<Score, Turn> result = {{}, {}};
     int depth = 1;
 
@@ -29,19 +30,71 @@ class Search : public SearchContext {
 
       if (!temp_result.first.isValid() || !temp_result.first.isValid()) break;
 
+      auto elapsed = duration_cast<milliseconds>(clock::now() - begin).count();
+
       result = temp_result;
-      m_settings.feedback->sendDepth(depth);
-      m_settings.feedback->sendScore(temp_result.first.toString(depth));
-      m_settings.feedback->sendTurn(temp_result.second);
-      m_settings.feedback->sendNodesSearched(m_counter.getPosition());
-      m_settings.feedback->sendTimeElapsed(
-          duration_cast<milliseconds>(clock::now() - begin).count());
+      m_settings.feedback->setDepth(depth);
+      m_settings.feedback->setSelDepth(depth);
+      m_settings.feedback->setScore(temp_result.first.toString(depth));
+      m_settings.feedback->setPVLine(searchPV(temp_result, depth));
+      m_settings.feedback->setNodesSearched(m_counter.getPosition());
+      m_settings.feedback->setTimeElapsed(elapsed);
+      m_settings.feedback->setNPS(m_counter.getPosition() / (elapsed / 1000.0));
+      m_settings.feedback->flush();
+
+      if (m_counter.getPosition() > m_settings.nodes) break;  // nodes limit
+      if (elapsed > m_settings.time) break;                   // time soft limit
     }
     m_settings.feedback->sendBestMove(result.second);
   }
 
+  void mateSearch() {
+    /*
+    using clock = std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+
+    auto begin = clock::now();
+
+    unsigned founded_mate = -1;
+
+    for (int depth = 1; depth <= m_settings.depth; depth++) {
+      std::pair<Score, Turn> temp_result;
+      if (m_settings.board.getCurrentSide() == Color::White)
+        temp_result = searchTurn<true>(depth);
+      else
+        temp_result = searchTurn<false>(depth);
+
+      if (!temp_result.first.isValid() || !temp_result.first.isValid()) break;
+
+      auto elapsed = duration_cast<milliseconds>(clock::now() - begin).count();
+
+      m_settings.feedback->setDepth(depth);
+      m_settings.feedback->setSelDepth(depth);
+      m_settings.feedback->setScore(temp_result.first.toString(depth));
+      m_settings.feedback->setPVLine(searchPV(temp_result, depth));
+      m_settings.feedback->setNodesSearched(m_counter.getPosition());
+      m_settings.feedback->setTimeElapsed(elapsed);
+      m_settings.feedback->setNPS(m_counter.getPosition() / (elapsed / 1000.0));
+      m_settings.feedback->flushMate();
+
+      if (m_counter.getPosition() > m_settings.nodes) break;  // nodes limit
+      if (elapsed > m_settings.time) break;                   // time soft limit
+    }
+*/
+  }
+
  private:
-  std::vector<Turn> searchPV() {}
+  std::vector<Turn> searchPV(std::pair<Score, Turn> pair, int depth) {
+    std::vector<Turn> results{pair.second};
+    BitBoard board = m_settings.board;
+    board = board.executeTurn(board.getCurrentSide(), pair.second);
+    depth--;
+    for (int i = 0; i < depth; i++) {
+    }
+
+    return results;
+  }
 
   template <bool min_max>
   Score search(ThreadContext *context, Score alpha, Score beta, int depth) {
