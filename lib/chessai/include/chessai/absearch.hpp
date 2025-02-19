@@ -84,6 +84,8 @@ inline std::pair<Score, Turn> alphaBetaTurn(const BitBoard &board,
     Score score;
     alphaBetaWrapper(BitBoard(board, turns[i]), context, alpha, beta, depth - 1,
                      [&score](Score temp) { score = temp; });
+    if (!score.isValid()) return {{}, {}};
+
     if (mode) {
       if (score > bscore) {
         bscore = score;

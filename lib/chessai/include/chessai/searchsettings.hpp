@@ -19,6 +19,12 @@ struct SearchSettings {
   int depth =
       std::numeric_limits<int>::max();  // depth we have to calculate moves
 
+  void resetLimits() {
+    time = std::numeric_limits<float>::max();
+    nodes = std::numeric_limits<long>::max();
+    depth = std::numeric_limits<int>::max();
+  }
+
   // additional options
   std::vector<Turn> moves = {};  // moves to analyze
 };
