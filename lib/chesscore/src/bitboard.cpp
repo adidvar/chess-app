@@ -765,9 +765,8 @@ BitBoard::Flags BitBoard::getFlags() const noexcept
     return m_flags;
 }
 
-Color BitBoard::getCurrentSide() const noexcept
-{
-    return (m_flags & Flags::flags_color) ? Color::Black : Color::White;
+Color BitBoard::side() const noexcept {
+  return (m_flags & Flags::flags_color) ? Color::Black : Color::White;
 }
 
 template <BitBoard::Flags flags>
@@ -910,7 +909,7 @@ bool BitBoard::testTurn(Turn turn) const {
   Turn turns[BitBoard::MaxTurns];
 
   bool mate;
-  getTurns(getCurrentSide(), turns, mate);
+  getTurns(side(), turns, mate);
 
   return std::find(std::begin(turns), std::end(turns), turn) != std::end(turns);
 }

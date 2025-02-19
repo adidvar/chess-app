@@ -3,65 +3,14 @@
 
 #include "chessai/computer.hpp"
 #include "parser.hpp"
+#include "tools.hpp"
 #include "writter.hpp"
 
 class UCI : public Parser {
  public:
   UCI() {
-    feedback.reset(new UCIFeedBack());
-    settings.feedback = std::dynamic_pointer_cast<IFeedBack>(feedback);
-    settings.depth = 7;
+    settings.feedback.reset(dynamic_cast<IFeedBack *>(this), [](auto ptr) {});
   }
-
-  virtual void debug(bool enable) override { feedback->setDebugMode(enable); }
-
-  void uci() override {
-    id();
-    uciOk();
-  }
-
-  void stop() override {
-    if (feedback->getReadyFlag() == false) computer.Abort();
-  }
-
-  void quit() override {
-    exit(0);
-  }
-
-  void isReady() override {
-    readyOk();
-  }
-
-  void ponderHit() override {
-  }
-
-  void uciNewGame() override { stop(); }
-
-  void setOption(const std::string& name, const std::string& value) override {
-  }
-
-  void position(const BitBoard& fen, const std::vector<Turn>& moves) override {
-    BitBoard board(fen);
-    for (auto turn : moves) {
-      if (!turn.isValid()) throw std::runtime_error("Invalid turn");
-      if (!board.testTurn(turn)) throw std::runtime_error("Invalid turn");
-
-      board = board.executeTurn(board.getCurrentSide(), turn);
-    }
-    settings.board = board;
-  }
-
-  void go(const std::string& parameters) override {
-    if (feedback->getReadyFlag() == true) {
-      computer.Start(settings);
-      feedback->resetReadyFlag();
-    }
-  }
-
- private:
-  Computer computer;
-  SearchSettings settings;
-  std::shared_ptr<UCIFeedBack> feedback;
 
   void id() {
     Writter::idName("chess-app");
@@ -76,7 +25,84 @@ class UCI : public Parser {
     Writter::readyOk();
   }
 
-  void bestMove(const std::string& move, const std::string& ponder = "") {
-    Writter::bestMove(move, ponder);
+  virtual void debug(bool enable) override {
+    setDebugMode(enable);
   }
+
+  void uci() override {
+    id();
+    uciOk();
+  }
+
+  void stop() override {
+    if (getReadyFlag() == false) computer.Abort();
+  }
+
+  void quit() override {
+    exit(0);
+  }
+
+  void isReady() override {
+    readyOk();
+  }
+
+  void uciNewGame() override {
+    stop();
+  }
+
+  void setOption(const std::string &name, const std::string &value) override {}
+
+  void position(const BitBoard &fen) override {
+    settings.board = fen;
+  }
+
+  void go() override {
+    if (getReadyFlag() == true) {
+      computer.Start(settings);
+      resetReadyFlag();
+    }
+  }
+
+  void goPerft(int depth) override {
+    perft(settings.board, depth);
+  }
+
+  virtual void goMate(int depth) override {
+    sendInfo("mate search");
+  }
+  virtual void goTimeControl(int wsec, int bsec, int winc, int binc) override {
+    int remainingTime = (settings.board.side() == Color::White) ? wsec : bsec;
+    int increment = (settings.board.side() == Color::White) ? winc : binc;
+
+    settings.time = std::min(remainingTime / 20 + increment, remainingTime / 2);
+
+    sendInfo("time controll: auto");
+    sendInfo(std::format("time: {}", settings.time));
+  };
+  virtual void goTime(int msec) override {
+    settings.time = msec;
+    sendInfo("time controll: time");
+    sendInfo(std::format("time: {}", settings.time));
+  };
+  virtual void goDepth(int depth) override {
+    settings.depth = depth;
+    sendInfo("depth controll: enabled");
+  };
+  virtual void goNodes(long nodes) override {
+    settings.nodes = nodes;
+    sendInfo("nodes controll: enabled");
+  };
+  virtual void goMoves(std::vector<Turn> turns) override {
+    settings.moves = turns;
+    sendInfo("nodes moves: enabled");
+  };
+  virtual void goInfinite() override {
+    settings.resetLimits();
+    sendInfo("time controll: infinite");
+  };
+  virtual void goMovesToGo(int moves) override {};
+
+ private:
+  Computer computer;
+  SearchSettings settings;
 };

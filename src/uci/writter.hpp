@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <format>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -8,7 +9,7 @@
 #include "chessai/ifeedback.hpp"
 #include "chesscore/figures.hpp"
 
-class Writter {
+class Writter : public IFeedBack {
  public:
   static void idName(const std::string& name) {
     std::cout << "id name " << name << std::endl;
@@ -26,8 +27,8 @@ class Writter {
     std::cout << "readyok" << std::endl;
   }
 
-  static void option(const std::string& name, const std::string& type,
-                     const std::string& defaultValue = "", int min = 0, int max = 0) {
+  void option(const std::string& name, const std::string& type,
+              const std::string& defaultValue = "", int min = 0, int max = 0) {
     std::cout << "option name " << name << " type " << type;
     if (!defaultValue.empty()) {
       std::cout << " default " << defaultValue;
@@ -38,110 +39,86 @@ class Writter {
     std::cout << std::endl;
   }
 
-  static void bestMove(const std::string& move, const std::string& ponder = "") {
-    std::cout << "bestmove " << move;
-    if (!ponder.empty()) {
-      std::cout << " ponder " << ponder;
-    }
-    std::cout << std::endl;
-  }
-
-  static void info(const std::string& key, const std::string& value) {
-    std::cout << "info " << key << " " << value << std::endl;
-  }
-
-  static void infoPv(const std::vector<Turn>& moves) {
-    std::cout << "info pv";
-    for (const auto& move : moves) {
-      std::cout << " " << move.toString();
-    }
-    std::cout << std::endl;
-  }
-
-  static void debug(const std::string& message) {
-    std::cout << "info string debug: " << message << std::endl;
-  }
-
-  static void info(const std::string& message) {
-    std::cout << "info string info: " << message << std::endl;
-  }
-
-  static void warning(const std::string& message) {
-    std::cout << "info string warning: " << message << std::endl;
-  }
-
-  static void error(const std::string& message) {
-    std::cout << "info string error: " << message << std::endl;
-  }
-
-  static void critical(const std::string& message) {
-    std::cout << "info string critical: " << message << std::endl;
-  }
-};
-
-class UCIFeedBack : public IFeedBack {
- public:
-  virtual void sendBestMove(Turn bestMove) {
+  virtual void sendBestMove(Turn bestMove) override {
     std::cout << "bestmove " << bestMove.toString() << std::endl;
     ready_flag.store(true);
   }
 
-  virtual void sendDepth(int depth) {
-    std::cout << "info depth " << depth << std::endl;
+  virtual void setDepth(int depth) override {
+    this->depth = depth;
   }
-
-  virtual void sendScore(const std::string& score) {
-    std::cout << "info score " << score << std::endl;
+  virtual void setSelDepth(int depth) override {
+    this->seldepth = depth;
   }
-
-  virtual void sendTurn(Turn turn) {
-    std::cout << "info turn " << turn.toString() << std::endl;
+  virtual void setTimeElapsed(int milliseconds) override {
+    this->time = milliseconds;
   }
-
-  virtual void sendNodesSearched(size_t nodes) {
-    std::cout << "info nodes " << nodes << std::endl;
+  virtual void setNodesSearched(size_t nodes) override {
+    this->nodes = nodes;
   }
-
-  virtual void sendTimeElapsed(int milliseconds) {
-    std::cout << "info time " << milliseconds << std::endl;
+  virtual void setNPS(size_t nodes) override {
+    this->nps = nodes;
   }
-
-  virtual void sendPVLine(const std::vector<Turn>& pvLine) {
-    std::cout << "info pv";
-    for (const auto& move : pvLine) {
-      std::cout << " " << move.toString();
-    }
+  virtual void setScore(const std::string& score) override {
+    this->score = score;
+  }
+  virtual void setPVLine(const std::vector<Turn>& pvLine) override {
+    this->pv = pvLine;
+  }
+  virtual void flush() override {
+    std::cout << std::format(
+        "info depth {} seldepth {} score {} nodes {} nps {} time {} pv ", depth,
+        seldepth, score, nodes, nps, time);
+    for (auto turn : pv) std::cout << turn.toString() << " ";
     std::cout << std::endl;
-  }
+  };
 
-  virtual void sendDebug(const std::string& message) {
+  virtual void sendDebug(const std::string& message) override {
     if (debug_enabled.load())
-      std::cout << "info string debug: " << message << std::endl;
+      std::cout << "info string " << message << std::endl;
   }
 
-  virtual void sendInfo(const std::string& message) {
-    std::cout << "info string info: " << message << std::endl;
+  virtual void sendInfo(const std::string& message) override {
+    std::cout << "info string " << message << std::endl;
   }
 
-  virtual void sendWarning(const std::string& message) {
-    std::cout << "info string warning: " << message << std::endl;
+  virtual void sendWarning(const std::string& message) override {
+    std::cout << "info string warning " << message << std::endl;
   }
 
-  virtual void sendError(const std::string& message) {
-    std::cout << "info string error: " << message << std::endl;
+  virtual void sendError(const std::string& message) override {
+    debug_enabled.store(true);
+    std::cout << "info string error " << message << std::endl;
   }
 
-  virtual void sendCritical(const std::string& message) {
-    std::cout << "info string critical: " << message << std::endl;
-  }
+  void setDebugMode(bool enabled) {
+    debug_enabled.store(enabled);
+  };
+  bool getReadyFlag() const {
+    return ready_flag.load();
+  };
+  void resetReadyFlag() {
+    ready_flag.store(false);
+  };
 
-  void setDebugMode(bool enabled) { debug_enabled.store(enabled); };
-  bool getReadyFlag() const { return ready_flag.load(); };
-  void resetReadyFlag() { ready_flag.store(false); };
-
-  virtual ~UCIFeedBack() = default;
+  virtual ~Writter() = default;
 
  private:
+  // buffer
+  int depth;
+  int seldepth;
+  long time;
+  size_t nodes;
+  int nps;
+  std::string score;
+  std::vector<Turn> pv;
+
+  // control
   std::atomic_bool debug_enabled = false;
   std::atomic_bool ready_flag = true;
 };
+
+void sendCritical(const std::string& message) {
+  std::cerr << "critical error: " << message << std::endl;
+  exit(-1);
+}

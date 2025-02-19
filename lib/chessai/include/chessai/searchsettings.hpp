@@ -1,7 +1,7 @@
 #pragma once
 
+#include <limits>
 #include <memory>
-#include <optional>
 
 #include "chesscore/bitboard.hpp"
 #include "ifeedback.hpp"
@@ -11,20 +11,20 @@ struct SearchSettings {
   BitBoard board;
   std::shared_ptr<IFeedBack> feedback{new IFeedBack()};
 
-  // time controll parameters
-  const int default_time = 6000;  // when no parameters
-  bool infinite = false;
-  std::optional<int> depth = 20;
-  std::optional<int> mate = 20;
-  std::optional<int> nodes = 0;
-  std::optional<float> move_time;
-  std::optional<float> w_time;
-  std::optional<float> w_inc;
-  std::optional<float> b_time;
-  std::optional<float> b_inc;
-  std::optional<float> moves_to_go;
+  // stop parameters
+  float time =
+      std::numeric_limits<float>::max();  // time we have to calculate moves
+  long nodes =
+      std::numeric_limits<long>::max();  // nodes we have to calculate moves
+  int depth =
+      std::numeric_limits<int>::max();  // depth we have to calculate moves
+
+  void resetLimits() {
+    time = std::numeric_limits<float>::max();
+    nodes = std::numeric_limits<long>::max();
+    depth = std::numeric_limits<int>::max();
+  }
 
   // additional options
-  bool ponder = false;
-  std::vector<Turn> search_moves = {};
+  std::vector<Turn> moves = {};  // moves to analyze
 };
