@@ -62,11 +62,11 @@ static size_t Counter(const BitBoard &board, size_t depth)
     size_t counter = 0;
     bool is_mate;
     Turn turns[216];
-    int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
+    int count = board.getTurns(board.side(), turns, is_mate);
     if (depth == 1)
         return count;
     for (int i = 0; i < count; i++) {
-        counter += Counter(board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
+        counter += Counter(board.executeTurn(board.side(), turns[i]), depth - 1);
     }
     return counter;
 }

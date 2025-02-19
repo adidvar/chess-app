@@ -34,7 +34,7 @@ public:
 
  [[nodiscard]] Figure get(Position position) const noexcept;
  [[nodiscard]] Flags getFlags() const noexcept;
- [[nodiscard]] Color getCurrentSide() const noexcept;
+ [[nodiscard]] Color side() const noexcept;
 
  int getTurns(Color color, Turn *out, bool &in_check) const;
 
@@ -228,4 +228,4 @@ constexpr void BitBoard::promoteBlackFigure(bitboard position, Figure figure)
 }
 
 inline BitBoard::BitBoard(const BitBoard &board, Turn turn)
-    : BitBoard(board.executeTurn(board.getCurrentSide(), turn)) {}
+    : BitBoard(board.executeTurn(board.side(), turn)) {}

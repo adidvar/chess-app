@@ -10,10 +10,10 @@ inline size_t countPerft(const BitBoard &board, size_t depth) {
   size_t counter = 0;
   bool is_mate;
   Turn turns[216];
-  int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
+  int count = board.getTurns(board.side(), turns, is_mate);
   if (depth == 1) return count;
   for (int i = 0; i < count; i++) {
-    counter += countPerft(board.executeTurn(board.getCurrentSide(), turns[i]),
+    counter += countPerft(board.executeTurn(board.side(), turns[i]),
                           depth - 1);
   }
   return counter;
@@ -32,10 +32,10 @@ inline void perft(const BitBoard &board, int depth) {
   size_t counter = 0;
   bool is_mate;
   Turn turns[216];
-  int count = board.getTurns(board.getCurrentSide(), turns, is_mate);
+  int count = board.getTurns(board.side(), turns, is_mate);
   for (int i = 0; i < count; i++) {
     int subcounter = countPerft(
-        board.executeTurn(board.getCurrentSide(), turns[i]), depth - 1);
+        board.executeTurn(board.side(), turns[i]), depth - 1);
     std::cout << turns[i].toString() << ": " << subcounter << std::endl;
     counter += subcounter;
   }

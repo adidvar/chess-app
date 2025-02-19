@@ -98,7 +98,7 @@ class Parser : public Reader, public Writter {
           sendWarning("invalid turn");
           return;
         }
-        fen = fen.executeTurn(fen.getCurrentSide(), turn);
+        fen = fen.executeTurn(fen.side(), turn);
       }
       position(fen);
     } catch (const FenError& error) {
