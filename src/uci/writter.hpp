@@ -67,7 +67,7 @@ class Writter : public IFeedBack {
   }
   virtual void flush() override {
     std::cout << std::format(
-        "depth {} seldepth {} score {} nodes {} nps {} time {} pv ", depth,
+        "info depth {} seldepth {} score {} nodes {} nps {} time {} pv ", depth,
         seldepth, score, nodes, nps, time);
     for (auto turn : pv) std::cout << turn.toString() << " ";
     std::cout << std::endl;
