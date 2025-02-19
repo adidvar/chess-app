@@ -17,4 +17,5 @@ class Computer{
  private:
   std::unique_ptr<SearchContext> m_search;
   std::unique_ptr<std::thread> m_thread;
+  std::unique_ptr<std::thread> m_timer;
 };
