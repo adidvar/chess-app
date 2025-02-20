@@ -478,9 +478,9 @@ class BitBoardHelper
             bitboard pawns_possible_left = pawnsShift<9>(pawns) & enemies & to_attack_mask
                                            & chooseMask(~row_h, ~row_a)
                                            & chooseMask(~line_8, ~line_1);
-            bitboard pawns_possible_right = pawnsShift<7>(pawns) & enemies & to_attack_mask
-                                            & chooseMask(~row_a, ~row_h)
-                                            & chooseMask(~line_8, ~line_1);
+            bitboard pawns_possible_right =
+                pawnsShift<7>(pawns) & enemies & to_attack_mask &
+                chooseMask(~row_a, ~row_h) & chooseMask(~line_8, ~line_1);
 
             bitboard pawns_promotion = pawns & chooseMask(line_7, line_2);
 
@@ -866,10 +866,11 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
             copy.promoteWhiteFigure(to, turn.figure());
         }
 
-        //for el_passant
-        if ((from & m_w_p & line_5) && (to & ((from >> 9) | (from >> 7)))) {
-            if (to & ~copy.getBlacks())
-                copy.m_b_p &= ~(to << 8);
+        // for el_passant
+        if ((m_flags & flags_el_passant) &&
+            (positionToMask(m_turn.to()) & m_b_p) && (from & m_w_p & line_5) &&
+            (to & ((from >> 9) | (from >> 7)))) {
+          if (to & ~copy.getBlacks()) copy.m_b_p &= ~(to << 8);
         }
 
         //rook moving for castling
@@ -888,10 +889,11 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
             copy.promoteBlackFigure(to, turn.figure());
         }
 
-        //for el_passant
-        if ((from & m_b_p & line_4) && (to & ((from << 9) | (from << 7)))) {
-            if (to & ~copy.getWhites())
-                copy.m_w_p &= ~(to >> 8);
+        // for el_passant
+        if ((m_flags & flags_el_passant) &&
+            (positionToMask(m_turn.to()) & m_w_p) && (from & m_b_p & line_4) &&
+            (to & ((from << 9) | (from << 7)))) {
+          if (to & ~copy.getWhites()) copy.m_w_p &= ~(to >> 8);
         }
 
         //rook moving for castling

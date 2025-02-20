@@ -248,6 +248,9 @@ TEST_CASE("BitBoard generation tests", "[bitboard][generation]") {
     REQUIRE(Counter(BitBoard(), 2) == 400);
     REQUIRE(Counter(BitBoard(), 3) == 8902);
     REQUIRE(Counter(BitBoard(), 4) == 197281);
+    REQUIRE(Counter(BitBoard(), 5) == 4865609);
+    REQUIRE(Counter(BitBoard(), 6) == 119060324);
+    REQUIRE(Counter(BitBoard(), 7) == 3195901860);
 
     REQUIRE(MateTest(BitBoard{"Q3k3/Q7/8/8/8/8/8/3K4 b - - 1 1"}) == true);
     REQUIRE(MateTest(BitBoard{"4k3/Q7/8/8/8/8/8/3K3Q b - - 1 1"}) == false);
