@@ -53,6 +53,7 @@ class UCI : public Parser {
   void setOption(const std::string &name, const std::string &value) override {}
 
   void position(const BitBoard &fen) override {
+    sendDebug(fen.fen());
     settings.board = fen;
   }
 
