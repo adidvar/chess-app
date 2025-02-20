@@ -209,29 +209,31 @@ def compare_perft_at_position(engine1, engine2, position, depth, move_history=No
         return []
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <engine1_path> <engine2_path> <depth>")
-        print("Example: python script.py ./myengine ./stockfish 7")
+    if len(sys.argv) != 5:
+        print("Usage: python script.py <engine1_path> <engine2_path> <depth> <FEN>")
+        print("Example: python script.py ./myengine ./stockfish 7 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'")
         return
 
     engine1_path = sys.argv[1]
     engine2_path = sys.argv[2]
     depth = int(sys.argv[3])
+    fen = sys.argv[4]
 
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Starting perft comparison")
     print(f"Engine 1: {engine1_path}")
     print(f"Engine 2: {engine2_path}")
     print(f"Depth: {depth}")
+    print(f"FEN: {fen}")
 
     try:
         engine1 = ChessEngine(engine1_path)
         engine2 = ChessEngine(engine2_path)
 
         print(f"\nStarting recursive perft analysis to depth {depth}...")
-        differences = compare_perft_at_position(engine1, engine2, "startpos", depth)
+        differences = compare_perft_at_position(engine1, engine2, fen, depth)
 
         if not differences:
-            print("\nNo differences found between engines at the starting position!")
+            print("\nNo differences found between engines at the given position!")
 
     except Exception as e:
         print(f"Error: {str(e)}")
