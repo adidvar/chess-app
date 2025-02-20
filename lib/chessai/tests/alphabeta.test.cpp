@@ -52,7 +52,7 @@ TEST_CASE("Search logic testing", "[search]") {
                 "4r3/1pp2rbk/6pn/4n3/P3BN1q/1PB2bPP/8/2Q1RRK1 b - - 0 31", 3) ==
             "h4g3");
     REQUIRE(testComputer("4r1k1/4r1p1/8/p2R1P1K/5P1P/1QP3q1/1P6/3R4 b - - 0 1",
-                         4) == "g7g6");
+                         6) == "g7g6");
   }
 
   SECTION("Good turns testing") { REQUIRE(true); }

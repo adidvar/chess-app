@@ -16,10 +16,6 @@ size_t getTurns(BitBoard board) {
 int main()
 {
   std::cout << getTurns(
-      BitBoard{"rnbqkbnr/pppppp1p/8/8/7P/3P3p/PPP1PPP1/RNBQKBN1 w Qkq - 0 1"});
-  std::cout
-      << BitBoard{"rnbqkbnr/pppppp1p/8/8/6pP/3P3R/PPP1PPP1/RNBQKBN1 w Qkq - 0 1"}
-             .executeTurn(Color::White, Turn("g4h3"))
-             .fen();
+      BitBoard{"7k/1p2N3/p4p2/1r1p2p1/8/P7/5KPP/5RR1 w - - 0 0"});
   return 0;
 }

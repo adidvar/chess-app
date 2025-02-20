@@ -347,8 +347,10 @@ class BitBoardHelper
             bitboard b_attack_mask = processBishop(king_position, all);
             bitboard r_attack_mask = processRook(king_position, all);
 
-            bitboard pawns_attack = (pawnsShift<9>(bit) | pawnsShift<7>(bit))
-                                    & getEnemyPawns(board);
+            bitboard pawns_attack =
+                (pawnsShift<9>(bit & chooseMask(~row_a, ~row_h)) |
+                 pawnsShift<7>(bit & chooseMask(~row_h, ~row_a))) &
+                getEnemyPawns(board);
             bitboard knights_attack = n_attack_mask & getEnemyKnights(board);
             bitboard bishop_attack = b_attack_mask & diagonal_enemies;
             bitboard rook_attack = r_attack_mask & orthogonal_enemies;
@@ -507,30 +509,42 @@ class BitBoardHelper
                      bit = takeBit(pawns_possible_right))
                     out[counter++] = generateTurnDelta<7, true>(bit);
 
-                if constexpr (flags & BitBoard::flags_el_passant) {
-                    bitboard to_mask = positionToMask(
-                        (board.m_turn.from().index() + board.m_turn.to().index()) / 2);
+                if constexpr ((flags & BitBoard::flags_el_passant)) {
+                  bitboard to_mask =
+                      positionToMask((board.m_turn.from().index() +
+                                      board.m_turn.to().index()) /
+                                     2);
 
-                    bitboard attack_cell = pawnsShift<-8>(to_mask) & getEnemyPawns(board);
-                    bool enabled = (attack_cell & getEnemyPawns(board)) > 0;
-                    bool sub_enabled = false;
-                    // el passant rules when we in mate
-                    if constexpr (generate_attack)
-                        sub_enabled = sub_enabled || ((attack_cell & to_attack_mask) > 0);
-                    if constexpr (generate_moves)
-                        sub_enabled = sub_enabled || ((to_mask & to_move_mask) > 0);
-                    enabled = enabled && sub_enabled;
+                  bitboard attack_cell =
+                      pawnsShift<-8>(to_mask) & getEnemyPawns(board);
+                  bool enabled = (attack_cell & getEnemyPawns(board)) > 0;
+                  bool sub_enabled = false;
+                  // el passant rules when we in mate
+                  if constexpr (generate_attack)
+                    sub_enabled =
+                        sub_enabled || ((attack_cell & to_attack_mask) > 0);
+                  if constexpr (generate_moves)
+                    sub_enabled = sub_enabled || ((to_mask & to_move_mask) > 0);
+                  enabled = enabled && sub_enabled;
 
-                    if (((pawnsShift<9>(pawns) & chooseMask(~row_h, ~row_a) & to_mask)) && enabled) {
-                        bitboard new_blockers = all & (~attack_cell) & (~pawnsShift<-9>(to_mask));
-                        if (!isMate(new_blockers))
-                            out[counter++] = generateTurnDelta<9, true>(to_mask);
-                    }
-                    if (((pawnsShift<7>(pawns) & chooseMask(~row_a, ~row_h) & to_mask)) && enabled) {
-                        bitboard new_blockers = all & (~attack_cell) & (~pawnsShift<-7>(to_mask));
-                        if (!isMate(new_blockers))
-                            out[counter++] = generateTurnDelta<7, true>(to_mask);
-                    }
+                  if (((pawnsShift<9>(pawns) & chooseMask(~row_h, ~row_a) &
+                        to_mask)) &&
+                      enabled) {
+                    bitboard new_blockers =
+                        (all & (~attack_cell) & (~pawnsShift<-9>(to_mask))) |
+                        to_mask;
+                    if (!isMate(new_blockers))
+                      out[counter++] = generateTurnDelta<9, true>(to_mask);
+                  }
+                  if (((pawnsShift<7>(pawns) & chooseMask(~row_a, ~row_h) &
+                        to_mask)) &&
+                      enabled) {
+                    bitboard new_blockers =
+                        (all & (~attack_cell) & (~pawnsShift<-7>(to_mask))) |
+                        to_mask;
+                    if (!isMate(new_blockers))
+                      out[counter++] = generateTurnDelta<7, true>(to_mask);
+                  }
                 }
             }
 
@@ -856,6 +870,9 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
     else
         copy.m_flags = (Flags) (copy.m_flags | flags_color);
 
+    bitboard el_passant =
+        positionToMask((m_turn.from().index() + m_turn.to().index()) / 2);
+
     if (color == Color::White) {
         copy.moveFromToWhite(from, to);
         copy.removeBlackFigure(~to);
@@ -867,7 +884,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
         }
 
         // for el_passant
-        if ((m_flags & flags_el_passant) &&
+        if ((m_flags & flags_el_passant) && (el_passant & to) &&
             (positionToMask(m_turn.to()) & m_b_p) && (from & m_w_p & line_5) &&
             (to & ((from >> 9) | (from >> 7)))) {
           if (to & ~copy.getBlacks()) copy.m_b_p &= ~(to << 8);
@@ -875,10 +892,10 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
 
         //rook moving for castling
         if (from & "e1"_bm)
-            if (to & "g1"_bm)
-                copy.moveFromToWhite("h1"_bm, "f1"_bm);
-            else if (to & "c1"_bm)
-                copy.moveFromToWhite("a1"_bm, "d1"_bm);
+          if ((m_flags & flags_white_oo) && (to & "g1"_bm))
+            copy.moveFromToWhite("h1"_bm, "f1"_bm);
+          else if ((m_flags & flags_white_ooo) && (to & "c1"_bm))
+            copy.moveFromToWhite("a1"_bm, "d1"_bm);
     } else {
         copy.moveFromToBlack(from, to);
         copy.removeWhiteFigure(~to);
@@ -890,7 +907,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
         }
 
         // for el_passant
-        if ((m_flags & flags_el_passant) &&
+        if ((m_flags & flags_el_passant) && (el_passant & to) &&
             (positionToMask(m_turn.to()) & m_w_p) && (from & m_b_p & line_4) &&
             (to & ((from << 9) | (from << 7)))) {
           if (to & ~copy.getWhites()) copy.m_w_p &= ~(to >> 8);
@@ -898,10 +915,10 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
 
         //rook moving for castling
         if (from & "e8"_bm)
-            if (to & "g8"_bm)
-                copy.moveFromToBlack("h8"_bm, "f8"_bm);
-            else if (to & "c8"_bm)
-                copy.moveFromToBlack("a8"_bm, "d8"_bm);
+          if ((m_flags & flags_black_oo) && (to & "g8"_bm))
+            copy.moveFromToBlack("h8"_bm, "f8"_bm);
+          else if ((m_flags & flags_black_ooo) && (to & "c8"_bm))
+            copy.moveFromToBlack("a8"_bm, "d8"_bm);
     }
     copy.m_turn = turn;
     return copy;
