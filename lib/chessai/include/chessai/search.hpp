@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "eventcounter.hpp"
+#include "hktable.hpp"
 #include "searchsettings.hpp"
 
 class ThreadContext {
@@ -14,27 +15,42 @@ class ThreadContext {
       : color(color), stop(flag), counter(counter) {}
 
   const BitBoard &top() {
-    return boards_stack.top();
+    return stack.top();
   }
-  void initBoard(const BitBoard &board) {
-    boards_stack.emplace(board);
+  void initBoard(const BitBoard &board, unsigned depth) {
+    stack.emplace(board);
+    this->depth = depth;
   }
   void clearBoard() {
-    while (!boards_stack.empty()) undoTurn();
+    while (!stack.empty()) undoTurn();
   }
   void undoTurn() {
-    boards_stack.pop();
+    stack.pop();
   }
   void applyTurn(Turn turn) {
-    boards_stack.emplace(boards_stack.top(), turn);
+    stack.emplace(stack.top(), turn);
+  }
+
+  void incTurn(Turn turn, unsigned depth) {
+    table.increment(turn, this->depth - depth);
+  }
+
+  size_t getK(Turn turn, unsigned depth) {
+    return table.getK(turn, this->depth - depth);
+  }
+
+  size_t getH(Turn turn) {
+    return table.getH(turn);
   }
 
   const Color color;
   const StopFlag &stop;
   EventCounter &counter;
+  HKTable table;
 
  private:
-  std::stack<BitBoard> boards_stack;
+  std::stack<BitBoard> stack;
+  unsigned depth;
 };
 
 class SearchContext {

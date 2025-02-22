@@ -1,103 +1,50 @@
 #pragma once
 
-/*
-inline void sortMoves(const BitBoard &board, std::vector<BitBoard> &vector,
-                    Score a, Score b, const HKTable &bftable,
-                    const TTable *const ttable, int depthleft, int depthmax,
-                    Turn pv) {
-  constexpr int history_scale = 50;
+#include <algorithm>
 
-  enum TurnTypes {
-    PV = 6,
-    Hashed = 5,
-    PositiveAttack = 4,
-    KillerMoves = 3,
-    NormalMoves = 2,
-    NegativeAttack = 1,
-  };
+#include "search.hpp"
 
-  for (auto &elem : vector) {
-    auto from_pos = elem.turn.from();
-    auto to_pos = elem.turn.to();
+enum class TurnTypes : int32_t {
+  PV = 6,
+  Hashed = 5,
+  PositiveAttack = 4,
+  KillerMoves = 3,
+  NormalMoves = 2,
+  NegativeAttack = 1,
+};
 
-    auto from_figure = board.GetFigure(from_pos);
-    auto to_figure = board.GetFigure(to_pos);
-
-    const TTableItem *element = nullptr;
-    bool found = false;
-    if (ttable != nullptr && (depthmax - depthleft) <= depthmax / 2) {
-      element = ttable->Search(elem.hash, found);
-    }
-
-    if (elem.turn == pv && pv != Turn()) {
-      elem.priority.type = PV;
-      elem.priority.index = 0;
-    } else if (found && -element->value >= a) {
-      elem.priority.type = Hashed;
-      elem.priority.index = -element->value;
-    } else if (to_figure != Figure::kEmpty) {
-      auto delta_price =
-          Score::GetFigureScore(to_figure) - Score::GetFigureScore(from_figure);
-      elem.priority.type =
-          (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
-      elem.priority.index = delta_price;
-    } else if (bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft)) {
-      elem.priority.type = KillerMoves;
-      elem.priority.index =
-          (int)Score::GetFigureScore(from_figure) +
-          bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft) *
-              bftable.GetHistoryCount(elem.turn);
-    } else {
-      elem.priority.type = NormalMoves;
-      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetHistoryCount(elem.turn) * history_scale;
-    }
-  }
-  std::sort(vector.rbegin(), vector.rend());
+inline auto mergePriority(TurnTypes major, int32_t minor) {
+  return (int64_t)major * 4294967296LL + minor;
 }
 
-inline void BFTableReorderer(const BitBoard &board,
-                             std::vector<BitBoardTuple> &vector,
-                             const HKTable &bftable, int depthleft,
-                             int depthmax, Turn pv) {
+inline void sortMoves(ThreadContext *context, Turn *turns, int count,
+                      int depth) {
   constexpr int history_scale = 50;
 
-  enum TurnTypes {
-    PV = 5,
-    PositiveAttack = 4,
-    KillerMoves = 3,
-    NormalMoves = 2,
-    NegativeAttack = 1,
-  };
+  std::pair<int64_t, Turn> temp[216];
 
-  for (auto &elem : vector) {
-    auto from_pos = elem.turn.from();
-    auto to_pos = elem.turn.to();
+  for (int i = 0; i < count; i++) {
+    auto from_pos = turns[i].from();
+    auto to_pos = turns[i].to();
 
-    auto from_figure = board.GetFigure(from_pos);
-    auto to_figure = board.GetFigure(to_pos);
+    auto from_figure = context->top().get(from_pos);
+    auto to_figure = context->top().get(to_pos);
 
-    if (elem.turn == pv && pv != Turn()) {
-      elem.priority.type = PV;
-      elem.priority.index = 0;
-    } else if (to_figure != Figure::kEmpty) {
-      auto delta_price =
-          Score::GetFigureScore(to_figure) - Score::GetFigureScore(from_figure);
-      elem.priority.type =
-          (int)delta_price >= 0 ? PositiveAttack : NegativeAttack;
-      elem.priority.index = delta_price;
-    } else if (bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft)) {
-      elem.priority.type = KillerMoves;
-      elem.priority.index =
-          (int)Score::GetFigureScore(from_figure) +
-          bftable.GetKillerMoveCount(elem.turn, depthmax - depthleft) *
-              bftable.GetHistoryCount(elem.turn);
-    } else {
-      elem.priority.type = NormalMoves;
-      elem.priority.index = (int)Score::GetFigureScore(from_figure) +
-                            bftable.GetHistoryCount(elem.turn) * history_scale;
+    if (to_figure != Figure::Empty) {  // attacks
+      temp[i].first = mergePriority(TurnTypes::PositiveAttack, 0);
+    } else {  // normal moves
+      temp[i].first =
+          mergePriority(TurnTypes::NormalMoves,
+                        history_scale * context->getK(turns[i], depth) +
+                            context->getH(turns[i]));
     }
+    temp[i].second = turns[i];
   }
-  std::sort(vector.rbegin(), vector.rend());
+
+  std::sort(temp, temp + count,
+            [](auto p1, auto p2) { return p1.first > p2.first; });
+
+  for (int i = 0; i < count; i++) {
+    turns[i] = temp[i].second;
+  }
 }
-*/
