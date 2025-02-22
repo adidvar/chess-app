@@ -7,9 +7,9 @@
 
 class HKTable {
  public:
-  void increment(Turn turn, uint8_t depth);
-  [[nodiscard]] size_t getKillerCount(Turn turn, uint8_t depth) const;
-  [[nodiscard]] size_t getHistoryCount(Turn turn) const;
+  void increment(Turn turn, unsigned depth);
+  [[nodiscard]] size_t getK(Turn turn, unsigned depth) const;
+  [[nodiscard]] size_t getH(Turn turn) const;
   void clear();
 
  private:
@@ -22,7 +22,7 @@ class HKTable {
   Frame m_history_table;
 };
 
-inline void HKTable::increment(Turn turn, uint8_t depth) {
+inline void HKTable::increment(Turn turn, unsigned depth) {
   if (depth >= m_killer_table.size()) [[unlikely]] {
     m_killer_table.resize(depth + 1);
     m_killer_table[depth].data[turn.from().index()][turn.to().index()] += 1;
@@ -33,13 +33,13 @@ inline void HKTable::increment(Turn turn, uint8_t depth) {
   // depth;
 }
 
-inline size_t HKTable::getKillerCount(Turn turn, uint8_t depth) const {
+inline size_t HKTable::getK(Turn turn, unsigned depth) const {
   if (depth >= m_killer_table.size()) [[unlikely]]
     return 0;
   return m_killer_table[depth].data[turn.from().index()][turn.to().index()];
 }
 
-inline size_t HKTable::getHistoryCount(Turn turn) const {
+inline size_t HKTable::getH(Turn turn) const {
   return m_history_table.data[turn.from().index()][turn.to().index()];
 }
 
