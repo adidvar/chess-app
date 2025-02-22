@@ -119,7 +119,7 @@ inline Score Score::getStaticValue(const BitBoard &board) {
 
 inline std::string Score::toString(int depth) const {
   if (m_value > k_checkmate_max && m_value < -k_checkmate_max)
-    return std::format("cp {:.2f}", m_value / 126.0);
+    return std::format("cp {}", static_cast<int>(std::round(m_value / 1.26)));
   else {
     return std::format("mate {}", getTurnsToCheckMate(depth));
   }
