@@ -35,6 +35,6 @@ My pet chess engine
    git clone https://github.com/adidvar/chess-app
    cd chess-app
    cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-   cmake --build --config Release
+   cmake --build . --config Release
    ./build/uci/uci
   ```
