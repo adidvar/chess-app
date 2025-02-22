@@ -136,7 +136,10 @@ inline void iterativeSearch(SearchContext *context) {
     result = temp;
     settings.feedback->setDepth(depth);
     settings.feedback->setSelDepth(depth);
-    settings.feedback->setScore(temp.first.toString(depth));
+    settings.feedback->setScore((context->settings.board.side() == Color::White
+                                     ? temp.first
+                                     : -temp.first)
+                                    .toString(depth));
     settings.feedback->setPVLine({temp.second});
     settings.feedback->setNodesSearched(context->counter.getPosition());
     settings.feedback->setTimeElapsed(elapsed);
