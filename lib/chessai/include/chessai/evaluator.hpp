@@ -11,8 +11,11 @@ class EvaluatedBitBoard : public BitBoard {
   static float toCentiPawns(int value);
 
   ScoreType evaluate() const;
+  ScoreType evaluateSEE(Turn turn) const;
 
  protected:
   int getMaterial() const;
   int getTables() const;
+
+  int getSEE() const;
 };

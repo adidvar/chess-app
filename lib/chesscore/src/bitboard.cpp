@@ -490,12 +490,13 @@ class BitBoardHelper
             enemies &= to_attack_mask;
 
             if constexpr (generate_moves) {
-                for (bitboard bit = takeBit(pawns_possible); bit; bit = takeBit(pawns_possible))
-                    out[counter++] = generateTurnDelta<8, false>(bit);
+              for (bitboard bit = takeBit(pawns_possible); bit;
+                   bit = takeBit(pawns_possible))
+                out[counter++] = generateTurnDelta<8, false>(bit);
 
-                for (bitboard bit = takeBit(pawns_possible_long); bit;
-                     bit = takeBit(pawns_possible_long))
-                    out[counter++] = generateTurnDelta<16, false>(bit);
+              for (bitboard bit = takeBit(pawns_possible_long); bit;
+                   bit = takeBit(pawns_possible_long))
+                out[counter++] = generateTurnDelta<16, false>(bit);
             }
 
             if constexpr (generate_attack) {
@@ -808,6 +809,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
     bitboard from = positionToMask(turn.from());
     bitboard to = positionToMask(turn.to());
 
+    /*
     if (from & 10448351135499550865ull) {
       if (from & 1224979098644774912)  // white king and left rook
         copy.m_flags = (Flags)(copy.m_flags & ~flags_white_ooo);
@@ -850,6 +852,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
             copy.m_flags = (Flags) (copy.m_flags | flags_el_passant);
         }
     }
+*/
 
     if (color != Color::White)
         copy.m_flags = (Flags) (copy.m_flags & ~flags_color);
@@ -858,8 +861,9 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
 
     if (color == Color::White) {
         copy.moveFromToWhite(from, to);
-        copy.removeBlackFigure(~to);
+        // copy.removeBlackFigure(~to);
 
+        /*
         //for promotion
         if (from & m_w_p & line_7) {
             copy.removeWhiteFigure(~to);
@@ -878,10 +882,12 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
                 copy.moveFromToWhite("h1"_bm, "f1"_bm);
             else if (to & "c1"_bm)
                 copy.moveFromToWhite("a1"_bm, "d1"_bm);
+*/
     } else {
         copy.moveFromToBlack(from, to);
-        copy.removeWhiteFigure(~to);
+        // copy.removeWhiteFigure(~to);
 
+        /*
         //for promotion
         if (from & m_b_p & line_2) {
             copy.removeBlackFigure(~to);
@@ -900,6 +906,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const
                 copy.moveFromToBlack("h8"_bm, "f8"_bm);
             else if (to & "c8"_bm)
                 copy.moveFromToBlack("a8"_bm, "d8"_bm);
+*/
     }
     copy.m_turn = turn;
     return copy;

@@ -169,10 +169,11 @@ public:
     constexpr void setFigure(Figure figure);
 
 private:
-    uint16_t m_from : 6;
-    uint16_t m_to : 6;
-    uint16_t m_attack : 1 = false;
-    uint16_t m_figure : 3 = Figure::Empty;
+ uint16_t m_from : 6;
+ uint16_t m_to : 6;
+ uint16_t m_attack : 1 = false;
+ uint16_t m_figure : 3 = Figure::Empty;
+ // uint16_t flags = 0;
 };
 
 static_assert(sizeof(Turn) == 2, "Turn must be exactly 2 bytes!");

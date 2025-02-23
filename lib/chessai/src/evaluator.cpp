@@ -19,6 +19,10 @@ float EvaluatedBitBoard::toCentiPawns(int value) {
   return 20.0 / (1.0 + pow(3.0, -value / 1260.0));
 }
 
+EvaluatedBitBoard::ScoreType EvaluatedBitBoard::evaluateSEE(Turn turn) const {
+  return 0;
+}
+
 constexpr auto p_p = S(126, 208);
 constexpr auto p_n = S(781, 854);
 constexpr auto p_b = S(825, 915);
