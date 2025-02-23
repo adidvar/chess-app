@@ -64,7 +64,7 @@ inline void alphaBetaWrapper(const BitBoard &board, SearchContext *context,
                              Score alpha, Score beta, int depth,
                              Lambda lambda) {
   auto thread_context = context->getContextInstance();
-  thread_context->initBoard(board, depth);
+  thread_context->initBoard(board, depth, 1);
   auto score = (board.side() == Color::White)
                    ? alphaBeta<true>(thread_context, alpha, beta, depth)
                    : alphaBeta<false>(thread_context, alpha, beta, depth);
@@ -77,8 +77,13 @@ inline std::pair<Score, Turn> alphaBetaTurn(const BitBoard &board,
                                             Score beta, int depth) {
   Turn turns[216];
 
+  auto thread_context = context->getContextInstance();
+
+  thread_context->initBoard(board, depth, 0);
+
   bool check;
   int size = board.getTurns(board.side(), turns, check);
+  sortMoves(thread_context, turns, size, depth);
 
   if (size == 0) {
     if (check) return {Score::checkMate(board.side(), depth), Turn()};
@@ -99,17 +104,25 @@ inline std::pair<Score, Turn> alphaBetaTurn(const BitBoard &board,
       if (score > bscore) {
         bscore = score;
         bturn = turns[i];
-        if (score > alpha) alpha = score;
+        if (score > alpha) {
+          alpha = score;
+          thread_context->incTurn(turns[i], depth);
+        }
       }
     } else {
       if (score < bscore) {
         bscore = score;
         bturn = turns[i];
-        if (score < beta) beta = score;
+        if (score < beta) {
+          beta = score;
+          thread_context->incTurn(turns[i], depth);
+        }
       }
     }
     if (beta <= alpha) break;
   }
+
+  thread_context->clearBoard();
 
   return {bscore, bturn};
 }

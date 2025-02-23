@@ -19,15 +19,20 @@ float EvaluatedBitBoard::toCentiPawns(int value) {
   return 20.0 / (1.0 + pow(3.0, -value / 1260.0));
 }
 
-EvaluatedBitBoard::ScoreType EvaluatedBitBoard::evaluateSEE(Turn turn) const {
-  return 0;
-}
-
+constexpr auto p_e = S(0, 0);
 constexpr auto p_p = S(126, 208);
 constexpr auto p_n = S(781, 854);
 constexpr auto p_b = S(825, 915);
 constexpr auto p_r = S(1276, 1380);
 constexpr auto p_q = S(2538, 2682);
+
+constexpr S prices[]{p_e, p_p, p_n, p_b, p_r, p_q};
+
+EvaluatedBitBoard::ScoreType EvaluatedBitBoard::evaluateSEE(Turn turn) const {
+  auto from_figure = get(turn.from());
+  auto to_figure = get(turn.to());
+  return prices[to_figure]() - prices[from_figure]();
+}
 
 int EvaluatedBitBoard::getMaterial() const {
   int value = 0;

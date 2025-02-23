@@ -30,7 +30,9 @@ inline void sortMoves(ThreadContext *context, Turn *turns, int count,
 
     if (turns[i].isAttack()) {  // attacks
       auto see = Score::getSEE(context->top(), turns[i]);
-      temp[i].first = mergePriority(TurnTypes::PositiveAttack, see);
+      temp[i].first = mergePriority(see > Score{0} ? TurnTypes::PositiveAttack
+                                                   : TurnTypes::NegativeAttack,
+                                    see);
     } else {  // normal moves
       temp[i].first =
           mergePriority(TurnTypes::NormalMoves,
