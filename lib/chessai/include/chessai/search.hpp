@@ -73,6 +73,7 @@ class SearchContext {
   StopFlag stop;
   EventCounter counter;
   HKTable table;
+  Turn pv;
 
  private:
   std::unordered_map<std::thread::id, ThreadContext> pool;
