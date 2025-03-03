@@ -4,6 +4,7 @@
 ### C++ ###
 # Prerequisites
 *.d
+.zed
 
 ### tests ###
 .runsettings

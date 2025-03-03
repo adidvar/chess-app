@@ -72,12 +72,21 @@ class UCI : public Parser {
   }
   virtual void goTimeControl(int wsec, int bsec, int winc, int binc) override {
     int remainingTime = (settings.board.side() == Color::White) ? wsec : bsec;
+    int opponentTime = (settings.board.side() == Color::White) ? bsec : wsec;
     int increment = (settings.board.side() == Color::White) ? winc : binc;
 
-    settings.time = std::min(remainingTime / 20 + increment, remainingTime / 2);
+    int timeDifference = remainingTime - opponentTime;
 
-    sendInfo("time controll: auto");
-    sendInfo(std::format("time: {}", settings.time));
+    int desiredTime = 4000 + (timeDifference / 3) + increment;
+
+    // Встановлюємо час на хід з урахуванням додаткового часу і ліміту
+    settings.time = std::min(remainingTime / 20 + increment,
+                             std::max(desiredTime, remainingTime / 2));
+
+    sendInfo("time control: auto");
+    sendInfo(std::format(
+        "time: {}",
+        settings.time / 1000));  // Перетворюємо на секунди для виведення
   };
   virtual void goTime(int msec) override {
     settings.time = msec;
