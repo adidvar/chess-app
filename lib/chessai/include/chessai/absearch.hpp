@@ -83,7 +83,7 @@ inline std::pair<Score, Turn> alphaBetaTurn(const BitBoard &board,
 
   bool check;
   int size = board.getTurns(board.side(), turns, check);
-  sortMoves(thread_context, turns, size, depth, context->pv);
+  sortMoves(thread_context, turns, size, depth, context->getPV());
 
   if (size == 0) {
     if (check) return {Score::checkMate(board.side(), depth), Turn()};
@@ -124,7 +124,7 @@ inline std::pair<Score, Turn> alphaBetaTurn(const BitBoard &board,
 
   thread_context->clearBoard();
 
-  context->pv = bturn;
+  context->pushPV(bturn);
 
   return {bscore, bturn};
 }

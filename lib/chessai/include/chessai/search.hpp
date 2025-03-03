@@ -25,7 +25,9 @@ class ThreadContext {
     stack.emplace(board);
   }
   void clearBoard() {
-    while (!stack.empty()) undoTurn();
+    while (!stack.empty()) {
+      undoTurn();
+    }
   }
   void undoTurn() {
     stack.pop();
@@ -70,11 +72,21 @@ class SearchContext {
     return &pool.at(id);
   }
 
+  void pushPV(Turn turn) {
+    if (pv.size() >= 2) {
+      pv.erase(pv.begin());
+    }
+    pv.push_back(turn);
+  }
+  auto getPV() const {
+    return pv;
+  }
+
   StopFlag stop;
   EventCounter counter;
   HKTable table;
-  Turn pv;
 
  private:
   std::unordered_map<std::thread::id, ThreadContext> pool;
+  std::vector<Turn> pv;
 };

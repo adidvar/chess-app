@@ -52,46 +52,48 @@ class BitBoardHelper {
   }
   template <int8_t from, int8_t to>
   constexpr Turn generateCastling() {
-    return {Position(from), Position(to)};
+    return {Position(from), Position(to), true};
   }
 
-  template <int8_t delta, bool attack>
+  template <int8_t delta, bool advanced>
   constexpr Turn generateTurnDeltaFrom(Position from) {
     if constexpr ((flags & BitBoard::flags_color) == 0)
-      return {Position(from), Position(from.index() - delta)};
+      return {Position(from), Position(from.index() - delta), advanced};
     else
-      return {Position(from), Position(from.index() + delta)};
+      return {Position(from), Position(from.index() + delta), advanced};
   }
 
-  template <int8_t delta, bool attack, int8_t figure>
+  template <int8_t delta, bool advanced, int8_t figure>
   constexpr Turn generateTurnFigureDeltaFrom(Position from) {
     if constexpr ((flags & BitBoard::flags_color) == 0)
-      return {Position(from), Position(from.index() - delta), (Figure)figure};
+      return {Position(from), Position(from.index() - delta), (Figure)figure,
+              advanced};
     else
-      return {Position(from), Position(from.index() + delta), (Figure)figure};
+      return {Position(from), Position(from.index() + delta), (Figure)figure,
+              advanced};
   }
 
-  template <int8_t delta, bool attack>
+  template <int8_t delta, bool advanced>
   constexpr Turn generateTurnDelta(bitboard to) {
     int8_t pos = log2_64(to);
     if constexpr ((flags & BitBoard::flags_color) == 0)
-      return {Position(pos + delta), Position(pos)};
+      return {Position(pos + delta), Position(pos), advanced};
     else
-      return {Position(pos - delta), Position(pos)};
+      return {Position(pos - delta), Position(pos), advanced};
   }
 
-  template <int8_t delta, bool attack, int8_t figure>
+  template <int8_t delta, bool advanced, int8_t figure>
   constexpr Turn generateTurnFigureDelta(bitboard to) {
     int8_t pos = log2_64(to);
     if constexpr ((flags & BitBoard::flags_color) == 0)
-      return {Position(pos + delta), Position(pos), (Figure)figure};
+      return {Position(pos + delta), Position(pos), (Figure)figure, advanced};
     else
-      return {Position(pos - delta), Position(pos), (Figure)figure};
+      return {Position(pos - delta), Position(pos), (Figure)figure, advanced};
   }
 
-  template <bool attack>
+  template <bool advanced>
   constexpr Turn generateTurn(Position from, Position to) {
-    return {Position(from), Position(to)};
+    return {Position(from), Position(to), advanced};
   }
 
   constexpr int generateBlockedPawn(bitboard from, bitboard move,
@@ -269,7 +271,7 @@ class BitBoardHelper {
     return ~((bitboard)0);
   }
 
-  constexpr bool isMate(bitboard borders) {
+  constexpr bool isCheck(bitboard borders) {
     Position king_pos = log2_64(getKing(board));
     bitboard diagonal_enemies = getEnemyBishops(board) | getEnemyQueens(board);
     bitboard orthogonal_enemies = getEnemyRooks(board) | getEnemyQueens(board);
@@ -518,14 +520,14 @@ class BitBoardHelper {
               enabled) {
             bitboard new_blockers =
                 all & (~attack_cell) & (~pawnsShift<-9>(to_mask));
-            if (!isMate(new_blockers))
+            if (!isCheck(new_blockers))
               out[counter++] = generateTurnDelta<9, true>(to_mask);
           }
           if (((pawnsShift<7>(pawns) & chooseMask(~row_a, ~row_h) & to_mask)) &&
               enabled) {
             bitboard new_blockers =
                 all & (~attack_cell) & (~pawnsShift<-7>(to_mask));
-            if (!isMate(new_blockers))
+            if (!isCheck(new_blockers))
               out[counter++] = generateTurnDelta<7, true>(to_mask);
           }
         }
