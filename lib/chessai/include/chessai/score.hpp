@@ -31,6 +31,7 @@ class Score {
 
   constexpr static Score tie();
   static Score getStaticValue(const BitBoard &board);
+  static Score getSEE(const BitBoard &board, Turn turn);
   std::string toString(int depth) const;
 
   constexpr static Score max();
@@ -115,6 +116,11 @@ constexpr Score Score::tie() { return {0}; }
 inline Score Score::getStaticValue(const BitBoard &board) {
   EvaluatedBitBoard evaluator(board);
   return clamp(evaluator.evaluate());
+}
+
+inline Score Score::getSEE(const BitBoard &board, Turn turn) {
+  EvaluatedBitBoard evaluator(board);
+  return clamp(evaluator.evaluateSEE(turn));
 }
 
 inline std::string Score::toString(int depth) const {

@@ -11,18 +11,25 @@
 
 class ThreadContext {
  public:
-  ThreadContext(Color color, const StopFlag &flag, EventCounter &counter)
-      : color(color), stop(flag), counter(counter) {}
+  ThreadContext(Color color, const StopFlag &flag, EventCounter &counter,
+                HKTable &table)
+      : color(color), stop(flag), counter(counter), table(table) {}
 
   const BitBoard &top() {
     return stack.top();
   }
-  void initBoard(const BitBoard &board, unsigned depth) {
+
+  void initBoard(const BitBoard &board, unsigned depth_max,
+                 unsigned depth_start) {
+    this->depth_max = depth_max;
+    this->depth_start = depth_start;
     stack.emplace(board);
-    this->depth = depth;
   }
   void clearBoard() {
-    while (!stack.empty()) undoTurn();
+    while (!stack.empty()) {
+      undoTurn();
+    }
+
   }
   void undoTurn() {
     stack.pop();
@@ -32,11 +39,11 @@ class ThreadContext {
   }
 
   void incTurn(Turn turn, unsigned depth) {
-    table.increment(turn, this->depth - depth);
+    table.increment(turn, depth_start + this->depth_max - depth);
   }
 
   size_t getK(Turn turn, unsigned depth) {
-    return table.getK(turn, this->depth - depth);
+    return table.getK(turn, depth_start + this->depth_max - depth);
   }
 
   size_t getH(Turn turn) {
@@ -49,8 +56,12 @@ class ThreadContext {
   HKTable table;
 
  private:
+
+  HKTable &table;
   std::stack<BitBoard> stack;
-  unsigned depth;
+  unsigned depth_max;
+  unsigned depth_start;
+
 };
 
 class SearchContext {
@@ -61,13 +72,26 @@ class SearchContext {
   ThreadContext *getContextInstance() {
     auto id = std::this_thread::get_id();
     if (!pool.contains(id))
-      pool.insert({id, ThreadContext(settings.board.side(), stop, counter)});
+      pool.insert(
+          {id, ThreadContext(settings.board.side(), stop, counter, table)});
     return &pool.at(id);
+  }
+
+  void pushPV(Turn turn) {
+    if (pv.size() >= 2) {
+      pv.erase(pv.begin());
+    }
+    pv.push_back(turn);
+  }
+  auto getPV() const {
+    return pv;
   }
 
   StopFlag stop;
   EventCounter counter;
+  HKTable table;
 
  private:
   std::unordered_map<std::thread::id, ThreadContext> pool;
+  std::vector<Turn> pv;
 };

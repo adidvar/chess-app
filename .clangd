@@ -1,0 +1,41 @@
+CompileFlags:
+  CompilationDatabase: "build/Desktop-Release"
+  Add:
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+    - -std=c++20
+
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Add:
+      - modernize-*
+      - readability-*
+      - performance-*
+      - bugprone-*
+      - cppcoreguidelines-*
+      - misc-*
+    CheckOptions:
+      modernize-use-auto.MinTypeWidening: false
+
+Index:
+  Background: Build
+
+Completion:
+  AllScopes: Yes
+
+InlayHints:
+    BlockEnd: Yes
+    Designators: Yes
+    Enabled: Yes
+    ParameterNames: Yes
+    DeducedTypes: Yes
+    TypeNameLimit: 24
+
+SemanticTokens:
+  DisabledKinds: []
+  DisabledModifiers: []
+
+Hover:
+  ShowAKA: Yes
