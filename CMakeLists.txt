@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(chess-app LANGUAGES C CXX VERSION 0.1)
+project(chess-app LANGUAGES C CXX VERSION 0.2)
 
 include(GNUInstallDirs)
 enable_testing()

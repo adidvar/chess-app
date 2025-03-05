@@ -18,6 +18,7 @@ class ThreadContext {
   const BitBoard &top() {
     return stack.top();
   }
+
   void initBoard(const BitBoard &board, unsigned depth_max,
                  unsigned depth_start) {
     this->depth_max = depth_max;
@@ -28,6 +29,7 @@ class ThreadContext {
     while (!stack.empty()) {
       undoTurn();
     }
+
   }
   void undoTurn() {
     stack.pop();
@@ -51,12 +53,15 @@ class ThreadContext {
   const Color color;
   const StopFlag &stop;
   EventCounter &counter;
+  HKTable table;
 
  private:
+
   HKTable &table;
   std::stack<BitBoard> stack;
   unsigned depth_max;
   unsigned depth_start;
+
 };
 
 class SearchContext {

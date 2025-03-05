@@ -590,11 +590,13 @@ class BitBoardHelper {
                 generateTurn<false>(from_position, log2_64(to_bit));
         }
 
+
         if constexpr (generate_attack) {
           bitboard attacks = attack_mask & enemies;
           for (bitboard to_bit = takeBit(attacks); to_bit;
                to_bit = takeBit(attacks))
             out[counter++] = generateTurn<true>(from_position, log2_64(to_bit));
+
         }
       }
     }
@@ -621,10 +623,11 @@ class BitBoardHelper {
       }
     }
 
-    {  /// ROOKS GENERATION WITH SOME MAGIC
+
       for (bitboard bit = takeBit(rooks); bit; bit = takeBit(rooks)) {
         Position from_position = log2_64(bit);
         bitboard attack_mask = processRook(from_position, all);
+
 
         if constexpr (generate_moves) {
           bitboard moves = attack_mask & empty;
@@ -893,6 +896,7 @@ BitBoard BitBoard::executeTurn(Color color, Turn turn) const {
     // for el_passant
     if ((from & m_b_p & line_4) && (to & ((from << 9) | (from << 7)))) {
       if (to & ~copy.getWhites()) copy.m_w_p &= ~(to >> 8);
+
     }
 
     // rook moving for castling

@@ -45,9 +45,11 @@ constexpr bitboard lines[8]{line_1, line_2, line_3, line_4, line_5, line_6, line
 
 inline bitboard takeBit(bitboard &board)
 {
-    bitboard bit = board & (-board);
-    board ^= bit;
-    return bit;
+  bitboard copy = board;
+  bitboard minus = (board - 1);
+  bitboard next = board & minus;
+  board = next;
+  return copy;
 }
 
 constexpr int popCount(bitboard b)
