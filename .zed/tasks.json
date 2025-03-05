@@ -1,0 +1,48 @@
+[
+  {
+    "label": "CMake configure Conan-release",
+    "command": "cmake",
+    "args": [
+      "-S . -B build/Release -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=Release"
+    ],
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "CMake build",
+    "command": "cmake",
+    "args": ["--build build/Release -j 6"],
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Run uci",
+    "command": "./build/Release/uci/uci",
+    "args": [],
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Run tests",
+    "command": "cd build/Release;ctest",
+    "args": [],
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+{
+    "label": "Run bench",
+    "command": "cd build/Release/chesscore;./test_chesscore",
+    "args": [],
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  }
+]
