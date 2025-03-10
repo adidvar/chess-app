@@ -18,7 +18,7 @@ My pet UCI-compatible chess engine
 - **Move Ordering**: Uses heuristics to improve search speed by evaluating the most promising moves first.
 
 
-## To Restore from old code
+## To Restore (from old code)
 
 - **Principal Variation Search (PVS)**: Optimizes the search by assuming that the best move is found early.
 - **Zobrist Hashing**: Efficiently stores game states to avoid redundant calculations.
